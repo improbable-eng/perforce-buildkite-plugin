@@ -7,7 +7,9 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you 
 
 ## Example
 
+```yaml
 steps:
     plugins:
       - ca-johnson/perforce:
           p4port: my-perforce-server:1666
+```
