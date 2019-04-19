@@ -1,0 +1,3 @@
+.buildkite/plugins
+.vscode
+.pytest_cache
