@@ -9,5 +9,5 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you 
 
 steps:
     plugins:
-      - ca-johnson/perforce-buildkite-plugin:
+      - ca-johnson/perforce:
           p4port: my-perforce-server:1666
