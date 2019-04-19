@@ -8,13 +8,15 @@ set -euo pipefail
 # 
 
 echo "~~~ Perforce Checkout"
-python ./.buildkite/plugins/perforce/checkout.py
+export P4PORT="${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-$P4PORT}"
+export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
+
+python ./.buildkite/plugins/perforce/python/checkout.py
 exit 0
 
 
 # Override p4 env vars with plugin configuration
-export P4PORT="${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-$P4PORT}"
-export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
+
 
 # A few options:
 # Make one with 1337 bash scripting + pipe to p4 client -i

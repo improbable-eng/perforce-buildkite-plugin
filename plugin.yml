@@ -3,7 +3,6 @@ description: Checks out a perforce repository instead of git.
 author: https://github.com/ca-johnson
 requirements:
   - p4
-  - python
 configuration:
   properties:
     p4port:
