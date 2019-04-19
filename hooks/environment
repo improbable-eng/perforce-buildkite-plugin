@@ -3,7 +3,7 @@ set -euo pipefail
 
 echo "Using Plugins: BUILDKITE_PLUGINS"
 
-DISALLOWED=$(echo $BUILDKITE_PLUGINS | jq -c '[.[] | select(.".buildkite/plugins/perforce" | not)]')
+DISALLOWED=$(echo $BUILDKITE_PLUGINS | jq -c '[.[] | select(."ca-johnson/perforce" | not)]')
 if [ "$DISALLOWED" != '[]' ]; then
     echo "Tried to use plugins that havn't been whitelisted: ${DISALLOWED}"
     exit 1
