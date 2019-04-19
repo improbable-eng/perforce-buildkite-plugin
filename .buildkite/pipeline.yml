@@ -1,9 +1,4 @@
 steps:
- - label: ":bash: Tests"
-    plugins:
-      - ca-johnson/perforce
-        run: tests
-
   - label: ":bash: Tests"
     command: pytest
 

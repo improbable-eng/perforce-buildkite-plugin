@@ -11,7 +11,7 @@ echo "~~~ Perforce Checkout"
 export P4PORT="${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-$P4PORT}"
 export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
 
-python ./perforce/python/checkout.py
+python ./python/checkout.py
 exit 0
 
 
