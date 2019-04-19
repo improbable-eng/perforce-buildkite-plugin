@@ -13,7 +13,7 @@ configuration:
       type: string
     stream:
       type: string
-    workspace_mapping:
+    mapping:
       type: string
   required:
     - p4port
