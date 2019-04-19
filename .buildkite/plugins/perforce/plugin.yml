@@ -1,0 +1,20 @@
+name: Perforce
+description: Checks out a perforce repository instead of git.
+author: https://github.com/ca-johnson
+requirements:
+  - p4
+  - python
+configuration:
+  properties:
+    p4port:
+      type: string
+    p4user:
+      type: string
+    p4tickets:
+      type: string
+    stream:
+      type: string
+    workspace_mapping:
+      type: string
+  required:
+    - p4port

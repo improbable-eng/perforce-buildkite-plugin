@@ -1,0 +1,16 @@
+steps:
+  - label: "Run"
+    command: "exit 1"
+    plugins:
+      # ${BUILDKITE_REPO}#${BUILDKITE_COMMIT}:
+      #   p4port: localhost:1666
+      #   p4user: test
+      .buildkite/plugins/perforce:
+        p4port: localhost:1666
+        p4user: test
+
+  - label: ":bash: Tests"
+    command: pytest
+
+  - label: ":sparkles: Lint"
+    command: pylint
