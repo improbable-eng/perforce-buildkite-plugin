@@ -11,9 +11,9 @@ class Repo():
             self.p4.user = user
         self.root = root
         assert(not (view and stream), "Stream implies view, cannot use both")
-        self.view = self._localize_view(view)
         self.stream = stream
-
+        self.view = self._localize_view(view or [])
+        self.p4.exception_level = 1 # Only errors are raised as exceptions
         self.p4.connect()
 
     def _get_clientname(self):
@@ -34,15 +34,6 @@ class Repo():
             return '%s //%s/%s' % (depot, clientname, local)
         return [inject_client(mapping) for mapping in view]
 
-    def clean(self):
-        """ Perform a p4clean on the workspace to 
-            remove added and restore deleted files
-
-            Does not detect modified files
-        """
-        # TODO: Fast implementation of p4 clean
-        self.p4.run_clean(['-a', '-d'])
-
     def _setup_client(self):
         """Creates or re-uses the client workspace for this machine"""
         clientname = self._get_clientname()
@@ -53,12 +44,23 @@ class Repo():
             client._stream = self.stream
         if self.view:
             client._view = self.view
-            
+
         self.p4.save_client(client)
 
         self.p4.client = clientname
 
+    def clean(self):
+        """ Perform a p4clean on the workspace to 
+            remove added and restore deleted files
+
+            Does not detect modified files
+        """
+        # TODO: Fast implementation of p4 clean
+        self._setup_client()
+        self.p4.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
+
     def info(self):
+        self._setup_client()
         return self.p4.run_info()[0]
 
     def sync(self):

@@ -1,3 +1,5 @@
+
+import unittest
 import os
 from threading import Thread
 import tempfile
@@ -44,10 +46,10 @@ def setup_server(from_zip=None):
     """Start a p4 server in the background and return the address"""
     port = find_free_port()
     Thread(target=partial(run_p4d, port, from_zip=from_zip), daemon=True).start()
-    time.sleep(5)
+    time.sleep(1)
     return 'localhost:%s' % port
 
-def test_harness():
+def _test_harness():
     """Check that tests can start and connect to a local perforce server"""
     port = setup_server(from_zip='server.zip')
     repo = perforce.Repo(port)
@@ -58,16 +60,28 @@ def test_harness():
     assert(content == "Hello World\n")
 
 
-def test_sync():
+def test_checkout():
     port = setup_server(from_zip='server.zip')
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
         repo = perforce.Repo(port, root=client_root)
+
+        assert(os.listdir(client_root) == [], "Workspace should be empty")
         repo.sync()
+        assert(os.listdir(client_root) == ["file.txt"], "Workspace file wasn't synced")
 
-        with open(os.path.join(client_root, 'file.txt')) as content:
-            assert(content.read() == "Hello World\n")
+        os.remove(os.path.join(client_root, "file.txt"))
+        open(os.path.join(client_root, "added.txt"), 'a').close()
+        assert(os.listdir(client_root) == ["added.txt"], "Workspace files in unexpected state prior to clean")
+        repo.clean()
+        assert(os.listdir(client_root) == ["file.txt"], "Failed to restore workspace file")
 
+
+        
+
+
+
+        
 # def test_bad_configs():
 #     perforce.Repo('port', stream='stream', view=['view'])
 #     perforce.Repo('port', view=['bad_view'])
