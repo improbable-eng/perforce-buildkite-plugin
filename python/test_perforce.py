@@ -4,7 +4,7 @@ import tempfile
 import subprocess
 import time
 
-import checkout
+import perforce
 
 from functools import partial
 
@@ -42,7 +42,13 @@ def start_server():
     return 'localhost:%s' % port
 
 def test_harness():
+    """Check that tests can start and connect to a local perforce server"""
     port = start_server()
-    repo = checkout.P4Repository(port)
+    repo = perforce.Repo(port)
     assert(repo.info()['serverAddress'] == port)
 
+# def test_checkout():
+#     port = start_server()
+#     repo = perforce.Repo(port)
+
+#     repo.info()

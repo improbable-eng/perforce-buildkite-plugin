@@ -1,6 +1,6 @@
 from P4 import P4,P4Exception
 
-class P4Repository():
+class Repo():
     def __init__(self, port=None, user=None):
         self.p4 = P4()
         if port:
@@ -11,12 +11,4 @@ class P4Repository():
 
     def info(self):
         return self.p4.run_info()[0]
-
-
-def main():
-    repo = P4Repository()
-    print(repo.info())
-
-if __name__ == "__main__":
-    main()
 
