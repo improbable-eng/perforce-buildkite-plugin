@@ -10,7 +10,7 @@ class Repo():
         if user:
             self.p4.user = user
         self.root = root
-        assert(not (view and stream), "Stream implies view, cannot use both")
+        # assert(not (view and stream), "Stream implies view, cannot use both")
         self.stream = stream
         self.view = self._localize_view(view or [])
         self.p4.exception_level = 1 # Only errors are raised as exceptions

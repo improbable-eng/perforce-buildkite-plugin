@@ -5,3 +5,4 @@ steps:
       - ./.buildkite/plugins/perforce:
           p4port: localhost:1666
           p4user: banana
+          view: //depot/... ...
