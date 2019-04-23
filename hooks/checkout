@@ -11,17 +11,11 @@ echo "~~~ Perforce Checkout"
 export P4PORT="${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-$P4PORT}"
 export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
 
-python ./python/checkout.py
+python ./python/perforce.py
 exit 0
 
 
 # Override p4 env vars with plugin configuration
-
-
-# A few options:
-# Make one with 1337 bash scripting + pipe to p4 client -i
-# Make 'client_template' and squirt some fields into it + pipe to p4 client -i
-# Use p4python
 
 # Considerations:
 # Workspace root should be something near $BUILDKITE_BUILD_CHECKOUT_PATH

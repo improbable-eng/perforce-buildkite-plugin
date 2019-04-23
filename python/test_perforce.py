@@ -37,9 +37,8 @@ def run_p4d(port, from_zip=None):
     if from_zip:
         zip_path = os.path.join(os.path.dirname(__file__), 'fixture', from_zip)
         with zipfile.ZipFile(zip_path) as archive:
-            archive.extractall(tmpdir)            
+            archive.extractall(tmpdir)
     subprocess.run(["p4d", "-r", tmpdir, "-p", str(port)], timeout=__P4D_TIMEOUT__)
-
 
 def setup_server(from_zip=None):
     """Start a p4 server in the background and return the address"""
@@ -53,14 +52,24 @@ def test_harness():
     port = setup_server(from_zip='server.zip')
     repo = perforce.Repo(port)
     assert(repo.info()['serverAddress'] == port)
-    
+
     # There should be a sample file checked into the fixture server
     content = repo.p4.run_print("//depot/file.txt")[1] # Returns [metadata, contents]
     assert(content == "Hello World\n")
 
 
-def test_checkout():
+def test_sync():
     port = setup_server(from_zip='server.zip')
-    repo = perforce.Repo(port)
 
-    repo.info()
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+        repo = perforce.Repo(port, root=client_root)
+        repo.sync()
+
+        with open(os.path.join(client_root, 'file.txt')) as content:
+            assert(content.read() == "Hello World\n")
+
+# def test_bad_configs():
+#     perforce.Repo('port', stream='stream', view=['view'])
+#     perforce.Repo('port', view=['bad_view'])
+
+    
