@@ -11,4 +11,3 @@ class Repo():
 
     def info(self):
         return self.p4.run_info()[0]
-
