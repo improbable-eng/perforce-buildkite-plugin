@@ -4,7 +4,7 @@ Manage a perforce workspace in the context of a build machine
 import re
 import socket
 
-from P4 import P4
+from P4 import P4 # pylint: disable=import-error
 
 class Repo:
     """A class for manipulating perforce workspaces"""
