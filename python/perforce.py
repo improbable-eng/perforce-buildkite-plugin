@@ -6,7 +6,7 @@ import socket
 
 from P4 import P4
 
-class Repo(object):
+class Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None):
         self.root = root
@@ -59,7 +59,7 @@ class Repo(object):
 
             Does not detect modified files
         """
-        # todo: Fast implementation of p4 clean
+        # Add a fast implementation of p4 clean here
         self._setup_client()
         self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
 

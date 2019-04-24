@@ -21,28 +21,32 @@ __P4D_TIMEOUT__ = 30
 
 def find_free_port():
     """Find an open port that we could run a perforce server on"""
+    # pylint: disable=no-member
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         sock.bind(('', 0))
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return sock.getsockname()[1]
 
 
-def run_p4d(port, from_zip=None):
+def run_p4d(p4port, from_zip=None):
+    """Start a perforce server with the given hostname:port.
+       Optionally unzip server state from a file
+    """
     prefix = 'bk-p4d-test-'
     parent = tempfile.gettempdir()
-    for d in os.listdir(parent):
-        if d.startswith(prefix):
+    for item in os.listdir(parent):
+        if item.startswith(prefix):
             try:
-                shutil.rmtree(os.path.join(parent, d))
-            except:
-                print("Failed to remove", d)
+                shutil.rmtree(os.path.join(parent, item))
+            except Exception: # pylint: disable=broad-except
+                print("Failed to remove", item)
 
     tmpdir = tempfile.mkdtemp(prefix=prefix)
     if from_zip:
         zip_path = os.path.join(os.path.dirname(__file__), 'fixture', from_zip)
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(tmpdir)
-    subprocess.run(["p4d", "-r", tmpdir, "-p", str(port)],
+    subprocess.run(["p4d", "-r", tmpdir, "-p", str(p4port)],
                    timeout=__P4D_TIMEOUT__)
 
 
@@ -53,7 +57,7 @@ def setup_server(from_zip=None):
     time.sleep(1)
     p4port = 'localhost:%s' % port
     os.environ['P4PORT'] = p4port
-    return
+    return p4port
 
 
 def _test_harness():
@@ -69,7 +73,8 @@ def _test_harness():
 
 
 def test_checkout():
-    port = setup_server(from_zip='server.zip')
+    """Test normal flow of checking out files, running p4 clean"""
+    setup_server(from_zip='server.zip')
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
         repo = perforce.Repo(root=client_root)
