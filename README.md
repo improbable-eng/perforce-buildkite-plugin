@@ -42,3 +42,16 @@ steps:
       - ca-johnson/perforce:
           stream: //dev/minimal
 ```
+
+## Contributing
+
+Making changes to python/
+* Write unit tests
+* Implement new functionality
+* Iterate via unit tests
+
+Making changes to hooks/
+* Add entries to local-pipeline.yml to test new behaviour
+* Point it at a real perforce server, or run one on localhost.
+* Run `make` at repo root
+* This vendors the plugin and runs the pipeline locally
