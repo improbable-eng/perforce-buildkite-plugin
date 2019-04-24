@@ -51,13 +51,15 @@ def setup_server(from_zip=None):
     port = find_free_port()
     Thread(target=partial(run_p4d, port, from_zip=from_zip), daemon=True).start()
     time.sleep(1)
-    return 'localhost:%s' % port
+    p4port = 'localhost:%s' % port
+    os.environ['P4PORT'] = p4port
+    return 
 
 
 def _test_harness():
     """Check that tests can start and connect to a local perforce server"""
     port = setup_server(from_zip='server.zip')
-    repo = perforce.Repo(port)
+    repo = perforce.Repo()
     assert repo.info()['serverAddress'] == port
 
     # There should be a sample file checked into the fixture server
@@ -70,7 +72,7 @@ def test_checkout():
     port = setup_server(from_zip='server.zip')
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
-        repo = perforce.Repo(port, root=client_root)
+        repo = perforce.Repo(root=client_root)
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()

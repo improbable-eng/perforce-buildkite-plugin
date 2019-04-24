@@ -1,19 +1,21 @@
+"""
+Manage a perforce workspace in the context of a build machine
+"""
+
 from P4 import P4, P4Exception
 import socket
 import re
 
 
 class Repo():
-    def __init__(self, port=None, user=None, root=None, view=None, stream=None):
-        self.p4 = P4()
-        if port:
-            self.p4.port = port
-        if user:
-            self.p4.user = user
+    """A class for manipulating perforce workspaces"""
+    def __init__(self, root=None, view=None, stream=None):
         self.root = root
         assert not (view and stream), "Stream implies view, cannot use both"
         self.stream = stream
         self.view = self._localize_view(view or [])
+
+        self.p4 = P4()
         self.p4.exception_level = 1  # Only errors are raised as exceptions
         self.p4.connect()
 
@@ -51,12 +53,12 @@ class Repo():
         self.p4.client = clientname
 
     def clean(self):
-        """ Perform a p4clean on the workspace to 
+        """ Perform a p4clean on the workspace to
             remove added and restore deleted files
 
             Does not detect modified files
         """
-        # TODO: Fast implementation of p4 clean
+        # todo: Fast implementation of p4 clean
         self._setup_client()
         self.p4.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
 
