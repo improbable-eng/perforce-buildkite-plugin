@@ -1,19 +1,18 @@
-
-import unittest
-import os
+"""
+Test perforce module for managing workspaces
+"""
+from contextlib import closing
+from functools import partial
 from threading import Thread
-import tempfile
+import os
+import shutil
+import socket
 import subprocess
+import tempfile
 import time
 import zipfile
-import shutil
 
 import perforce
-
-from functools import partial
-
-import socket
-from contextlib import closing
 
 # Time after which the p4 server will automatically be shut-down.
 __P4D_TIMEOUT__ = 30
@@ -53,7 +52,7 @@ def setup_server(from_zip=None):
     time.sleep(1)
     p4port = 'localhost:%s' % port
     os.environ['P4PORT'] = p4port
-    return 
+    return
 
 
 def _test_harness():
@@ -64,7 +63,7 @@ def _test_harness():
 
     # There should be a sample file checked into the fixture server
     # Returns [metadata, contents]
-    content = repo.p4.run_print("//depot/file.txt")[1]
+    content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
 
 

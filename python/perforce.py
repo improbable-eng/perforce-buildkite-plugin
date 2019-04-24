@@ -1,13 +1,12 @@
 """
 Manage a perforce workspace in the context of a build machine
 """
-
-from P4 import P4, P4Exception
-import socket
 import re
+import socket
 
+from P4 import P4
 
-class Repo():
+class Repo(object):
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None):
         self.root = root
@@ -15,9 +14,9 @@ class Repo():
         self.stream = stream
         self.view = self._localize_view(view or [])
 
-        self.p4 = P4()
-        self.p4.exception_level = 1  # Only errors are raised as exceptions
-        self.p4.connect()
+        self.perforce = P4()
+        self.perforce.exception_level = 1  # Only errors are raised as exceptions
+        self.perforce.connect()
 
     def _get_clientname(self):
         if self.stream:
@@ -32,15 +31,17 @@ class Repo():
             view = [view]
         clientname = self._get_clientname()
 
-        def inject_client(mapping):
+        def insert_clientname(mapping):
+            """Insert client name into path mapping"""
             depot, local = mapping.split(' ')
             return '%s //%s/%s' % (depot, clientname, local)
-        return [inject_client(mapping) for mapping in view]
+        return [insert_clientname(mapping) for mapping in view]
 
     def _setup_client(self):
         """Creates or re-uses the client workspace for this machine"""
+        # pylint: disable=protected-access
         clientname = self._get_clientname()
-        client = self.p4.fetch_client(clientname)
+        client = self.perforce.fetch_client(clientname)
         if self.root:
             client._root = self.root
         if self.stream:
@@ -48,9 +49,9 @@ class Repo():
         if self.view:
             client._view = self.view
 
-        self.p4.save_client(client)
+        self.perforce.save_client(client)
 
-        self.p4.client = clientname
+        self.perforce.client = clientname
 
     def clean(self):
         """ Perform a p4clean on the workspace to
@@ -60,12 +61,14 @@ class Repo():
         """
         # todo: Fast implementation of p4 clean
         self._setup_client()
-        self.p4.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
+        self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
 
     def info(self):
+        """Get server info"""
         self._setup_client()
-        return self.p4.run_info()[0]
+        return self.perforce.run_info()[0]
 
     def sync(self):
+        """Sync the workspace"""
         self._setup_client()
-        return self.p4.run_sync()
+        return self.perforce.run_sync()
