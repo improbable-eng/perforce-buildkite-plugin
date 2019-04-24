@@ -8,6 +8,11 @@ before_install:
   - wget http://www.perforce.com/downloads/perforce/r18.2/bin.linux26x86_64/p4d && sudo chmod +x p4d && sudo mv p4d /usr/local/bin/p4d
 install: 
   - pip install -U pip
+  - curl ftp.perforce.com
   - pip install pylint p4python
 script:
   - pylint **/*.py && pytest
+
+
+
+
