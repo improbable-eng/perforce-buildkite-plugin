@@ -3,8 +3,8 @@ set -euo pipefail
 
 echo "Using Plugins: BUILDKITE_PLUGINS"
 
-# TODO: Fix warning for unbound var
-DISALLOWED=$(echo $BUILDKITE_PLUGINS | jq -c '[.[] | select(."ca-johnson/perforce" | not)]')
+# TODO: Switch to https://github.com/buildkite/buildkite-plugin-whitelister
+DISALLOWED=$(echo ${BUILDKITE_PLUGINS:-"{}"} | jq -c '[.[] | select(."github.com/ca-johnson/perforce-buildkite-plugin" | not)]')
 if [ "$DISALLOWED" != '[]' ]; then
     echo "Warning: Using plugins that havn't been whitelisted: ${DISALLOWED}"
     exit 0

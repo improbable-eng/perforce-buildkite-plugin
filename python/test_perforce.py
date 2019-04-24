@@ -75,12 +75,6 @@ def test_checkout():
         assert(os.listdir(client_root) == ["added.txt"], "Workspace files in unexpected state prior to clean")
         repo.clean()
         assert(os.listdir(client_root) == ["file.txt"], "Failed to restore workspace file")
-
-
-        
-
-
-
         
 # def test_bad_configs():
 #     perforce.Repo('port', stream='stream', view=['view'])

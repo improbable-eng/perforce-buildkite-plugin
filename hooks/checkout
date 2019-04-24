@@ -1,13 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-
-# Before this ever runs, you need:
-# 'p4' in PATH
+# Before this will run, you need:
+# p4 in PATH
+# python in PATH
+# requirements.txt installed into python env
 # trust for p4 server
-# 
+# ticket/passwd in env for user
 
-echo "~~~ Perforce Checkout"
 export P4PORT="${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-$P4PORT}"
 export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
 
