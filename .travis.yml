@@ -3,8 +3,9 @@ python:
   - "3.6"
 before_install:
   - sudo apt-get update -q
-  - sudo apt-get install python-dev build-essential openssl-dev
+  - sudo apt-get install python-dev build-essential libssl-dev
   - wget http://www.perforce.com/downloads/perforce/r18.2/bin.linux26x86_64/p4 && sudo chmod +x p4 && sudo mv p4 /usr/local/bin/p4
+  - wget http://www.perforce.com/downloads/perforce/r18.2/bin.linux26x86_64/p4d && sudo chmod +x p4d && sudo mv p4d /usr/local/bin/p4d
 install: 
   - pip install pylint p4python
 script:
