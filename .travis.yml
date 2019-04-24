@@ -1,8 +1,11 @@
 language: python
 python:
   - "3.6"
+before_install:
+  - sudo apt-get update -q
+  - sudo apt-get install python-dev build-essential openssl-dev
+  - wget http://www.perforce.com/downloads/perforce/r18.2/bin.linux26x86_64/p4 && sudo chmod +x p4 && sudo mv p4 /usr/local/bin/p4
 install: 
-  - "apt-get install python-dev build-essential openssl-dev"
-  - "pip install pylint p4python"
+  - pip install pylint p4python
 script:
   - pylint **/*.py && pytest
