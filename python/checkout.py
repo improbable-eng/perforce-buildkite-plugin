@@ -12,7 +12,12 @@ def main():
     parser.add_argument('--root', action='store', help='client workspace root')
     args = parser.parse_args()
 
-    repo = perforce.Repo(root=args.root, stream=args.stream, view=args.view)
+    # Coerce view from ['//depot/...', '...'] to ['//depot/... ...']
+    assert (len(args.view) % 2) == 0, "Invalid view format"
+    view_iter = iter(args.view)
+    view = ['%s %s' % (v, next(view_iter)) for v in view_iter]
+
+    repo = perforce.Repo(root=args.root, stream=args.stream, view=view)
     repo.sync()
 
 if __name__ == "__main__":

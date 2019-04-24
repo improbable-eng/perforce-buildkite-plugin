@@ -15,8 +15,9 @@ export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
 # ${BUILDKITE_PLUGIN_PERFORCE_VIEW}
 
 ROOT=${BUILDKITE_PLUGIN_PERFORCE_ROOT:-$BUILDKITE_BUILD_CHECKOUT_PATH}
+VIEW=${BUILDKITE_PLUGIN_PERFORCE_VIEW:-"\"//... ...\""}
 
-python "${BASH_SOURCE%/*}/../python/checkout.py" --root "${ROOT}" 
+python "${BASH_SOURCE%/*}/../python/checkout.py" --root "${ROOT}" --view ${VIEW}
 
 # NWX perforce fingerprint (for p4 trust -i):
 # 35.203.30.49:1666 94:48:85:E4:0C:A5:64:ED:32:CB:2B:4C:55:CD:49:97:30:8D:D4:9F
