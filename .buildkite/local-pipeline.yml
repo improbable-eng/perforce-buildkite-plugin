@@ -6,3 +6,4 @@ steps:
           p4port: localhost:1666
           p4user: banana
           view: //depot/... ...
+          root: p4_workspace

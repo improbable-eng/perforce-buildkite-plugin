@@ -4,3 +4,5 @@ __pycache__/
 .buildkite/plugins
 .vscode
 .pytest_cache
+
+p4_workspace

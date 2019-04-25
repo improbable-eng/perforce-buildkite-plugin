@@ -52,6 +52,4 @@ Making changes to python/
 
 Making changes to hooks/ and scripts called by hooks
 * Add entries to local-pipeline.yml to test new behaviour
-* Run a perforce server on localhost
-* Run `make` at repo root
-* This vendors the plugin and runs the pipeline locally
+* `make` to start p4d on localhost:1666, vendor the plugin, run the pipeline and kill p4d.
