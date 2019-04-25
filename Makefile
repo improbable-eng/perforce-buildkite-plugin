@@ -1,4 +1,5 @@
 local_run: vendorize p4d
+	rm -f -r p4_workspace
 	bk local run .buildkite/local-pipeline.yml
 	$(MAKE) clean_p4d
 
