@@ -17,6 +17,7 @@ export P4USER="${BUILDKITE_PLUGIN_PERFORCE_P4USER:-$P4USER}"
 ROOT=${BUILDKITE_PLUGIN_PERFORCE_ROOT:-$BUILDKITE_BUILD_CHECKOUT_PATH}
 VIEW=${BUILDKITE_PLUGIN_PERFORCE_VIEW:-"\"//... ...\""}
 
+python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
 python "${BASH_SOURCE%/*}/../python/checkout.py" --root "${ROOT}" --view ${VIEW}
 
 # NWX perforce fingerprint (for p4 trust -i):
