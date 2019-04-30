@@ -1,0 +1,2 @@
+#!/bin/bash
+# Override built-in git post-checkout hook
