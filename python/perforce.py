@@ -3,6 +3,8 @@ Manage a perforce workspace in the context of a build machine
 """
 import re
 import socket
+import logging
+import sys
 
 from P4 import P4 # pylint: disable=import-error
 
@@ -20,6 +22,13 @@ class Repo:
 
         self.perforce = P4()
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
+        logger = logging.getLogger("P4Python")
+        logger.setLevel(logging.INFO)
+        handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        self.perforce.logger = logger
         self.perforce.connect()
         if self.perforce.port.startswith('ssl'):
             # Remove this and enforce prior provisioning of trusted fingerprints
