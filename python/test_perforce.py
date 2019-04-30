@@ -46,9 +46,11 @@ def run_p4d(p4port, from_zip=None):
         zip_path = os.path.join(os.path.dirname(__file__), 'fixture', from_zip)
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(tmpdir)
-    subprocess.run(["p4d", "-r", tmpdir, "-p", str(p4port)],
-                   timeout=__P4D_TIMEOUT__)
-
+    try:
+        subprocess.check_output(["p4d", "-r", tmpdir, "-p", str(p4port)],
+                                timeout=__P4D_TIMEOUT__)
+    except subprocess.TimeoutExpired:
+        pass
 
 def setup_server(from_zip=None):
     """Start a p4 server in the background and return the address"""
