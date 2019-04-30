@@ -17,6 +17,8 @@ class Repo:
         self.perforce = P4()
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
         self.perforce.connect()
+        if self.perforce.port.startswith('ssl'):
+            self.perforce.run_trust('-y') # TODO: Remove this and enforce prior provisioning of trusted fingerprints
 
     def _get_clientname(self):
         if self.stream:
