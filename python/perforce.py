@@ -9,8 +9,12 @@ from P4 import P4 # pylint: disable=import-error
 class Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None):
+        """
+        root: Directory in which to create the client workspace
+        view: Client workspace mapping
+        stream: Client workspace stream. Overrides view parameter.
+        """
         self.root = root
-        assert not (view and stream), "Stream implies view, cannot use both"
         self.stream = stream
         self.view = self._localize_view(view or [])
 

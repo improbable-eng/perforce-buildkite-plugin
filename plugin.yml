@@ -11,6 +11,8 @@ configuration:
       type: string
     p4tickets:
       type: string
+    p4trust:
+      type: string  
     stream:
       type: string
     view:
