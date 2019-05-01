@@ -10,6 +10,6 @@ before_install:
   - tar xzf p4api.tgz --directory /tmp/
 install: 
   - pip install -U pip
-  - pip install -r python/requirements.txt --install-option="--apidir" --install-option="/tmp/p4api-2018.2.1751184"
+  - pip install -r python/requirements.txt --install-option="--apidir /tmp/p4api-2018.2.1751184"
 script:
   - pylint **/*.py --errors-only && pytest
