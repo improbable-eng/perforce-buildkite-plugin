@@ -31,14 +31,11 @@ class Repo:
         self.perforce.logger = logger
         self.perforce.connect()
         if self.perforce.port.startswith('ssl'):
-            # Remove this and enforce prior provisioning of trusted fingerprints
+            # TODO: Remove this and enforce prior provisioning of trusted fingerprints
             self.perforce.run_trust('-y') 
 
     def _get_clientname(self):
-        if self.stream:
-            clientname = 'bk_%s_%s' % (socket.gethostname(), self.stream)
-        else:
-            clientname = 'bk_%s' % socket.gethostname()
+        clientname = 'bk_p4_%s' % socket.gethostname()
         return re.sub(r'\W', '_', clientname)
 
     def _localize_view(self, view):
@@ -75,7 +72,7 @@ class Repo:
 
             Does not detect modified files
         """
-        # Add a fast implementation of p4 clean here
+        # TODO: Add a fast implementation of p4 clean here
         self._setup_client()
         self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
 
