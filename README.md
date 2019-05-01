@@ -15,7 +15,7 @@ steps:
       - ca-johnson/perforce: ~
 ```
 
-Doing configuration via the plugin instead:
+Doing configuration via the plugin:
 
 ```yaml
 steps:
@@ -25,16 +25,18 @@ steps:
           p4user: my-username
 ```
 
-Custom workspace mapping:
+Custom workspace view:
 
 ```yaml
 steps:
     plugins:
       - ca-johnson/perforce:
-          mapping: ???
+          view: >-
+            //dev/project/... project/...
+            //dev/vendor/... vendor/...
 ```
 
-Workspace mapping via a p4 stream:
+Workspace view via a p4 stream:
 
 ```yaml
 steps:
