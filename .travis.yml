@@ -11,7 +11,7 @@ install:
   # - curl ftp.perforce.com
   - pip install pylint # p4python
 script:
-  - pylint **/*.py # && pytest
+  - pylint **/*.py --errors-only # && pytest
 
 
 
