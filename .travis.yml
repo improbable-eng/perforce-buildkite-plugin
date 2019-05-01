@@ -9,7 +9,7 @@ before_install:
   - wget http://www.perforce.com/downloads/perforce/r18.2/bin.linux26x86_64/p4api.tgz
   - tar xzf p4api.tgz --directory /tmp/
 install: 
-  - pip install -U pip
+  # - pip install -U pip
   - pip install -r python/requirements.txt --install-option="--apidir=/tmp/p4api-2018.2.1751184"
 script:
   - pylint **/*.py --errors-only && pytest
