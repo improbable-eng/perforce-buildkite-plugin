@@ -13,6 +13,6 @@ before_install:
 install: 
   - pip install -U pip
   - cd /tmp/p4python-2018.2.1743033/ && python setup.py install --apidir /tmp/p4api-2018.2.1751184
-  - pip install pylint
+  - pip install pylint pytest
 script:
-  - pylint **/*.py --errors-only && pytest
+  - pylint **/*.py --errors-only && pytest python
