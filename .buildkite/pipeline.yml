@@ -1,6 +1,0 @@
-steps:
-  - label: ":bash: Tests"
-    command: pytest
-
-  - label: ":sparkles: Lint"
-    command: pylint
