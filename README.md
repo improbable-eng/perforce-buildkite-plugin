@@ -47,11 +47,11 @@ steps:
 
 ## Contributing
 
-Making changes to python/
+Making changes to `python/`
 * Write unit tests
 * Implement new functionality
 * Iterate via unit tests
 
-Making changes to hooks/ and scripts called by hooks
+Making changes to `hooks/` and scripts called by hooks
 * Add entries to local-pipeline.yml to test new behaviour
 * `make` to start p4d on localhost:1666, vendor the plugin, run the pipeline and kill p4d.
