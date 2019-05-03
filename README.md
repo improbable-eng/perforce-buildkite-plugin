@@ -47,11 +47,15 @@ steps:
 
 ## Contributing
 
+1. Install python/requirements.txt
+2. Make sure `p4d` is in your `PATH`
+3. Make sure your version of `bk` supports `bk local run`
+
 Making changes to `python/`
 * Write unit tests
 * Implement new functionality
-* Iterate via unit tests
+* Iterate via python unit tests
 
 Making changes to `hooks/` and scripts called by hooks
-* Add entries to local-pipeline.yml to test new behaviour
+* Add entries to local-pipeline.yml to test new behaviour, if relevant.
 * `make` to start p4d on localhost:1666, vendor the plugin, run the pipeline and kill p4d.
