@@ -1,5 +1,9 @@
 @echo off
 
+rem Required to prevent global post-checkout hook from failing
+rem TODO: Skip if relevant phases missing from BUILDKITE_PHASES
+git init 
+
 if defined BUILDKITE_PLUGIN_PERFORCE_P4PORT (
     set "P4PORT=%BUILDKITE_PLUGIN_PERFORCE_P4PORT%"
 )
@@ -33,6 +37,3 @@ if defined BUILDKITE_PLUGIN_PERFORCE_STREAM (
 
 python -m pip install -r "%~dp0../python/requirements.txt"
 python "%~dp0../python/checkout.py" --root "%ROOT%" --stream "%STREAM%" --view %VIEW%
-
-rem Required to prevent global post-checkout hook from failing
-git init 
