@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -ex
 sudo apt-get install python-dev build-essential libssl-dev
 
