@@ -4,7 +4,7 @@ python:
 os:
   - linux
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo ./ci/install_linux.sh; fi
+  - sudo ./ci/install_$TRAVIS_OS_NAME.sh
 install: 
   - pip install -U pip
   - pip install -U pylint pytest
