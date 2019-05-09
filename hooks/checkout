@@ -2,7 +2,6 @@
 set -euo pipefail
 
 # Required to prevent global post-checkout hook from failing
-# TODO: Skip if relevant phases missing from BUILDKITE_PHASES
 git init 
 
 if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-}" ]]; then
