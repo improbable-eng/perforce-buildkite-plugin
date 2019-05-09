@@ -1,9 +1,5 @@
 @echo off
 
-rem Required to prevent global post-checkout hook from failing
-rem TODO: Skip if relevant phases missing from BUILDKITE_PHASES
-git init 
-
 if defined BUILDKITE_PLUGIN_PERFORCE_P4PORT (
     set "P4PORT=%BUILDKITE_PLUGIN_PERFORCE_P4PORT%"
 )

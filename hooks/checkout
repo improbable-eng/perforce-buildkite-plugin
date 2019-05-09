@@ -1,10 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Required to prevent global post-checkout hook from failing
-# TODO: Skip if relevant phases missing from BUILDKITE_PHASES
-git init 
-
 if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-}" ]]; then
     export P4PORT=$BUILDKITE_PLUGIN_PERFORCE_P4PORT
 fi
@@ -24,4 +20,3 @@ STREAM=${BUILDKITE_PLUGIN_PERFORCE_STREAM:-}
 
 python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
 python "${BASH_SOURCE%/*}/../python/checkout.py" --root "${ROOT}" --stream "${STREAM}" --view ${VIEW}
-
