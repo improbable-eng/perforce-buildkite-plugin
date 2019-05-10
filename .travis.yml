@@ -3,6 +3,7 @@ python:
   - "3.6"
 os:
   - linux
+  - windows
 before_install:
   - pip install -U pip
 install: 
