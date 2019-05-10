@@ -81,6 +81,10 @@ class Repo:
         self._setup_client()
         return self.perforce.run_info()[0]
 
+    def head(self):
+        """Get current head revision"""
+        return int(self.perforce.run_counter("maxCommitChange")[0]['value'])
+
     def sync(self):
         """Sync the workspace"""
         self._setup_client()
