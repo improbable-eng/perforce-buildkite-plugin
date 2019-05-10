@@ -5,9 +5,9 @@ local_run: vendorize p4d
 
 vendorize:
 	mkdir .buildkite/plugins/perforce -p
-	cp hooks python plugin.yml .buildkite/plugins/perforce/ -r
+	cp hooks python plugin.yml .buildkite/plugins/perforce/ -rf
 	# Checkout hook not available locally, so make a command hook instead
-	cp .buildkite/plugins/perforce/hooks/checkout .buildkite/plugins/perforce/hooks/command 
+	cp .buildkite/plugins/perforce/hooks/checkout .buildkite/plugins/perforce/hooks/command -f
 
 # p4d: export P4SSLDIR=sslkeys
 p4d: clean_p4d
