@@ -95,6 +95,9 @@ def test_checkout():
         assert os.listdir(client_root) == [
             "file.txt"], "Failed to restore workspace file"
 
+        repo.sync(revision='#0')
+        assert os.listdir(client_root) == [], "Workspace file wasn't de-synced"
+
 # def test_bad_configs():
 #     perforce.Repo('port', stream='stream', view=['view'])
 #     perforce.Repo('port', view=['bad_view'])

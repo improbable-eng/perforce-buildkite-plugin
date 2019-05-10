@@ -11,6 +11,7 @@ def main():
     """Main"""
     parser = argparse.ArgumentParser(
         description='Checkout a perforce repository')
+    parser.add_argument('--revision', action='store', help='revision specifier to sync')
     parser.add_argument('--port', action='store', help='perforce port')
     parser.add_argument('--user', action='store', help='perforce user')
     parser.add_argument('--stream', action='store', help='stream to sync')
@@ -26,7 +27,7 @@ def main():
     view = ['%s %s' % (v, next(view_iter)) for v in view_iter]
 
     repo = perforce.Repo(root=args.root, stream=args.stream, view=view)
-    repo.sync()
+    repo.sync(revision=args.revision)
 
 
 if __name__ == "__main__":
