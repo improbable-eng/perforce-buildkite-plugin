@@ -6,7 +6,8 @@ os:
 before_install:
   - pip install -U pip
 install: 
-  - ./ci/install_$TRAVIS_OS_NAME.sh
+  - if [ $TRAVIS_OS_NAME = linux ]; then ./ci/install_linux.sh; fi
+  - if [ $TRAVIS_OS_NAME = windows ]; then ./ci/install_windows.bat; fi
   - pip install -U pylint pytest
 script:
   - pylint **/*.py --errors-only && pytest
