@@ -7,6 +7,5 @@ before_install:
   - pip install -U pip
 install: 
   - ./ci/install_$TRAVIS_OS_NAME.sh
-  - pip install -U pylint pytest
 script:
-  - pylint **/*.py --errors-only && pytest
+  - ./ci/test.sh

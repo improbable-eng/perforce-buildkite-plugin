@@ -32,7 +32,7 @@ class Repo:
         self.perforce.connect()
         if self.perforce.port.startswith('ssl'):
             # TODO: Remove this and enforce prior provisioning of trusted fingerprints
-            self.perforce.run_trust('-y') 
+            self.perforce.run_trust('-y')
 
     def _get_clientname(self):
         clientname = 'bk_p4_%s' % socket.gethostname()
