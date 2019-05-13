@@ -1,16 +1,34 @@
 """
 Entrypoint for buildkite checkout hook
 """
+import os
 import argparse
+import subprocess
 
 import perforce
 
+__ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
+__REVISION_METADATA__ = 'buildkite:perforce:revision'
+
+def get_build_revision():
+    if not __ACCESS_TOKEN__:
+        return None
+    # Exitcode 0 if exists, 100 if not
+    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 0:
+        return subprocess.check_output(['buildkite-agent', 'meta-data', 'get',  __REVISION_METADATA__])
+    return None
+
+def set_build_revision(revision):
+    if not __ACCESS_TOKEN__:
+        return
+    # Exitcode 0 if exists, 100 if not
+    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 100:
+        subprocess.call(['buildkite-agent', 'meta-data', 'set',  __REVISION_METADATA__, revision])
 
 def main():
     """Main"""
     parser = argparse.ArgumentParser(
         description='Checkout a perforce repository')
-    parser.add_argument('--revision', action='store', help='revision specifier to sync')
     parser.add_argument('--port', action='store', help='perforce port')
     parser.add_argument('--user', action='store', help='perforce user')
     parser.add_argument('--stream', action='store', help='stream to sync')
@@ -26,9 +44,16 @@ def main():
     view = ['%s %s' % (v, next(view_iter)) for v in view_iter]
 
     repo = perforce.Repo(root=args.root, stream=args.stream, view=view)
-    revision = args.revision or repo.head()
-    repo.sync(revision=revision)
 
+    revision = get_build_revision()
+    if not revision: # No revision set, must be our responsibility.
+        if os.environ['BUILDKITE_COMMIT'] == 'HEAD':
+            revision = repo.head()
+        else:
+            revision = os.environ['BUILDKITE_COMMIT']
+        set_build_revision(revision)
+
+    repo.sync(revision=revision)
 
 if __name__ == "__main__":
     main()
