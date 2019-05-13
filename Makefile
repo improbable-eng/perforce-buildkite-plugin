@@ -3,6 +3,10 @@ local_run: vendorize p4d
 	bk local run .buildkite/local-pipeline.yml
 	$(MAKE) clean_p4d
 
+test:
+	python3 -m pip install -r ./ci/requirements.txt
+	./ci/test.sh
+
 vendorize:
 	mkdir .buildkite/plugins/perforce -p
 	cp hooks python plugin.yml .buildkite/plugins/perforce/ -rf
