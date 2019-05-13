@@ -1,7 +1,6 @@
 """
 Entrypoint for buildkite checkout hook
 """
-
 import argparse
 
 import perforce
@@ -27,7 +26,8 @@ def main():
     view = ['%s %s' % (v, next(view_iter)) for v in view_iter]
 
     repo = perforce.Repo(root=args.root, stream=args.stream, view=view)
-    repo.sync(revision=args.revision)
+    revision = args.revision or repo.head()
+    repo.sync(revision=revision)
 
 
 if __name__ == "__main__":
