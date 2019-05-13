@@ -23,4 +23,3 @@ STREAM=${BUILDKITE_PLUGIN_PERFORCE_STREAM:-}
 
 python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
 python "${BASH_SOURCE%/*}/../python/checkout.py" --root "${ROOT}" --stream "${STREAM}" --view ${VIEW}
-

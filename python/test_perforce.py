@@ -80,7 +80,7 @@ def test_checkout():
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
         repo = perforce.Repo(root=client_root)
-        assert repo.head() == 1, "Unexpected head revision"
+        assert repo.head() == "#1", "Unexpected head revision"
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
