@@ -12,7 +12,7 @@ import tempfile
 import time
 import zipfile
 
-import perforce
+from perforce import P4Repo
 
 # Time after which the p4 server will automatically be shut-down.
 __P4D_TIMEOUT__ = 30
@@ -65,7 +65,7 @@ def setup_server(from_zip=None):
 def _test_harness():
     """Check that tests can start and connect to a local perforce server"""
     port = setup_server(from_zip='server.zip')
-    repo = perforce.Repo()
+    repo = P4Repo()
     assert repo.info()['serverAddress'] == port
 
     # There should be a sample file checked into the fixture server
@@ -79,7 +79,7 @@ def test_checkout():
     setup_server(from_zip='server.zip')
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
-        repo = perforce.Repo(root=client_root)
+        repo = P4Repo(root=client_root)
         assert repo.head() == "@1", "Unexpected head revision"
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
@@ -99,5 +99,5 @@ def test_checkout():
         assert os.listdir(client_root) == [], "Workspace file wasn't de-synced"
 
 # def test_bad_configs():
-#     perforce.Repo('port', stream='stream', view=['view'])
-#     perforce.Repo('port', view=['bad_view'])
+#     P4Repo('port', stream='stream', view=['view'])
+#     P4Repo('port', view=['bad_view'])
