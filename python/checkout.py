@@ -8,6 +8,7 @@ import subprocess
 import perforce
 
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
+__LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
 
 def get_build_revision():
@@ -47,7 +48,7 @@ def main():
 
     revision = get_build_revision()
     if not revision: # No revision set, must be our responsibility.
-        if os.environ['BUILDKITE_COMMIT'] == 'HEAD':
+        if os.environ['BUILDKITE_COMMIT'] == 'HEAD' or __LOCAL_RUN__:
             revision = repo.head()
         else:
             revision = os.environ['BUILDKITE_COMMIT']
