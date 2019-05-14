@@ -9,6 +9,7 @@ import perforce
 
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
+__REVISION_ANNOTATION__ = "Revision: %s"
 
 def get_build_revision():
     if not __ACCESS_TOKEN__:
@@ -24,6 +25,7 @@ def set_build_revision(revision):
     # Exitcode 0 if exists, 100 if not
     if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 100:
         subprocess.call(['buildkite-agent', 'meta-data', 'set',  __REVISION_METADATA__, revision])
+        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
 
 def main():
     """Main"""
