@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Required to prevent global post-checkout hook from failing
-git init 
-
 if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-}" ]]; then
     export P4PORT=$BUILDKITE_PLUGIN_PERFORCE_P4PORT
 fi

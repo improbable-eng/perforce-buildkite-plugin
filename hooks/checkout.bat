@@ -1,8 +1,5 @@
 @echo off
 
-rem Required to prevent global post-checkout hook from failing
-git init 
-
 if defined BUILDKITE_PLUGIN_PERFORCE_P4PORT (
     set "P4PORT=%BUILDKITE_PLUGIN_PERFORCE_P4PORT%"
 )
