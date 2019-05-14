@@ -8,7 +8,7 @@ import sys
 
 from P4 import P4 # pylint: disable=import-error
 
-class Repo:
+class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None):
         """

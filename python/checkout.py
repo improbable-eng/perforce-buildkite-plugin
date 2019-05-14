@@ -5,29 +5,9 @@ import os
 import argparse
 import subprocess
 
-import perforce
+from perforce import P4Repo
+from buildkite import get_build_revision, set_build_revision
 
-__ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
-# https://github.com/buildkite/cli/blob/e8aac4bedf34cd8084a3ae7a4ab7812c611d0310/local/run.go#L403
-__LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local' 
-__REVISION_METADATA__ = 'buildkite:perforce:revision'
-__REVISION_ANNOTATION__ = "Revision: %s"
-
-def get_build_revision():
-    if not __ACCESS_TOKEN__:
-        return None
-    # Exitcode 0 if exists, 100 if not
-    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 0:
-        return subprocess.check_output(['buildkite-agent', 'meta-data', 'get',  __REVISION_METADATA__])
-    return None
-
-def set_build_revision(revision):
-    if not __ACCESS_TOKEN__:
-        return
-    # Exitcode 0 if exists, 100 if not
-    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 100:
-        subprocess.call(['buildkite-agent', 'meta-data', 'set',  __REVISION_METADATA__, revision])
-        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
 
 def main():
     """Main"""
@@ -47,14 +27,11 @@ def main():
     view_iter = iter(args.view)
     view = ['%s %s' % (v, next(view_iter)) for v in view_iter]
 
-    repo = perforce.Repo(root=args.root, stream=args.stream, view=view)
+    repo = P4Repo(root=args.root, stream=args.stream, view=view)
 
     revision = get_build_revision()
-    if not revision: # No revision set, must be our responsibility.
-        if os.environ['BUILDKITE_COMMIT'] == 'HEAD' or __LOCAL_RUN__:
-            revision = repo.head()
-        else:
-            revision = os.environ['BUILDKITE_COMMIT']
+    if revision == 'HEAD':
+        revision = repo.head()
         set_build_revision(revision)
 
     repo.sync(revision=revision)
