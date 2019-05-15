@@ -15,16 +15,16 @@ __REVISION_ANNOTATION__ = "Revision: %s"
 def get_env():
     env = {}
     for p4var in ['P4PORT','P4USER', 'P4TICKETS', 'P4TRUST']:
-        plugin_value = os.environ['BUILDITE_PLUGIN_PERFORCE_%s' % p4var]
+        plugin_value = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_%s' % p4var)
         if plugin_value:
             env[p4var] = plugin_value
     return env
 
 def get_config():
     conf = {}
-    conf['root'] = os.environ['BUILDKITE_PLUGIN_PERFORCE_ROOT'] or os.environ['BUILDKITE_BUILD_CHECKOUT_PATH']
-    conf['view'] = os.environ['BUILDKITE_PUGIN_PERFORCE_VIEW'] or '//... ...'
-    conf['stream'] = os.environ['BUILDKITE_PLUGIN_PERFORCE_STREAM']
+    conf['root'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_ROOT') or os.environ.get('BUILDKITE_BUILD_CHECKOUT_PATH')
+    conf['view'] = os.environ.get('BUILDKITE_PUGIN_PERFORCE_VIEW') or '//... ...'
+    conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
 
     # Coerce view into pairs of [depot client] paths
     view_parts = shlex.split(conf['view'])
