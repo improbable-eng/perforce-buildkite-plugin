@@ -2,7 +2,6 @@
 Interact with buildkite as part of plugin hooks
 """
 import os
-import shlex
 import subprocess
 
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
@@ -23,15 +22,14 @@ def get_env():
 def get_config():
     conf = {}
     conf['root'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_ROOT') or os.environ.get('BUILDKITE_BUILD_CHECKOUT_PATH')
-    conf['view'] = os.environ.get('BUILDKITE_PUGIN_PERFORCE_VIEW') or '//... ...'
+    conf['view'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_VIEW') or '//... ...'
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
 
     # Coerce view into pairs of [depot client] paths
-    view_parts = shlex.split(conf['view'])
+    view_parts = conf['view'].split(' ')
     assert (len(view_parts) % 2) == 0, "Invalid view format"
     view_iter = iter(view_parts)
     conf['view'] = ['%s %s' % (v, next(view_iter)) for v in view_iter]
-
     return conf
 
 def get_build_revision():
