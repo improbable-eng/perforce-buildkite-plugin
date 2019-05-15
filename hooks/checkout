@@ -1,22 +1,5 @@
 #!/bin/bash
 set -euo pipefail
 
-if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4PORT:-}" ]]; then
-    export P4PORT=$BUILDKITE_PLUGIN_PERFORCE_P4PORT
-fi
-if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4USER:-}" ]]; then
-    export P4USER=$BUILDKITE_PLUGIN_PERFORCE_P4USER
-fi
-if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4TICKETS:-}" ]]; then
-    export P4TICKETS=$BUILDKITE_PLUGIN_PERFORCE_P4TICKETS
-fi
-if [[ "${BUILDKITE_PLUGIN_PERFORCE_P4TRUST:-}" ]]; then
-    export P4TRUST=$BUILDKITE_PLUGIN_PERFORCE_P4TRUST
-fi
-
-ROOT=${BUILDKITE_PLUGIN_PERFORCE_ROOT:-$BUILDKITE_BUILD_CHECKOUT_PATH}
-VIEW=${BUILDKITE_PLUGIN_PERFORCE_VIEW:-"\"//... ...\""}
-STREAM=${BUILDKITE_PLUGIN_PERFORCE_STREAM:-}
-
 python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
-python "${BASH_SOURCE%/*}/../python/checkout.py" --root "${ROOT}" --stream "${STREAM}" --view ${VIEW}
+python "${BASH_SOURCE%/*}/../python/checkout.py"
