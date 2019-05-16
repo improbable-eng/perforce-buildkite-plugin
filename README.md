@@ -2,39 +2,45 @@
 
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core)
 
-* Configure by setting env vars in your build environment (e.g. `P4PORT`, `P4USER`) or via plugin config.
-* `P4PORT` may by configured by setting `BUILDKITE_REPO` for your pipeline.
-* Optionally add workspace mapping.
+1. Configure at least P4PORT and P4USER (see examples below)
+2. Provision with credentials - a P4TICKETS file is recommended
+3. Optionally customise workspace mapping.
 
-## Example
+## Examples
 
-Assuming everything is configured via env vars and you just want to sync the whole repository:
+Configuration via env vars:
+
+```yaml
+env:
+  P4PORT: perforce:1666
+  P4USER: username
+
+steps:
+  plugins:
+    - ca-johnson/perforce: ~
+```
+
+Configuration via the plugin:
 
 ```yaml
 steps:
-    plugins:
-      - ca-johnson/perforce: ~
+  plugins:
+    - ca-johnson/perforce:
+      p4port: perforce:1666
+      p4user: username
 ```
 
-Doing configuration via the plugin:
-
-```yaml
-steps:
-    plugins:
-      - ca-johnson/perforce:
-          p4port: my-perforce-server:1666
-          p4user: my-username
-```
+`P4PORT` may also be configured by setting `BUILDKITE_REPO` for your pipeline.
 
 Custom workspace view:
 
 ```yaml
 steps:
-    plugins:
-      - ca-johnson/perforce:
-          view: >-
-            //dev/project/... project/...
-            //dev/vendor/... vendor/...
+  plugins:
+    - ca-johnson/perforce:
+      view: >-
+        //dev/project/... project/...
+        //dev/vendor/... vendor/...
 ```
 
 Workspace view via a p4 stream:
