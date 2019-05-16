@@ -12,8 +12,10 @@ __REVISION_ANNOTATION__ = "Revision: %s"
 
 
 def get_env():
-    env = {}
-    for p4var in ['P4PORT','P4USER', 'P4TICKETS', 'P4TRUST']:
+    env = {
+        'P4PORT': os.environ.get('P4PORT') or os.environ.get('BUILDKITE_REPO')
+    }
+    for p4var in ['P4PORT', 'P4USER', 'P4TICKETS', 'P4TRUST']:
         plugin_value = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_%s' % p4var)
         if plugin_value:
             env[p4var] = plugin_value
