@@ -72,11 +72,8 @@ def store_server(repo, to_zip):
                 abs_path = os.path.join(root, filename)
                 archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
 
-def test_harness():
-    """
-    Check that tests can start and connect to a local perforce server
-
-    """
+def test_fixture():
+    """Check that tests can start and connect to a local perforce server"""
     port = setup_server(from_zip='server.zip')
     repo = P4Repo()
     assert repo.info()['serverAddress'] == port
@@ -85,6 +82,7 @@ def test_harness():
     # Returns [metadata, contents]
     content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
+    assert repo.head() == "@2", "Unexpected head revision"
 
     # To change the fixture server, uncomment the next line and put a breakpoint on it.
     # Make changes to the p4 server then check in the new server.zip
@@ -96,7 +94,6 @@ def test_checkout():
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
         repo = P4Repo(root=client_root)
-        assert repo.head() == "@2", "Unexpected head revision"
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
