@@ -75,8 +75,7 @@ def store_server(repo, to_zip):
 def test_harness():
     """
     Check that tests can start and connect to a local perforce server
-    To change the fixture server, put a breakpoint in this test,
-    make changes to the p4 server then check in the new server.zip
+
     """
     port = setup_server(from_zip='server.zip')
     repo = P4Repo()
@@ -87,7 +86,9 @@ def test_harness():
     content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
 
-    store_server(repo, 'new_server.zip')
+    # To change the fixture server, uncomment the next line and put a breakpoint on it.
+    # Make changes to the p4 server then check in the new server.zip
+    # store_server(repo, 'new_server.zip')
 
 def test_checkout():
     """Test normal flow of checking out files"""
