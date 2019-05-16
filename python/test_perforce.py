@@ -72,7 +72,7 @@ def store_server(repo, to_zip):
                 abs_path = os.path.join(root, filename)
                 archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
 
-def _test_harness():
+def test_harness():
     """
     Check that tests can start and connect to a local perforce server
     To change the fixture server, put a breakpoint in this test,
@@ -89,19 +89,20 @@ def _test_harness():
 
     store_server(repo, 'new_server.zip')
 
-
 def test_checkout():
     """Test normal flow of checking out files"""
     setup_server(from_zip='server.zip')
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
         repo = P4Repo(root=client_root)
-        assert repo.head() == "@1", "Unexpected head revision"
+        assert repo.head() == "@2", "Unexpected head revision"
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
         assert os.listdir(client_root) == [
             "file.txt"], "Workspace file wasn't synced"
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
         os.remove(os.path.join(client_root, "file.txt"))
         open(os.path.join(client_root, "added.txt"), 'a').close()
@@ -125,6 +126,8 @@ def test_checkout_stream():
         repo.sync()
         assert os.listdir(client_root) == [
             "file.txt"], "Workspace file wasn't synced"
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
 
 # def test_bad_configs():
 #     P4Repo('port', stream='stream', view=['view'])
