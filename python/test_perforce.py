@@ -61,9 +61,22 @@ def setup_server(from_zip=None):
     os.environ['P4PORT'] = p4port
     return p4port
 
+def store_server(repo, to_zip):
+    """Zip up a server to use as a unit test fixture"""
+    serverRoot = repo.info()['serverRoot']
 
-def _test_harness():
-    """Check that tests can start and connect to a local perforce server"""
+    zip_path = os.path.join(os.path.dirname(__file__), 'fixture', to_zip)
+    with zipfile.ZipFile(zip_path, 'w') as archive:
+        for root, _, files in os.walk(serverRoot):
+            for filename in files:
+                abs_path = os.path.join(root, filename)
+                archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
+
+def test_harness():
+    """
+    Check that tests can start and connect to a local perforce server
+
+    """
     port = setup_server(from_zip='server.zip')
     repo = P4Repo()
     assert repo.info()['serverAddress'] == port
@@ -73,19 +86,24 @@ def _test_harness():
     content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
 
+    # To change the fixture server, uncomment the next line and put a breakpoint on it.
+    # Make changes to the p4 server then check in the new server.zip
+    # store_server(repo, 'new_server.zip')
 
 def test_checkout():
-    """Test normal flow of checking out files, running p4 clean"""
+    """Test normal flow of checking out files"""
     setup_server(from_zip='server.zip')
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
         repo = P4Repo(root=client_root)
-        assert repo.head() == "@1", "Unexpected head revision"
+        assert repo.head() == "@2", "Unexpected head revision"
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
         assert os.listdir(client_root) == [
             "file.txt"], "Workspace file wasn't synced"
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
         os.remove(os.path.join(client_root, "file.txt"))
         open(os.path.join(client_root, "added.txt"), 'a').close()
@@ -97,6 +115,20 @@ def test_checkout():
 
         repo.sync(revision='@0')
         assert os.listdir(client_root) == [], "Workspace file wasn't de-synced"
+
+def test_checkout_stream():
+    """Test checking out a stream depot"""
+    setup_server(from_zip='server.zip')
+
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+        repo = P4Repo(root=client_root, stream='//stream-depot/main')
+
+        assert os.listdir(client_root) == [], "Workspace should be empty"
+        repo.sync()
+        assert os.listdir(client_root) == [
+            "file.txt"], "Workspace file wasn't synced"
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
 
 # def test_bad_configs():
 #     P4Repo('port', stream='stream', view=['view'])
