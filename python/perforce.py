@@ -79,6 +79,8 @@ class P4Repo:
             'P4USER': self.perforce.user,
             'P4PORT': self.perforce.port
         }
+        if not os.path.exists(self.root):
+            os.makedirs(self.root)
         with open(os.path.join(self.root, "p4config"), 'w') as p4config:
             p4config.writelines(["%s=%s\n" % (k, v) for k, v in config.items()])
 
@@ -101,7 +103,7 @@ class P4Repo:
         """Get current head revision"""
         return '@%s' % self.perforce.run_counter("maxCommitChange")[0]['value']
 
-    def sync(self, *args, revision=None):
+    def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
-        return self.perforce.run_sync(*args, '//...%s' % (revision or ''))
+        return self.perforce.run_sync('//...%s' % (revision or ''))
