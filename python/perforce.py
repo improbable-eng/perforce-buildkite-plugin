@@ -1,6 +1,7 @@
 """
 Manage a perforce workspace in the context of a build machine
 """
+import os
 import re
 import socket
 import logging
@@ -69,6 +70,19 @@ class P4Repo:
         self.perforce.save_client(client)
 
         self.perforce.client = clientname
+        self._write_p4config()
+
+    def _write_p4config(self):
+        """Writes a p4config at the workspace root"""
+        config = {
+            'P4CLIENT': self.perforce.client,
+            'P4USER': self.perforce.user,
+            'P4PORT': self.perforce.port
+        }
+        if not os.path.exists(self.root):
+            os.makedirs(self.root)
+        with open(os.path.join(self.root, "p4config"), 'w') as p4config:
+            p4config.writelines(["%s=%s\n" % (k, v) for k, v in config.items()])
 
     def clean(self):
         """ Perform a p4clean on the workspace to
@@ -76,20 +90,20 @@ class P4Repo:
 
             Does not detect modified files
         """
-        # TODO: Add a fast implementation of p4 clean here
         self._setup_client()
+        # TODO: Add a fast implementation of p4 clean here
         self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
+        self._write_p4config()
 
     def info(self):
         """Get server info"""
-        self._setup_client()
         return self.perforce.run_info()[0]
 
     def head(self):
         """Get current head revision"""
         return '@%s' % self.perforce.run_counter("maxCommitChange")[0]['value']
 
-    def sync(self, *args, revision=None):
+    def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
-        return self.perforce.run_sync(*args, '//...%s' % (revision or ''))
+        return self.perforce.run_sync('//...%s' % (revision or ''))

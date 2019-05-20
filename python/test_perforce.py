@@ -98,12 +98,16 @@ def test_checkout():
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
         assert os.listdir(client_root) == [
-            "file.txt"], "Workspace file wasn't synced"
+            "file.txt", "p4config"], "Workspace sync not as expected"
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
         repo.sync(revision='@0')
-        assert os.listdir(client_root) == [], "Workspace file wasn't de-synced"
+        assert  "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
+
+        # Validate p4config
+        with open(os.path.join(client_root, "p4config")) as content:
+            assert "P4PORT=%s\n" % repo.perforce.port in content.readlines(), "Unexpected p4config content"
 
 def test_checkout_stream():
     """Test checking out a stream depot"""
@@ -114,8 +118,6 @@ def test_checkout_stream():
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
-        assert os.listdir(client_root) == [
-            "file.txt"], "Workspace file wasn't synced"
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
 
@@ -137,11 +139,9 @@ def test_workspace_recovery():
         # p4 clean
         os.remove(os.path.join(client_root, "file.txt"))
         open(os.path.join(client_root, "added.txt"), 'a').close()
-        assert os.listdir(client_root) == [
-            "added.txt"], "Workspace files in unexpected state prior to clean"
         repo.clean()
         assert os.listdir(client_root) == [
-            "file.txt"], "Failed to restore workspace file with repo.clean()"
+            "file.txt", "p4config"], "Failed to restore workspace file with repo.clean()"
 
 
 # def test_bad_configs():
