@@ -91,6 +91,7 @@ class P4Repo:
         self._setup_client()
         # TODO: Add a fast implementation of p4 clean here
         self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
+        self._write_p4config()
 
     def info(self):
         """Get server info"""

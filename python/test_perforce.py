@@ -139,11 +139,9 @@ def test_workspace_recovery():
         # p4 clean
         os.remove(os.path.join(client_root, "file.txt"))
         open(os.path.join(client_root, "added.txt"), 'a').close()
-        assert os.listdir(client_root) == [
-            "added.txt"], "Workspace files in unexpected state prior to clean"
         repo.clean()
         assert os.listdir(client_root) == [
-            "file.txt"], "Failed to restore workspace file with repo.clean()"
+            "file.txt", "p4config"], "Failed to restore workspace file with repo.clean()"
 
 
 # def test_bad_configs():
