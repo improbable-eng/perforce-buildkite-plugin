@@ -67,6 +67,10 @@ class P4Repo:
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = client._options.replace('noclobber', 'clobber')
 
+        if not os.path.isfile(os.path.join(self.root, "p4config")):
+            self.perforce.logger.warn("p4config was missing, creating a fresh workspace")
+            self.perforce.delete_client(clientname)
+
         self.perforce.save_client(client)
 
         self.perforce.client = clientname
