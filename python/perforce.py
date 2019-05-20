@@ -1,6 +1,7 @@
 """
 Manage a perforce workspace in the context of a build machine
 """
+import os
 import re
 import socket
 import logging
@@ -34,8 +35,6 @@ class P4Repo:
             # TODO: Remove this and enforce prior provisioning of trusted fingerprints
             self.perforce.run_trust('-y')
 
-        self._setup_client()
-
     def _get_clientname(self):
         clientname = 'bk_p4_%s' % socket.gethostname()
         return re.sub(r'\W', '_', clientname)
@@ -67,6 +66,17 @@ class P4Repo:
         self.perforce.save_client(client)
 
         self.perforce.client = clientname
+        self._write_p4config()
+
+    def _write_p4config(self):
+        """Writes a p4config at the workspace root"""
+        config = {
+            'P4CLIENT': self.perforce.client,
+            'P4USER': self.perforce.user,
+            'P4PORT': self.perforce.port
+        }
+        with open(os.path.join(self.root, "p4config"), 'w') as p4config:
+            p4config.writelines(["%s=%s\n" % (k, v) for k, v in config.items()])
 
     def clean(self):
         """ Perform a p4clean on the workspace to
@@ -74,6 +84,7 @@ class P4Repo:
 
             Does not detect modified files
         """
+        self._setup_client()
         # TODO: Add a fast implementation of p4 clean here
         self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
 
@@ -87,4 +98,5 @@ class P4Repo:
 
     def sync(self, revision=None):
         """Sync the workspace"""
+        self._setup_client()
         return self.perforce.run_sync('//...%s' % (revision or ''))
