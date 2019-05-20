@@ -35,6 +35,9 @@ class P4Repo:
             # TODO: Remove this and enforce prior provisioning of trusted fingerprints
             self.perforce.run_trust('-y')
 
+    def __del__(self):
+        self.perforce.disconnect()
+
     def _get_clientname(self):
         clientname = 'bk_p4_%s' % socket.gethostname()
         return re.sub(r'\W', '_', clientname)
