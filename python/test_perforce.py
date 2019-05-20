@@ -143,6 +143,12 @@ def test_workspace_recovery():
         assert os.listdir(client_root) == [
             "file.txt", "p4config"], "Failed to restore workspace file with repo.clean()"
 
+        os.remove(os.path.join(client_root, "file.txt"))
+        os.remove(os.path.join(client_root, "p4config"))
+        repo.sync() # Normally: "You already have file.txt", but since p4config is missing will re-create workspace
+        assert os.listdir(client_root) == [
+            "file.txt", "p4config"], "Failed to restore corrupt workspace due to missing p4config"
+
 
 # def test_bad_configs():
 #     P4Repo('port', stream='stream', view=['view'])

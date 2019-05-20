@@ -7,7 +7,8 @@ import socket
 import logging
 import sys
 
-from P4 import P4 # pylint: disable=import-error
+# Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
+from P4 import P4, P4Exception # pylint: disable=import-error
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
@@ -69,6 +70,15 @@ class P4Repo:
         # overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = client._options.replace('noclobber', 'clobber')
+
+        if not os.path.isfile(os.path.join(self.root, "p4config")):
+            self.perforce.logger.warn("p4config was missing, creating a fresh workspace")
+            try:
+                self.perforce.delete_client(clientname)
+            except P4Exception as exc:
+                # Suppress 'Client doesn't exist' messages
+                if not "doesn't exist" in str(exc):
+                    raise
 
         self.perforce.save_client(client)
 
