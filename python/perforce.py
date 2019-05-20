@@ -7,6 +7,7 @@ import socket
 import logging
 import sys
 
+# Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
 from P4 import P4 # pylint: disable=import-error
 
 class P4Repo:
@@ -69,7 +70,7 @@ class P4Repo:
 
         if not os.path.isfile(os.path.join(self.root, "p4config")):
             self.perforce.logger.warn("p4config was missing, creating a fresh workspace")
-            self.perforce.delete_client(clientname)
+            self.perforce.delete_client('-f', clientname)
 
         self.perforce.save_client(client)
 
