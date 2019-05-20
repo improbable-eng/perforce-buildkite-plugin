@@ -62,6 +62,10 @@ class P4Repo:
         if self.view:
             client._view = self.view
 
+        # overwrite writeable-but-unopened files
+        # (e.g. interrupted syncs, artefacts that have been checked-in)
+        client._options = client._options.replace('noclobber', 'clobber')
+
         self.perforce.save_client(client)
 
         self.perforce.client = clientname
@@ -85,7 +89,7 @@ class P4Repo:
         """Get current head revision"""
         return '@%s' % self.perforce.run_counter("maxCommitChange")[0]['value']
 
-    def sync(self, revision=None):
+    def sync(self, *args, revision=None):
         """Sync the workspace"""
         self._setup_client()
-        return self.perforce.run_sync('//...%s' % (revision or ''))
+        return self.perforce.run_sync(*args, '//...%s' % (revision or ''))
