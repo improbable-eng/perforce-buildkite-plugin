@@ -34,6 +34,8 @@ class P4Repo:
             # TODO: Remove this and enforce prior provisioning of trusted fingerprints
             self.perforce.run_trust('-y')
 
+        self._setup_client()
+
     def _get_clientname(self):
         clientname = 'bk_p4_%s' % socket.gethostname()
         return re.sub(r'\W', '_', clientname)
@@ -73,12 +75,10 @@ class P4Repo:
             Does not detect modified files
         """
         # TODO: Add a fast implementation of p4 clean here
-        self._setup_client()
         self.perforce.run_clean(['-a', '-d', '//%s/...' % self._get_clientname()])
 
     def info(self):
         """Get server info"""
-        self._setup_client()
         return self.perforce.run_info()[0]
 
     def head(self):
@@ -87,5 +87,4 @@ class P4Repo:
 
     def sync(self, revision=None):
         """Sync the workspace"""
-        self._setup_client()
         return self.perforce.run_sync('//...%s' % (revision or ''))
