@@ -102,11 +102,6 @@ def test_checkout():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        os.remove(os.path.join(client_root, "file.txt"))
-        open(os.path.join(client_root, "added.txt"), 'a').close()
-        repo.clean()
-        assert "file.txt" in os.listdir(client_root), "Failed to restore workspace file"
-
         repo.sync(revision='@0')
         assert  "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
 
@@ -125,6 +120,31 @@ def test_checkout_stream():
         repo.sync()
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
+
+def test_workspace_recovery():
+    """Test that we can detect and recover from various workspace snafus"""
+    setup_server(from_zip='server.zip')
+
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+        repo = P4Repo(root=client_root)
+
+        # clobber writeable file
+        # partially synced writeable files may be left in the workspace if a machine was shutdown mid-sync
+        with open(os.path.join(client_root, "file.txt"), 'w') as depotfile:
+            depotfile.write("Overwrite this file")
+        repo.sync() # By default, would raise 'cannot clobber writable file'
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+        # p4 clean
+        os.remove(os.path.join(client_root, "file.txt"))
+        open(os.path.join(client_root, "added.txt"), 'a').close()
+        assert os.listdir(client_root) == [
+            "added.txt"], "Workspace files in unexpected state prior to clean"
+        repo.clean()
+        assert os.listdir(client_root) == [
+            "file.txt"], "Failed to restore workspace file with repo.clean()"
+
 
 # def test_bad_configs():
 #     P4Repo('port', stream='stream', view=['view'])
