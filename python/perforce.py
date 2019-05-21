@@ -21,6 +21,7 @@ class P4Repo:
         self.stream = stream
         self.view = self._localize_view(view or [])
         self.parallel = parallel
+
         self.perforce = P4()
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
         logger = logging.getLogger("P4Python")
