@@ -36,8 +36,8 @@ class P4Repo:
             self.perforce.run_trust('-y')
 
     def _get_clientname(self):
-        clientname = 'bk_p4_%s' % os.environ.get('BUILDKITE_AGENT_ID', socket.gethostname())
-        return re.sub(r'\W', '_', clientname)
+        clientname = 'bk-p4-%s' % os.environ.get('BUILDKITE_AGENT_ID', socket.gethostname())
+        return re.sub(r'\W', '-', clientname)
 
     def _localize_view(self, view):
         """Convert path mapping to be a client workspace view"""
