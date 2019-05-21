@@ -14,7 +14,7 @@ def main():
     os.environ.update(get_env())
     config = get_config()
 
-    repo = P4Repo(root=config['root'], stream=config['stream'], view=config['view'])
+    repo = P4Repo(**config)
 
     revision = get_build_revision()
     if revision == 'HEAD':

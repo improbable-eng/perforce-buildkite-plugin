@@ -7,3 +7,4 @@ steps:
           p4user: banana
           view: //depot/... ...
           root: p4_workspace
+          parallel: 2

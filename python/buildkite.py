@@ -12,6 +12,7 @@ __REVISION_ANNOTATION__ = "Revision: %s"
 
 
 def get_env():
+    """Get env vars passed in via plugin config"""
     env = {
         'P4PORT': os.environ.get('P4PORT') or os.environ.get('BUILDKITE_REPO')
     }
@@ -22,10 +23,12 @@ def get_env():
     return env
 
 def get_config():
+    """Get configuration which will be passed directly to perforce.P4Repo as kwargs"""
     conf = {}
     conf['root'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_ROOT') or os.environ.get('BUILDKITE_BUILD_CHECKOUT_PATH')
     conf['view'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_VIEW') or '//... ...'
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
+    conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
 
     # Coerce view into pairs of [depot client] paths
     view_parts = conf['view'].split(' ')
