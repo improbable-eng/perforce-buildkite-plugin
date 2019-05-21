@@ -36,7 +36,7 @@ class P4Repo:
             self.perforce.run_trust('-y')
 
     def _get_clientname(self):
-        clientname = 'bk_p4_%s' % socket.gethostname()
+        clientname = 'bk_p4_%s' % os.environ.get('BUILDKITE_AGENT_ID', socket.gethostname())
         return re.sub(r'\W', '_', clientname)
 
     def _localize_view(self, view):
