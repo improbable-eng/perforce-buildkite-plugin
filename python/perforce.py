@@ -41,7 +41,7 @@ class P4Repo:
         self.perforce.disconnect()
 
     def _get_clientname(self):
-        clientname = 'bk-p4-%s' % os.environ.get('BUILDKITE_AGENT_ID', socket.gethostname())
+        clientname = 'bk-p4-%s' % os.environ.get('BUILDKITE_AGENT_NAME', socket.gethostname())
         return re.sub(r'\W', '-', clientname)
 
     def _localize_view(self, view):
