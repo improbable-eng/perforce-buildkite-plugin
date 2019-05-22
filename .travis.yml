@@ -1,4 +1,5 @@
 language: python
+# cache: pip # not enough installed via pip to justify
 python:
   - "3.6"
 os:
