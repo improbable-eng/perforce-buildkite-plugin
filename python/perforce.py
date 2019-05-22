@@ -1,7 +1,6 @@
 """
 Manage a perforce workspace in the context of a build machine
 """
-from __future__ import print_function
 import os
 import re
 import socket
@@ -122,15 +121,19 @@ class P4Repo:
     def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
-        return self.perforce.run_sync(
+        result = self.perforce.run_sync(
             '-q', '--parallel=threads=%s' % self.parallel,
             '//...%s' % (revision or ''),
-            progress=DotProgress())
+            progress=SyncProgress(self.perforce.logger))
+        self.perforce.logger.info("Synced %s files (%s)" % (
+            result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
+        return result
 
-class DotProgress(Progress):
-    """Simple progress indicator which prints '.' periodically"""
-    def __init__(self):
+class SyncProgress(Progress):
+    """Log the number of synced files periodically"""
+    def __init__(self, logger):
         Progress.__init__(self)
+        self.logger = logger
     
     def init(self, type):
         Progress.init(self, type)
@@ -138,13 +141,20 @@ class DotProgress(Progress):
     def setDescription(self, description, units):
         Progress.setDescription(self, description, units)
     
-    def setTotal( self, total ):
+    def setTotal(self, total):
         Progress.setTotal(self, total)
     
-    def update( self, position ):
-        Progress.update(self, position )
-        print('.', end='')
+    def update(self, position):
+        Progress.update(self, position)
+        self.logger.info('Syncing file #%s...' % position)
     
-    def done( self, fail ):
+    def done(self, fail):
         Progress.done(self, fail)
-        print('\n')
+
+def sizeof_fmt(num, suffix='B'):
+    """Format bytes to human readable value"""
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Pi', suffix)
