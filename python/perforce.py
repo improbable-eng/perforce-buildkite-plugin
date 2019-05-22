@@ -1,14 +1,16 @@
 """
 Manage a perforce workspace in the context of a build machine
 """
+from __future__ import print_function
 import os
 import re
 import socket
 import logging
 import sys
 
+
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
-from P4 import P4, P4Exception # pylint: disable=import-error
+from P4 import P4, P4Exception, Progress  # pylint: disable=import-error
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
@@ -120,6 +122,29 @@ class P4Repo:
     def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
-        files = '//...%s' % (revision or '')
-        opts = '--parallel=threads=%s' % self.parallel
-        return self.perforce.run_sync(opts, files)
+        return self.perforce.run_sync(
+            '-q', '--parallel=threads=%s' % self.parallel,
+            '//...%s' % (revision or ''),
+            progress=DotProgress())
+
+class DotProgress(Progress):
+    """Simple progress indicator which prints '.' periodically"""
+    def __init__(self):
+        Progress.__init__(self)
+    
+    def init(self, type):
+        Progress.init(self, type)
+    
+    def setDescription(self, description, units):
+        Progress.setDescription(self, description, units)
+    
+    def setTotal( self, total ):
+        Progress.setTotal(self, total)
+    
+    def update( self, position ):
+        Progress.update(self, position )
+        print('.', end='')
+    
+    def done( self, fail ):
+        Progress.done(self, fail)
+        print('\n')
