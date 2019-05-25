@@ -84,6 +84,7 @@ def test_fixture():
     assert content == "Hello World\n"
     assert repo.head() == "@2", "Unexpected head revision"
 
+    repo.perforce.run_change("a_sheleved_changelist") == 'exists'
     # To change the fixture server, uncomment the next line and put a breakpoint on it.
     # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
@@ -103,7 +104,7 @@ def test_checkout():
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
         repo.sync(revision='@0')
-        assert  "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
+        assert "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
 
         # Validate p4config
         with open(os.path.join(client_root, "p4config")) as content:
@@ -148,6 +149,21 @@ def test_workspace_recovery():
         repo.sync() # Normally: "You already have file.txt", but since p4config is missing will re-create workspace
         assert os.listdir(client_root) == [
             "file.txt", "p4config"], "Failed to restore corrupt workspace due to missing p4config"
+
+
+def test_unshelve():
+    """Test unshelving a pending changelist"""
+    setup_server(from_zip='server.zip')
+
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+        repo = P4Repo(root=client_root)
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+        repo.unshelve('2')
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
 
 # def test_bad_configs():

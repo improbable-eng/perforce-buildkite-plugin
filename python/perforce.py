@@ -129,6 +129,12 @@ class P4Repo:
             result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
         return result
 
+    def unshelve(self, changelist):
+        """Unshelve a pending change"""
+        self._setup_client()
+        self.perforce.run_unsheleve('-s', changelist)
+        # Improvement - Write unshelved files to disk to guarantee cleanup (patched.json)
+
 class SyncProgress(Progress):
     """Log the number of synced files periodically"""
     def __init__(self, logger):
