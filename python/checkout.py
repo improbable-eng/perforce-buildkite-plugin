@@ -23,5 +23,6 @@ def main():
 
     repo.sync(revision=revision)
 
+
 if __name__ == "__main__":
     main()

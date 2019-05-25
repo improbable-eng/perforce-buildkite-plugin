@@ -9,7 +9,7 @@ __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
 __REVISION_ANNOTATION__ = "Revision: %s"
-
+__BUILDKITE_AGENT__ = os.environ['BUILDKITE_BIN_PATH']
 
 def get_env():
     """Get env vars passed in via plugin config"""
@@ -36,6 +36,9 @@ def get_config():
     view_iter = iter(view_parts)
     conf['view'] = ['%s %s' % (v, next(view_iter)) for v in view_iter]
     return conf
+
+def get_premerge_change():
+    return os.env['']
 
 def get_build_revision():
     """Get a p4 revision for the build to sync to"""
