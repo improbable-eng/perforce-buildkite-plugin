@@ -44,21 +44,33 @@ def get_shelved_change():
         return branch
     return None
 
+def get_metadata(key):
+    """If it exists, retrieve metadata from buildkite for a given key"""
+    if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
+        return None
+
+    if subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', key]) == 0:
+        return subprocess.check_output([__BUILDKITE_AGENT__, 'meta-data', 'get',  key])
+
+def set_metadata(key, value, overwrite=False):
+    """ Set metadata in buildkite for a given key. Optionally overwrite existing data.
+        Returns true if data was written
+    """
+    if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
+        return False
+
+    if overwrite or subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', key]) == 100:
+        subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  key, value])
+        return True
+
 def get_build_revision():
     """Get a p4 revision for the build to sync to"""
-    if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
+    if __LOCAL_RUN__:
         return 'HEAD'
-    # Exitcode 0 if exists, 100 if not
-    if subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', __REVISION_METADATA__]) == 0:
-        return subprocess.check_output([__BUILDKITE_AGENT__, 'meta-data', 'get',  __REVISION_METADATA__])
 
-    return os.environ['BUILDKITE_COMMIT'] # HEAD or user-defined value
+    return get_metadata(__REVISION_METADATA__) or os.environ['BUILDKITE_COMMIT'] # metadata, HEAD or user-defined value
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
-    if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
-        return
-    # Exitcode 0 if exists, 100 if not
-    if subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', __REVISION_METADATA__]) == 100:
-        subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  __REVISION_METADATA__, revision])
+    if set_metadata(__REVISION_METADATA__, revision):
         subprocess.call([__BUILDKITE_AGENT__, 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
