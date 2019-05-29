@@ -1,6 +1,8 @@
 steps:
   - label: "Test"
     command: echo "Hello World"
+    env:
+      BUILDKITE_CLEAN_CHECKOUT: true
     plugins:
       - ./.buildkite/plugins/perforce:
           p4port: localhost:1666
