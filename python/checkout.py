@@ -25,6 +25,5 @@ def main():
     if os.environ.get('BUILDKITE_CLEAN_CHECKOUT'):
         repo.clean()
 
-
 if __name__ == "__main__":
     main()
