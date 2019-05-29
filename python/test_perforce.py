@@ -72,9 +72,11 @@ def store_server(repo, to_zip):
                 abs_path = os.path.join(root, filename)
                 archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
 
-def test_fixture():
+def test_fixture(capsys):
     """Check that tests can start and connect to a local perforce server"""
     port = setup_server(from_zip='server.zip')
+    with capsys.disabled():
+        print('port:', port, 'user: carl')
     repo = P4Repo()
     assert repo.info()['serverAddress'] == port
 
