@@ -6,7 +6,7 @@ import argparse
 import subprocess
 
 from perforce import P4Repo
-from buildkite import get_env, get_config, get_build_revision, set_build_revision
+from buildkite import get_env, get_config, get_build_revision, set_build_revision, get_shelved_change
 
 
 def main():
@@ -24,6 +24,10 @@ def main():
     repo.sync(revision=revision)
     if os.environ.get('BUILDKITE_CLEAN_CHECKOUT'):
         repo.clean()
+
+    changelist = get_shelved_change()
+    if changelist:
+        repo.unshelve(changelist)
 
 if __name__ == "__main__":
     main()

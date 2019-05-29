@@ -72,9 +72,11 @@ def store_server(repo, to_zip):
                 abs_path = os.path.join(root, filename)
                 archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
 
-def test_fixture():
+def test_fixture(capsys):
     """Check that tests can start and connect to a local perforce server"""
     port = setup_server(from_zip='server.zip')
+    with capsys.disabled():
+        print('port:', port, 'user: carl')
     repo = P4Repo()
     assert repo.info()['serverAddress'] == port
 
@@ -84,6 +86,9 @@ def test_fixture():
     assert content == "Hello World\n"
     assert repo.head() == "@2", "Unexpected head revision"
 
+    shelved_change = repo.perforce.run_describe('-sS', '3')
+    assert len(shelved_change) > 0, "Shelved changelist was missing"
+    assert shelved_change[0]['depotFile'] ==  ['//depot/file.txt'], "Unexpected files in shelved changelist"
     # To change the fixture server, uncomment the next line and put a breakpoint on it.
     # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
@@ -103,7 +108,7 @@ def test_checkout():
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
         repo.sync(revision='@0')
-        assert  "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
+        assert "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
 
         # Validate p4config
         with open(os.path.join(client_root, "p4config")) as content:
@@ -149,7 +154,21 @@ def test_workspace_recovery():
         assert os.listdir(client_root) == [
             "file.txt", "p4config"], "Failed to restore corrupt workspace due to missing p4config"
 
+def test_unshelve():
+    """Test unshelving a pending changelist"""
+    setup_server(from_zip='server.zip')
 
-# def test_bad_configs():
-#     P4Repo('port', stream='stream', view=['view'])
-#     P4Repo('port', view=['bad_view'])
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+        repo = P4Repo(root=client_root)
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+        repo.unshelve('3')
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+
+        # Unshelved changes are removed in following syncs
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"

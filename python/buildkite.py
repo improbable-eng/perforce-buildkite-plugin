@@ -37,6 +37,13 @@ def get_config():
     conf['view'] = ['%s %s' % (v, next(view_iter)) for v in view_iter]
     return conf
 
+def get_shelved_change():
+    """Get a shelved changelist that will be patched into each workspace"""
+    branch = os.environ.get('BUILDKITE_BRANCH', '')
+    if branch.isdigit():
+        return branch
+    return None
+
 def get_build_revision():
     """Get a p4 revision for the build to sync to"""
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
