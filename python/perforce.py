@@ -19,7 +19,7 @@ class P4Repo:
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
         """
-        self.root = root
+        self.root = os.path.abspath(root or '')
         self.stream = stream
         self.view = self._localize_view(view or [])
         self.parallel = parallel

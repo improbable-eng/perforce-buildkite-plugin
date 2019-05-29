@@ -22,6 +22,8 @@ def main():
         set_build_revision(revision)
 
     repo.sync(revision=revision)
+    if os.environ.get('BUILDKITE_CLEAN_CHECKOUT'):
+        repo.clean()
 
 if __name__ == "__main__":
     main()
