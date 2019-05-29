@@ -125,8 +125,9 @@ class P4Repo:
             '-q', '--parallel=threads=%s' % self.parallel,
             '//...%s' % (revision or ''),
             progress=SyncProgress(self.perforce.logger))
-        self.perforce.logger.info("Synced %s files (%s)" % (
-            result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
+        if result:
+            self.perforce.logger.info("Synced %s files (%s)" % (
+                result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
         return result
 
 class SyncProgress(Progress):
