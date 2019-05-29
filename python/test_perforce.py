@@ -154,7 +154,6 @@ def test_workspace_recovery():
         assert os.listdir(client_root) == [
             "file.txt", "p4config"], "Failed to restore corrupt workspace due to missing p4config"
 
-
 def test_unshelve():
     """Test unshelving a pending changelist"""
     setup_server(from_zip='server.zip')
@@ -165,7 +164,7 @@ def test_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        repo.unshelve('2')
+        repo.unshelve('3')
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
