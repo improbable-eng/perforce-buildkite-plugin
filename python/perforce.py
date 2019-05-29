@@ -19,7 +19,7 @@ class P4Repo:
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
         """
-        self.root = root
+        self.root = os.path.abspath(root or '')
         self.stream = stream
         self.view = self._localize_view(view or [])
         self.parallel = parallel
@@ -125,8 +125,9 @@ class P4Repo:
             '-q', '--parallel=threads=%s' % self.parallel,
             '//...%s' % (revision or ''),
             progress=SyncProgress(self.perforce.logger))
-        self.perforce.logger.info("Synced %s files (%s)" % (
-            result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
+        if result:
+            self.perforce.logger.info("Synced %s files (%s)" % (
+                result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
         return result
 
     def unshelve(self, changelist):

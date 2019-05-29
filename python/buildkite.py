@@ -9,7 +9,7 @@ __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
 __REVISION_ANNOTATION__ = "Revision: %s"
-__BUILDKITE_AGENT__ = os.environ['BUILDKITE_BIN_PATH']
+__BUILDKITE_AGENT__ = os.environ.get('BUILDKITE_BIN_PATH', 'buildkite-agent')
 
 def get_env():
     """Get env vars passed in via plugin config"""
@@ -45,8 +45,8 @@ def get_build_revision():
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
         return 'HEAD'
     # Exitcode 0 if exists, 100 if not
-    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 0:
-        return subprocess.check_output(['buildkite-agent', 'meta-data', 'get',  __REVISION_METADATA__])
+    if subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', __REVISION_METADATA__]) == 0:
+        return subprocess.check_output([__BUILDKITE_AGENT__, 'meta-data', 'get',  __REVISION_METADATA__])
 
     return os.environ['BUILDKITE_COMMIT'] # HEAD or user-defined value
 
@@ -55,6 +55,6 @@ def set_build_revision(revision):
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
         return
     # Exitcode 0 if exists, 100 if not
-    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', __REVISION_METADATA__]) == 100:
-        subprocess.call(['buildkite-agent', 'meta-data', 'set',  __REVISION_METADATA__, revision])
-        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
+    if subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', __REVISION_METADATA__]) == 100:
+        subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  __REVISION_METADATA__, revision])
+        subprocess.call([__BUILDKITE_AGENT__, 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
