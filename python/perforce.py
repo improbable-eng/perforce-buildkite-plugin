@@ -121,6 +121,7 @@ class P4Repo:
     def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
+        self.revert()
         result = self.perforce.run_sync(
             '-q', '--parallel=threads=%s' % self.parallel,
             '//...%s' % (revision or ''),
@@ -129,6 +130,11 @@ class P4Repo:
             self.perforce.logger.info("Synced %s files (%s)" % (
                 result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
         return result
+
+    def revert(self):
+        """Revert any pending changes in the workspace"""
+        self._setup_client()
+        self.perforce.run_revert('//...')
 
     def unshelve(self, changelist):
         """Unshelve a pending change"""

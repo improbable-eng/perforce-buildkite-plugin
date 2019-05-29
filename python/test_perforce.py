@@ -168,6 +168,10 @@ def test_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
 
 # def test_bad_configs():
 #     P4Repo('port', stream='stream', view=['view'])
