@@ -7,8 +7,11 @@ import subprocess
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 # https://github.com/buildkite/cli/blob/e8aac4bedf34cd8084a3ae7a4ab7812c611d0310/local/run.go#L403
 __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
+
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
 __REVISION_ANNOTATION__ = "Revision: %s"
+__SHELVED_METADATA__ = 'buildkite:perforce:shelved'
+__SHELVED_ANNOTATION__ = "Saved shelved change %s as %s"
 __BUILDKITE_AGENT__ = os.environ.get('BUILDKITE_BIN_PATH', 'buildkite-agent')
 
 def get_env():
@@ -62,6 +65,14 @@ def set_metadata(key, value, overwrite=False):
     if overwrite or subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', key]) == 100:
         subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  key, value])
         return True
+
+def set_blessed_shelved_change(blessed_changelist):
+    if set_metadata(__SHELVED_METADATA__, blessed_changelist):
+        subprocess.call([
+            __BUILDKITE_AGENT__, 'annotate', 
+            __SHELVED_ANNOTATION__ % (get_shelved_change(), blessed_changelist),
+            '--context', __SHELVED_METADATA__
+        ])
 
 def get_build_revision():
     """Get a p4 revision for the build to sync to"""
