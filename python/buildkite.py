@@ -62,7 +62,7 @@ def get_build_revision():
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
         return 'HEAD'
 
-    return get_metadata(__REVISION_METADATA__) or os.environ['BUILDKITE_COMMIT'] # HEAD or user-defined value
+    return get_metadata(__REVISION_METADATA__) or os.environ['BUILDKITE_COMMIT'] # metadata, HEAD or user-defined value
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
