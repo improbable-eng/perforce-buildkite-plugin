@@ -86,7 +86,9 @@ def test_fixture(capsys):
     assert content == "Hello World\n"
     assert repo.head() == "@2", "Unexpected head revision"
 
-    repo.perforce.run_change("a_sheleved_changelist") == 'exists'
+    shelved_change = repo.perforce.run_describe('-sS', '3')
+    assert len(shelved_change) > 0, "Shelved changelist was missing"
+    assert shelved_change[0]['depotFile'] ==  ['//depot/file.txt'], "Unexpected files in shelved changelist"
     # To change the fixture server, uncomment the next line and put a breakpoint on it.
     # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
