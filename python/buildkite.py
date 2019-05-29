@@ -37,8 +37,8 @@ def get_config():
     conf['view'] = ['%s %s' % (v, next(view_iter)) for v in view_iter]
     return conf
 
-def get_premerge_change():
-    return os.env['']
+def get_shelved_changelist():
+    return os.environ.get('BUILDKITE_BRANCH')
 
 def get_build_revision():
     """Get a p4 revision for the build to sync to"""
