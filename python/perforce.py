@@ -140,7 +140,11 @@ class P4Repo:
         """Unshelve a pending change"""
         self._setup_client()
         self.perforce.run_unshelve('-s', changelist)
-        # Improvement - Write unshelved files to disk to guarantee cleanup (patched.json)
+
+    def backup(self, changelist):
+        """Make a backup of files in a shelved changelist"""
+        
+        pass
 
 class SyncProgress(Progress):
     """Log the number of synced files periodically"""

@@ -3,6 +3,7 @@ Interact with buildkite as part of plugin hooks
 """
 import os
 import subprocess
+from datetime import datetime
 
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 # https://github.com/buildkite/cli/blob/e8aac4bedf34cd8084a3ae7a4ab7812c611d0310/local/run.go#L403
@@ -11,7 +12,7 @@ __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
 __REVISION_ANNOTATION__ = "Revision: %s"
 __SHELVED_METADATA__ = 'buildkite:perforce:shelved'
-__SHELVED_ANNOTATION__ = "Saved shelved change %s as %s"
+__SHELVED_ANNOTATION__ = "[%(timestamp)s] Saved shelved change %(original)s as %(copy)s"
 __BUILDKITE_AGENT__ = os.environ.get('BUILDKITE_BIN_PATH', 'buildkite-agent')
 
 def get_env():
@@ -40,13 +41,6 @@ def get_config():
     conf['view'] = ['%s %s' % (v, next(view_iter)) for v in view_iter]
     return conf
 
-def get_shelved_change():
-    """Get a shelved changelist that will be patched into each workspace"""
-    branch = os.environ.get('BUILDKITE_BRANCH', '')
-    if branch.isdigit():
-        return branch
-    return None
-
 def get_metadata(key):
     """If it exists, retrieve metadata from buildkite for a given key"""
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
@@ -66,11 +60,26 @@ def set_metadata(key, value, overwrite=False):
         subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  key, value])
         return True
 
-def set_blessed_shelved_change(blessed_changelist):
-    if set_metadata(__SHELVED_METADATA__, blessed_changelist):
+def get_users_shelved_change():
+    """Get the shelved changelist supplied by the user, if applicable"""
+    branch = os.environ.get('BUILDKITE_BRANCH', '')
+    if branch.isdigit():
+        return branch
+
+def get_saved_shelved_change():
+    """Get a saved version of the users originally supplied changelist, if available"""
+    return get_metadata(__SHELVED_METADATA__)
+
+def set_saved_shelved_change(changelist):
+    """Set a shelved change that should be used instead of the user-supplied one"""
+    if set_metadata(__SHELVED_METADATA__, changelist):
         subprocess.call([
             __BUILDKITE_AGENT__, 'annotate', 
-            __SHELVED_ANNOTATION__ % (get_shelved_change(), blessed_changelist),
+            __SHELVED_ANNOTATION__.format(**{
+                'timestamp': datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
+                'original': get_users_shelved_change(),
+                'copy': changelist,
+            }),
             '--context', __SHELVED_METADATA__
         ])
 
