@@ -1,7 +1,7 @@
 """
 Test perforce module for managing workspaces
 """
-from contextlib import closing
+from contextlib import closing, contextmanager
 from functools import partial
 from threading import Thread
 import os
@@ -61,6 +61,14 @@ def setup_server(from_zip=None):
     os.environ['P4PORT'] = p4port
     return p4port
 
+@contextmanager
+def setup_server_and_client(from_zip='server.zip'):
+    """Start server from a fixture and create a client workspace tmp dir"""
+    setup_server(from_zip)
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+        yield client_root
+
+
 def store_server(repo, to_zip):
     """Zip up a server to use as a unit test fixture"""
     serverRoot = repo.info()['serverRoot']
@@ -97,7 +105,7 @@ def test_checkout():
     """Test normal flow of checking out files"""
     setup_server(from_zip='server.zip')
 
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+    with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
@@ -118,7 +126,7 @@ def test_checkout_stream():
     """Test checking out a stream depot"""
     setup_server(from_zip='server.zip')
 
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+    with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root, stream='//stream-depot/main')
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
@@ -130,7 +138,7 @@ def test_workspace_recovery():
     """Test that we can detect and recover from various workspace snafus"""
     setup_server(from_zip='server.zip')
 
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+    with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
 
         # clobber writeable file
@@ -158,7 +166,7 @@ def test_unshelve():
     """Test unshelving a pending changelist"""
     setup_server(from_zip='server.zip')
 
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
+    with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
         repo.sync()
         with open(os.path.join(client_root, "file.txt")) as content:
