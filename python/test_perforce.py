@@ -103,8 +103,6 @@ def test_fixture(capsys):
 
 def test_checkout():
     """Test normal flow of checking out files"""
-    setup_server(from_zip='server.zip')
-
     with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
 
@@ -124,8 +122,6 @@ def test_checkout():
 
 def test_checkout_stream():
     """Test checking out a stream depot"""
-    setup_server(from_zip='server.zip')
-
     with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root, stream='//stream-depot/main')
 
@@ -136,8 +132,6 @@ def test_checkout_stream():
 
 def test_workspace_recovery():
     """Test that we can detect and recover from various workspace snafus"""
-    setup_server(from_zip='server.zip')
-
     with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
 
@@ -164,8 +158,6 @@ def test_workspace_recovery():
 
 def test_unshelve():
     """Test unshelving a pending changelist"""
-    setup_server(from_zip='server.zip')
-
     with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
         repo.sync()
