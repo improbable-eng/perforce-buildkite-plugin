@@ -182,7 +182,7 @@ def test_unshelve():
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
 def test_backup_shelve():
-    """Test unshelving a pending changelist"""
+    """Test making a copy of a shelved changelist"""
     setup_server(from_zip='server.zip')
 
     with setup_server_and_client() as client_root:
