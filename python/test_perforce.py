@@ -183,8 +183,6 @@ def test_unshelve():
 
 def test_backup_shelve():
     """Test making a copy of a shelved changelist"""
-    setup_server(from_zip='server.zip')
-
     with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
 
