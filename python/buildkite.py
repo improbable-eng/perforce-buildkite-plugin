@@ -60,17 +60,17 @@ def set_metadata(key, value, overwrite=False):
         subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  key, value])
         return True
 
-def get_users_shelved_change():
+def get_users_changelist():
     """Get the shelved changelist supplied by the user, if applicable"""
     branch = os.environ.get('BUILDKITE_BRANCH', '')
     if branch.isdigit():
         return branch
 
-def get_saved_shelved_change():
+def get_build_changelist():
     """Get a saved version of the users originally supplied changelist, if available"""
     return get_metadata(__SHELVED_METADATA__)
 
-def set_saved_shelved_change(changelist):
+def set_build_changelist(changelist):
     """Set a shelved change that should be used instead of the user-supplied one"""
     if set_metadata(__SHELVED_METADATA__, changelist):
         subprocess.call([
