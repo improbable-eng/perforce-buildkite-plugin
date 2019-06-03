@@ -140,7 +140,19 @@ class P4Repo:
         """Unshelve a pending change"""
         self._setup_client()
         self.perforce.run_unshelve('-s', changelist)
-        # Improvement - Write unshelved files to disk to guarantee cleanup (patched.json)
+
+    def backup(self, changelist):
+        """Make a copy of a shelved change"""
+        self.revert()
+        self.unshelve(changelist)
+        # Make pending CL from default CL
+        unshelved = self.perforce.fetch_change()
+        unshelved._description = 'Backup of %s for precommit testing in Buildkite' % changelist
+        output = self.perforce.save_change(unshelved)
+        backup_cl = output[0].split()[1] # Change X created with Y open file(s).
+        self.perforce.run_shelve('-c', backup_cl)
+        return backup_cl
+
 
 class SyncProgress(Progress):
     """Log the number of synced files periodically"""

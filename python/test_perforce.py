@@ -180,3 +180,16 @@ def test_unshelve():
         repo.sync()
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+def test_backup_shelve():
+    """Test unshelving a pending changelist"""
+    setup_server(from_zip='server.zip')
+
+    with setup_server_and_client() as client_root:
+        repo = P4Repo(root=client_root)
+
+        backup_changelist = repo.backup('3')
+        assert backup_changelist != '3', "Backup changelist number must be new"
+        repo.unshelve(backup_changelist)
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
