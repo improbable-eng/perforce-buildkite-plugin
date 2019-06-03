@@ -9,19 +9,21 @@ set -euo pipefail
 ORG_SLUG=$1
 PIPELINE_SLUG=$2
 
-CHANGE=$3
+CHANGELIST=$3
 USER=$4
 EMAIL=$5
 
-DESCRIPTION=$(p4 -Ztag -F %desc% describe %3)
+$(p4 -Ztag -F %desc% describe %3)
 
-curl -X POST "https://api.buildkite.com/v2/organizations/${ORG_SLUG}/pipelines/${PIPELINE_SLUG}/builds" \
-  -d ‘{
-    "commit": "${CHANGELIST}",
-    "branch": "master",
-    "message": "${DESCRIPTION}",
-    "author": {
-      "name": "${USER}",
-      "email": "${EMAIL}"
-    },
-  }’
+PAYLOAD="{
+    \"commit\": \"@${CHANGELIST}\",
+    \"branch\": \"master\",
+    \"message\": \"${DESCRIPTION}\",
+    \"author\": {
+        \"name\": \"${USER}\",
+        \"email\": \"${EMAIL}\"
+    }
+}"
+
+curl -H "Authorization: Bearer $TOKEN" -X POST "https://api.buildkite.com/v2/organizations/${ORG_SLUG}/pipelines/${PIPELINE_SLUG}/builds" \
+  -d "${PAYLOAD}"
