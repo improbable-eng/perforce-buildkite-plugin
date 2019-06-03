@@ -25,5 +25,5 @@ PAYLOAD="{
     }
 }"
 
-curl -H "Authorization: Bearer $TOKEN" -X POST "https://api.buildkite.com/v2/organizations/${ORG_SLUG}/pipelines/${PIPELINE_SLUG}/builds" \
+curl -H "Authorization: Bearer $BUILDKITE_TOKEN" -X POST "https://api.buildkite.com/v2/organizations/${ORG_SLUG}/pipelines/${PIPELINE_SLUG}/builds" \
   -d "${PAYLOAD}"
