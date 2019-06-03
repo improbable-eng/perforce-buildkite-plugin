@@ -190,6 +190,7 @@ def test_backup_shelve():
 
         backup_changelist = repo.backup('3')
         assert backup_changelist != '3', "Backup changelist number must be new"
+        repo.revert()
         repo.unshelve(backup_changelist)
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
