@@ -77,7 +77,7 @@ def set_build_changelist(changelist):
             __BUILDKITE_AGENT__, 'annotate', 
             __SHELVED_ANNOTATION__.format(**{
                 'timestamp': datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
-                'original': get_users_shelved_change(),
+                'original': get_users_changelist(),
                 'copy': changelist,
             }),
             '--context', __SHELVED_METADATA__
