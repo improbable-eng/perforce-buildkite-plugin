@@ -13,7 +13,7 @@ from P4 import P4, P4Exception, Progress  # pylint: disable=import-error
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
-    def __init__(self, root=None, view=None, stream=None, parallel=0):
+    def __init__(self, root=None, view=None, stream=None, sync=None, parallel=0):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -22,6 +22,7 @@ class P4Repo:
         self.root = os.path.abspath(root or '')
         self.stream = stream
         self.view = self._localize_view(view or [])
+        self.sync_paths = sync or '//...'
         self.parallel = parallel
 
         self.perforce = P4()
@@ -124,7 +125,7 @@ class P4Repo:
         self.revert()
         result = self.perforce.run_sync(
             '-q', '--parallel=threads=%s' % self.parallel,
-            '//...%s' % (revision or ''),
+            '%s%s' % (self.sync_paths, revision or ''),
             progress=SyncProgress(self.perforce.logger))
         if result:
             self.perforce.logger.info("Synced %s files (%s)" % (
