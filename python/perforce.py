@@ -27,10 +27,13 @@ class P4Repo:
 
         self.perforce = P4()
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
-        logger = logging.getLogger("P4Python")
+        logger = logging.getLogger("p4python")
         logger.setLevel(logging.INFO)
         handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s %(name)s %(levelname)s: %(message)s',
+            '%H:%M:%S',
+        )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         self.perforce.logger = logger
