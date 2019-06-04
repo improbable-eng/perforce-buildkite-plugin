@@ -4,4 +4,6 @@ set -euo pipefail
 python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
 python "${BASH_SOURCE%/*}/../python/checkout.py"
 
-rm -rf $(dirname ${BASH_SOURCE%/*})
+if [[ $BUILDKITE_PLUGINS == *"perforce-buildkite-plugin#master"* ]]; then
+    rm -rf $(dirname ${BASH_SOURCE%/*})
+fi
