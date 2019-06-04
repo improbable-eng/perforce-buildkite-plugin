@@ -25,6 +25,8 @@ class P4Repo:
         self.sync_paths = sync or '//...'
         self.parallel = parallel
 
+        self.created_client = False
+
         self.perforce = P4()
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
         logger = logging.getLogger("p4python")
@@ -90,6 +92,7 @@ class P4Repo:
 
         self.perforce.client = clientname
         self._write_p4config()
+        self.created_client = True
 
     def _write_p4config(self):
         """Writes a p4config at the workspace root"""
