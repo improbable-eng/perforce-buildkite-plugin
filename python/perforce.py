@@ -149,9 +149,9 @@ class P4Repo:
         # Make pending CL from default CL
         unshelved = self.perforce.fetch_change()
         unshelved._description = 'Backup of %s for precommit testing in Buildkite' % changelist
-        output = self.perforce.save_change(unshelved)[0]
-        match = re.search(r'Change (\d+) created', output)
-        backup_cl = match.group(1)
+        self.perforce.save_change(unshelved)
+        backup_change_info = self.perforce.run_changes('-c', self.perforce.client, '-s', 'pending', '-m', '1')
+        backup_cl = backup_change_info[0]['change']
         self.perforce.run_shelve('-c', backup_cl)
         return backup_cl
 
