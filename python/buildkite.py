@@ -13,7 +13,6 @@ __REVISION_METADATA__ = 'buildkite:perforce:revision'
 __REVISION_ANNOTATION__ = "Revision: %s"
 __SHELVED_METADATA__ = 'buildkite:perforce:shelved'
 __SHELVED_ANNOTATION__ = "[%(timestamp)s] Saved shelved change %(original)s as %(copy)s"
-__BUILDKITE_AGENT__ = os.environ.get('BUILDKITE_BIN_PATH', 'buildkite-agent')
 
 def get_env():
     """Get env vars passed in via plugin config"""
@@ -46,8 +45,8 @@ def get_metadata(key):
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
         return None
 
-    if subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', key]) == 0:
-        return subprocess.check_output([__BUILDKITE_AGENT__, 'meta-data', 'get',  key])
+    if subprocess.call(['buildkite-agent', 'meta-data', 'exists', key]) == 0:
+        return subprocess.check_output(['buildkite-agent', 'meta-data', 'get',  key])
 
 def set_metadata(key, value, overwrite=False):
     """ Set metadata in buildkite for a given key. Optionally overwrite existing data.
@@ -56,8 +55,8 @@ def set_metadata(key, value, overwrite=False):
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
         return False
 
-    if overwrite or subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'exists', key]) == 100:
-        subprocess.call([__BUILDKITE_AGENT__, 'meta-data', 'set',  key, value])
+    if overwrite or subprocess.call(['buildkite-agent', 'meta-data', 'exists', key]) == 100:
+        subprocess.call(['buildkite-agent', 'meta-data', 'set',  key, value])
         return True
 
 def get_users_changelist():
@@ -74,7 +73,7 @@ def set_build_changelist(changelist):
     """Set a shelved change that should be used instead of the user-supplied one"""
     if set_metadata(__SHELVED_METADATA__, changelist):
         subprocess.call([
-            __BUILDKITE_AGENT__, 'annotate', 
+            'buildkite-agent', 'annotate', 
             __SHELVED_ANNOTATION__.format(**{
                 'timestamp': datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
                 'original': get_users_changelist(),
@@ -93,4 +92,4 @@ def get_build_revision():
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
     if set_metadata(__REVISION_METADATA__, revision):
-        subprocess.call([__BUILDKITE_AGENT__, 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
+        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
