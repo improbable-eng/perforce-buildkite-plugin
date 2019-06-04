@@ -12,7 +12,7 @@ __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
 __REVISION_ANNOTATION__ = "Revision: %s"
 __SHELVED_METADATA__ = 'buildkite:perforce:shelved'
-__SHELVED_ANNOTATION__ = "[%(timestamp)s] Saved shelved change %(original)s as %(copy)s"
+__SHELVED_ANNOTATION__ = "[{timestamp}] Saved shelved change {original} as {copy}"
 
 def get_env():
     """Get env vars passed in via plugin config"""
