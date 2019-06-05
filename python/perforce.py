@@ -63,6 +63,8 @@ class P4Repo:
     def _setup_client(self):
         """Creates or re-uses the client workspace for this machine"""
         # pylint: disable=protected-access
+        if self.created_client:
+            return
         clientname = self._get_clientname()
         client = self.perforce.fetch_client(clientname)
         if self.root:
