@@ -78,6 +78,8 @@ class P4Repo:
         # overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = client._options.replace('noclobber', 'clobber')
+        # fully writeable workspace
+        client._options = client._options.replace('noallwrite', 'allwrite')
 
         if not os.path.isfile(os.path.join(self.root, "p4config")):
             self.perforce.logger.warn("p4config was missing, creating a fresh workspace")
