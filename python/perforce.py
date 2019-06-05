@@ -13,7 +13,8 @@ from P4 import P4, P4Exception, Progress  # pylint: disable=import-error
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
-    def __init__(self, root=None, view=None, stream=None, sync=None, parallel=0):
+    def __init__(self, root=None, view=None, stream=None,
+                 sync=None, client_opts=None, parallel=0):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -23,6 +24,7 @@ class P4Repo:
         self.stream = stream
         self.view = self._localize_view(view or [])
         self.sync_paths = sync or '//...'
+        self.client_opts = client_opts or ''
         self.parallel = parallel
 
         self.created_client = False
@@ -75,11 +77,9 @@ class P4Repo:
         if self.view:
             client._view = self.view
 
-        # overwrite writeable-but-unopened files
+        # unless overidden, overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
-        client._options = client._options.replace('noclobber', 'clobber')
-        # fully writeable workspace
-        client._options = client._options.replace('noallwrite', 'allwrite')
+        client._options = self.client_opts + ' clobber'
 
         if not os.path.isfile(os.path.join(self.root, "p4config")):
             self.perforce.logger.warn("p4config was missing, creating a fresh workspace")

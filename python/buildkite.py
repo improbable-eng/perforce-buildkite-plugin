@@ -33,6 +33,7 @@ def get_config():
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
     conf['sync'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SYNC')
     conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
+    conf['client_opts'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
 
     # Coerce view into pairs of [depot client] paths
     view_parts = conf['view'].split(' ')
