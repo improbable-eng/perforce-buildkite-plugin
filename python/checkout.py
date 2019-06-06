@@ -7,7 +7,7 @@ import subprocess
 
 from perforce import P4Repo
 from buildkite import (get_env, get_config, get_build_revision, set_build_revision,
-    get_users_changelist, get_build_changelist, set_build_changelist)
+    get_users_changelist, get_build_changelist, set_build_changelist, set_build_commit)
 
 def main():
     """Main"""
@@ -27,14 +27,15 @@ def main():
     if os.environ.get('BUILDKITE_CLEAN_CHECKOUT'):
         repo.clean()
 
-    user_changelist = get_users_changelist()
-    if user_changelist:
-        # Use existing or make a copy of the users changelist for this build
-        changelist = get_build_changelist()
-        if not changelist:
+    changelist = get_build_changelist()
+    if not changelist:
+        user_changelist = get_users_changelist()
+        if user_changelist:
+            # Make a copy of the users changelist for use in this build
             changelist = repo.backup(user_changelist)
-            set_build_changelist(changelist)
+            set_build_changelist(changelist)            
 
+    if changelist:
         repo.unshelve(changelist)
 
 
