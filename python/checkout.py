@@ -33,7 +33,7 @@ def main():
         if user_changelist:
             # Make a copy of the users changelist for use in this build
             changelist = repo.backup(user_changelist)
-            set_build_changelist(changelist)            
+            set_build_changelist(changelist)
 
     if changelist:
         repo.unshelve(changelist)
