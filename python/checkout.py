@@ -38,6 +38,7 @@ def main():
     if changelist:
         repo.unshelve(changelist)
 
+    set_build_commit(revision, changelist)
 
 if __name__ == "__main__":
     main()
