@@ -1,8 +1,6 @@
 name: Perforce
 description: Checks out a perforce repository instead of git.
 author: https://github.com/ca-johnson
-requirements:
-  - p4
 configuration:
   properties:
     p4port:
@@ -13,9 +11,15 @@ configuration:
       type: string
     p4trust:
       type: string  
-    stream:
+    root:
       type: string
     view:
       type: string
-    root:
+    stream:
       type: string
+    sync:
+      type: string
+    parallel:
+      type: string
+    client_opts:
+      type: string      
