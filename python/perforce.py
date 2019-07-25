@@ -127,7 +127,11 @@ class P4Repo:
 
     def head(self):
         """Get current head revision"""
-        return '@%s' % self.perforce.run_counter("maxCommitChange")[0]['value']
+        return self.perforce.run_counter("maxCommitChange")[0]['value']
+
+    def description(self, changelist):
+        """Get description of a given changelist"""
+        return self.perforce.run_describe(str(changelist))[0]['desc']
 
     def sync(self, revision=None):
         """Sync the workspace"""

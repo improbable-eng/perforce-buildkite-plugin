@@ -10,7 +10,6 @@ __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
-__REVISION_ANNOTATION__ = "Revision: %s"
 __SHELVED_METADATA__ = 'buildkite:perforce:shelved'
 __SHELVED_ANNOTATION__ = "Saved shelved change {original} as {copy}"
 
@@ -80,7 +79,8 @@ def set_build_changelist(changelist):
                 'original': get_users_changelist(),
                 'copy': changelist,
             }),
-            '--context', __SHELVED_METADATA__
+            '--context', __SHELVED_METADATA__,
+            '--style', 'info',
         ])
 
 def get_build_revision():
@@ -92,5 +92,8 @@ def get_build_revision():
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
-    if set_metadata(__REVISION_METADATA__, revision):
-        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
+    set_metadata(__REVISION_METADATA__, revision)
+
+def set_build_info(revision, description):
+    """Set the description and commit number in the UI for this build by mimicking a git repo"""
+    set_metadata('buildkite:git:commit', 'commit %s\n\n\t%s' % (revision, description))
