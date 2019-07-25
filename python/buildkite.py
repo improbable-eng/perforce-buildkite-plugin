@@ -93,8 +93,7 @@ def get_build_revision():
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
-    if set_metadata(__REVISION_METADATA__, revision):
-        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__, '--style', 'info'])
+    set_metadata(__REVISION_METADATA__, revision)
 
 def set_build_info(revision, description):
     """Set the description and commit number in the UI for this build by mimicking a git repo"""
