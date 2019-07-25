@@ -10,7 +10,6 @@ __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 
 __REVISION_METADATA__ = 'buildkite:perforce:revision'
-__REVISION_ANNOTATION__ = "Revision: %s"
 __SHELVED_METADATA__ = 'buildkite:perforce:shelved'
 __SHELVED_ANNOTATION__ = "Saved shelved change {original} as {copy}"
 
