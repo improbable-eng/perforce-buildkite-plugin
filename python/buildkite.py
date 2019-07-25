@@ -80,7 +80,8 @@ def set_build_changelist(changelist):
                 'original': get_users_changelist(),
                 'copy': changelist,
             }),
-            '--context', __SHELVED_METADATA__
+            '--context', __SHELVED_METADATA__,
+            '--style', 'info',
         ])
 
 def get_build_revision():
@@ -93,7 +94,7 @@ def get_build_revision():
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
     if set_metadata(__REVISION_METADATA__, revision):
-        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__])
+        subprocess.call(['buildkite-agent', 'annotate', __REVISION_ANNOTATION__ % revision, '--context', __REVISION_METADATA__, '--style', 'info'])
 
 def set_build_info(revision, description):
     """Set the description and commit number in the UI for this build by mimicking a git repo"""
