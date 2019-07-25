@@ -7,7 +7,7 @@ import subprocess
 
 from perforce import P4Repo
 from buildkite import (get_env, get_config, get_build_revision, set_build_revision,
-    get_users_changelist, get_build_changelist, set_build_changelist)
+    get_users_changelist, get_build_changelist, set_build_changelist, set_build_info)
 
 def main():
     """Main"""
@@ -19,7 +19,8 @@ def main():
     revision = get_build_revision()
     if revision == 'HEAD':
         # Resolve HEAD to a concrete revision
-        revision = repo.head()
+        head = repo.head()
+        revision = '@%s' % head
         set_build_revision(revision)
 
     repo.sync(revision=revision)
@@ -36,6 +37,9 @@ def main():
             set_build_changelist(changelist)
 
         repo.unshelve(changelist)
+
+    description = repo.description(get_build_changelist() or head)
+    set_build_info(head, description)
 
 
 if __name__ == "__main__":

@@ -92,7 +92,7 @@ def test_fixture(capsys):
     # Returns [metadata, contents]
     content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
-    assert repo.head() == "@2", "Unexpected head revision"
+    assert repo.head() == "2", "Unexpected head revision"
 
     shelved_change = repo.perforce.run_describe('-sS', '3')
     assert len(shelved_change) > 0, "Shelved changelist was missing"
