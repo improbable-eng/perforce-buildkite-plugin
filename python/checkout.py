@@ -38,7 +38,7 @@ def main():
 
         repo.unshelve(changelist)
 
-    description = repo.description(get_build_changelist() or head)
+    description = repo.description(get_users_changelist() or head)
     set_build_info(head, description)
 
 
