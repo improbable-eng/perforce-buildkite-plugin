@@ -19,8 +19,7 @@ def main():
     revision = get_build_revision()
     if revision == 'HEAD':
         # Resolve HEAD to a concrete revision
-        head = repo.head()
-        revision = '@%s' % head
+        revision = '@%s' % repo.head()
         set_build_revision(revision)
 
     repo.sync(revision=revision)
@@ -38,8 +37,9 @@ def main():
 
         repo.unshelve(changelist)
 
-    description = repo.description(get_users_changelist() or head)
-    set_build_info(head, description)
+    revision = get_build_revision().strip('@')
+    description = repo.description(get_users_changelist() or revision)
+    set_build_info(revision, description)
 
 
 if __name__ == "__main__":
