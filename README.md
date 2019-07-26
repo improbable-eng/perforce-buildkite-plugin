@@ -52,6 +52,25 @@ steps:
           stream: //dev/minimal
 ```
 
+Partial sync of a stream
+
+```yaml
+steps:
+    plugins:
+      - ca-johnson/perforce:
+          stream: //dev/minimal
+          sync: //dev/minimal/.buildkite/...
+```
+
+Enable parallel sync
+
+```yaml
+steps:
+    plugins:
+      - ca-johnson/perforce:
+          parallel: 16
+```
+
 ## Triggering Builds
 
 There are a few options for triggering builds that use this plugin, in this order from least valuable but most convenient to most valueable but least convenient.
