@@ -37,8 +37,8 @@ def main():
 
         repo.unshelve(changelist)
 
-    revision = get_build_revision().strip('@')
-    description = repo.description(get_users_changelist() or revision)
+    revision = get_build_revision()
+    description = repo.description(get_users_changelist() or revision.strip('@'))
     set_build_info(revision, description)
 
 
