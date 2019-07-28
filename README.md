@@ -6,6 +6,11 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you 
 2. Provision with credentials - a P4TICKETS file is recommended
 3. Optionally customise workspace mapping.
 
+The P4CLIENT, P4USER and P4PORT used by the plugin are written to a [P4CONFIG](https://www.perforce.com/manuals/v16.2/cmdref/P4CONFIG.html) file at the workspace root.
+
+Set the env var `P4CONFIG=p4config` to allow your build scripts to automatically pick up this info.
+
+
 ## Examples
 
 Configuration via env vars:
