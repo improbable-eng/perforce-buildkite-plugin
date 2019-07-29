@@ -1,0 +1,2 @@
+# Allow steps to pick up perforce configuration used by the plugin
+export P4CONFIG=p4config
