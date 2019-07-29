@@ -83,18 +83,13 @@ class P4Repo:
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = self.client_opts + ' clobber'
 
-        if not os.path.isfile(os.path.join(self.root, "p4config")):
-            self.perforce.logger.warn("p4config was missing, creating a fresh workspace")
-            try:
-                self.perforce.delete_client(clientname)
-            except P4Exception as exc:
-                # Suppress 'Client doesn't exist' messages
-                if not "doesn't exist" in str(exc):
-                    raise
-
         self.perforce.save_client(client)
-
         self.perforce.client = clientname
+
+        if not os.path.isfile(os.path.join(self.root, "p4config")):
+            self.perforce.logger.warn("p4config missing, flushing workspace to revision zero")
+            self.perforce.run_flush(['//...@0'])
+
         self._write_p4config()
         self.created_client = True
 
