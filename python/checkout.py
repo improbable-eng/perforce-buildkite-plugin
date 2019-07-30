@@ -8,7 +8,8 @@ import re
 
 from perforce import P4Repo
 from buildkite import (get_env, get_config, get_build_revision, set_build_revision,
-    get_users_changelist, get_build_changelist, set_build_changelist, set_build_info)
+    get_users_changelist, get_build_changelist, set_build_changelist, set_build_info,
+    should_backup_changelists)
 
 def main():
     """Main"""
@@ -25,7 +26,7 @@ def main():
 
     # Convert changelist number to revision specifier
     if re.match(r'^\d*$', revision):
-        revision = '@%d' % revision
+        revision = '@%s' % revision
 
     repo.sync(revision=revision)
 
@@ -37,7 +38,9 @@ def main():
         # Use existing or make a copy of the users changelist for this build
         changelist = get_build_changelist()
         if not changelist:
-            changelist = repo.backup(user_changelist)
+            changelist = user_changelist
+            if should_backup_changelists():
+                changelist = repo.backup(user_changelist)
             set_build_changelist(changelist)
 
         repo.unshelve(changelist)
