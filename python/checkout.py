@@ -4,6 +4,7 @@ Entrypoint for buildkite checkout hook
 import os
 import argparse
 import subprocess
+import re
 
 from perforce import P4Repo
 from buildkite import (get_env, get_config, get_build_revision, set_build_revision,
@@ -19,8 +20,12 @@ def main():
     revision = get_build_revision()
     if revision == 'HEAD':
         # Resolve HEAD to a concrete revision
-        revision = '@%s' % repo.head()
+        revision = repo.head()
         set_build_revision(revision)
+
+    # Convert changelist number to revision specifiers
+    if re.match(r'^\d*$', revision):
+        revision = '@%d' % revision
 
     repo.sync(revision=revision)
 
