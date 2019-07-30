@@ -38,6 +38,7 @@ def main():
         # Use existing or make a copy of the users changelist for this build
         changelist = get_build_changelist()
         if not changelist:
+            changelist = user_changelist
             if should_backup_changelists():
                 changelist = repo.backup(user_changelist)
             set_build_changelist(changelist)
