@@ -23,7 +23,7 @@ def main():
         revision = repo.head()
         set_build_revision(revision)
 
-    # Convert changelist number to revision specifiers
+    # Convert changelist number to revision specifier
     if re.match(r'^\d*$', revision):
         revision = '@%d' % revision
 
