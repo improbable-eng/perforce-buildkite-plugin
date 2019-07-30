@@ -42,7 +42,7 @@ def get_config():
     return conf
 
 def should_backup_changelists():
-    return os.environ.get('BUILDKITE_PLUGIN_PERFORCE_BACKUP_CHANGELISTS', 'true') == 'true'
+    return os.environ.get('BUILDKITE_PLUGIN_PERFORCE_BACKUP_CHANGELISTS', 'false') == 'true'
 
 def get_metadata(key):
     """If it exists, retrieve metadata from buildkite for a given key"""
