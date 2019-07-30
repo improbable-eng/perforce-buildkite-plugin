@@ -10,3 +10,4 @@ steps:
           view: //depot/... ...
           root: p4_workspace
           parallel: 2
+          backup_changelists: yes

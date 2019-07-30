@@ -22,4 +22,6 @@ configuration:
     parallel:
       type: string
     client_opts:
-      type: string      
+      type: string
+    backup_changelists:
+      type: bool
