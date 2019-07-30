@@ -34,11 +34,12 @@ def main():
         repo.clean()
 
     user_changelist = get_users_changelist()
-    if user_changelist and should_backup_changelists():
+    if user_changelist:
         # Use existing or make a copy of the users changelist for this build
         changelist = get_build_changelist()
         if not changelist:
-            changelist = repo.backup(user_changelist)
+            if  should_backup_changelists():
+                changelist = repo.backup(user_changelist)
             set_build_changelist(changelist)
 
         repo.unshelve(changelist)
