@@ -30,9 +30,6 @@ def main():
 
     repo.sync(revision=revision)
 
-    if os.environ.get('BUILDKITE_CLEAN_CHECKOUT'):
-        repo.clean()
-
     user_changelist = get_users_changelist()
     if user_changelist:
         # Use existing or make a copy of the users changelist for this build
