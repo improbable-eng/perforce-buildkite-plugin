@@ -75,7 +75,7 @@ def get_build_changelist():
 
 def set_build_changelist(changelist):
     """Set a shelved change that should be used instead of the user-supplied one"""
-    if set_metadata(__SHELVED_METADATA__, changelist):
+    if set_metadata(__SHELVED_METADATA__, changelist) and should_backup_changelists():
         subprocess.call([
             'buildkite-agent', 'annotate', 
             __SHELVED_ANNOTATION__.format(**{
