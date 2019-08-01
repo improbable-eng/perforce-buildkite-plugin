@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import time
 import zipfile
+import pytest
 
 from perforce import P4Repo
 
@@ -168,6 +169,9 @@ def test_unshelve():
         repo.unshelve('3')
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+
+        with pytest.raises(Exception, match=r'Changelist 4 does not contain any shelved files.'):
+            repo.unshelve('4')
 
         # Unshelved changes are removed in following syncs
         repo.sync()
