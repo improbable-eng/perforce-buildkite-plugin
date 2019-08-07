@@ -1,5 +1,5 @@
 """
-Entrypoint for buildkite checkout hook
+Entrypoint for checkout hook
 """
 import os
 import argparse
