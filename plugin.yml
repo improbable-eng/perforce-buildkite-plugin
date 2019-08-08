@@ -11,8 +11,6 @@ configuration:
       type: string
     p4trust:
       type: string  
-    root:
-      type: string
     view:
       type: string
     stream:
