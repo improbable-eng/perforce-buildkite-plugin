@@ -1,2 +1,23 @@
 # Allow steps to pick up perforce configuration used by the plugin
 export P4CONFIG=p4config
+
+# Allow sharing of perforce client workspaces for the same stream between pipelines
+if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
+    echo "Workspace sharing enabled"
+
+    STREAM="${BUILDKITE_PLUGIN_PERFORCE_STREAM}"
+    if [[ -z "${STREAM}" ]] ; then
+      echo "Error: You must use stream workspaces to enable shared workspaces" >&2
+      exit 1
+    fi
+    if [[ "${BUILDKITE_AGENT_META_DATA_AGENT_COUNT}" -gt 1 ]] ; then
+      echo "Error: You cannot share stream workspaces when running more than one agent" >&2
+      exit 1
+    fi
+    # Sanitize //depot/stream-name to __depot_stream-name
+    SANITIZED_STREAM=$(echo $STREAM | python -c "import sys; print(sys.stdin.read().replace('/', '_'));")
+
+    PERFORCE_CHECKOUT_PATH="${BUILDKITE_BUILD_CHECKOUT_PATH}/../${SANITIZED_STREAM}"
+    export BUILDKITE_BUILD_CHECKOUT_PATH="${PERFORCE_CHECKOUT_PATH}"
+    echo "Changed BUILDKITE_BUILD_CHECKOUT_PATH to ${PERFORCE_CHECKOUT_PATH}"
+fi

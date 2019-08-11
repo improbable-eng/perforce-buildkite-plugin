@@ -11,3 +11,12 @@ steps:
           root: p4_workspace
           parallel: 2
           backup_changelists: yes
+
+  # - label: "Test Shared Streams"
+  #   command: echo "Hello World"
+  #   plugins:
+  #     - ./.buildkite/plugins/perforce:
+  #         p4port: localhost:1666
+  #         p4user: banana
+  #         stream: //stream-depot/main # will checkout to ../__stream_depot_main
+  #         share_workspace: yes

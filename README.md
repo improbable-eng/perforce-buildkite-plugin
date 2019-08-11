@@ -73,6 +73,17 @@ steps:
           parallel: 16
 ```
 
+Share a stream workspace between pipelines. Useful to avoid syncing duplicate data with large workspaces.
+Only allowed when there is a single buildkite agent running on the machine.
+
+```yaml
+steps:
+    plugins:
+      - ca-johnson/perforce:
+          stream: //dev/buildkite
+          share_workspace: true
+```
+
 ## Triggering Builds
 
 There are a few options for triggering builds that use this plugin, in this order from least valuable but most convenient to most valueable but least convenient.
