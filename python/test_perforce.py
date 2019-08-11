@@ -109,8 +109,8 @@ def test_checkout():
 
         assert os.listdir(client_root) == [], "Workspace should be empty"
         repo.sync()
-        assert os.listdir(client_root) == [
-            "file.txt", "p4config"], "Workspace sync not as expected"
+        assert sorted(os.listdir(client_root)) == sorted([
+            "file.txt", "p4config"]), "Workspace sync not as expected"
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
@@ -148,15 +148,15 @@ def test_workspace_recovery():
         os.remove(os.path.join(client_root, "file.txt"))
         open(os.path.join(client_root, "added.txt"), 'a').close()
         repo.clean()
-        assert os.listdir(client_root) == [
-            "file.txt", "p4config"], "Failed to restore workspace file with repo.clean()"
+        assert sorted(os.listdir(client_root)) == sorted([
+            "file.txt", "p4config"]), "Failed to restore workspace file with repo.clean()"
 
         os.remove(os.path.join(client_root, "file.txt"))
         os.remove(os.path.join(client_root, "p4config"))
         repo = P4Repo(root=client_root) # Open a fresh client, as if this was a different job
         repo.sync() # Normally: "You already have file.txt", but since p4config is missing it will restore the workspace
-        assert os.listdir(client_root) == [
-            "file.txt", "p4config"], "Failed to restore corrupt workspace due to missing p4config"
+        assert sorted(os.listdir(client_root)) == sorted([
+            "file.txt", "p4config"]), "Failed to restore corrupt workspace due to missing p4config"
 
 def test_unshelve():
     """Test unshelving a pending changelist"""

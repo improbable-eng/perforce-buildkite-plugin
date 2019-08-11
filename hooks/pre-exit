@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euo pipefail
+
+python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
+python "${BASH_SOURCE%/*}/../python/pre-exit.py"
