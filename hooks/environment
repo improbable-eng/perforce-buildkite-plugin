@@ -2,7 +2,7 @@
 export P4CONFIG=p4config
 
 # Allow sharing of perforce client workspaces for the same stream between pipelines
-if "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" ; then
+if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
     echo "Workspace sharing enabled"
 
     STREAM="${BUILDKITE_PLUGIN_PERFORCE_STREAM}"
