@@ -7,7 +7,11 @@ if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
 
     STREAM="${BUILDKITE_PLUGIN_PERFORCE_STREAM}"
     if [[ -z "${STREAM}" ]] ; then
-      echo "ERROR: You must use stream workspaces to enable shared workspaces" >&2
+      echo "Error: You must use stream workspaces to enable shared workspaces" >&2
+      exit 1
+    fi
+    if [[ "${BUILDKITE_AGENT_META_DATA_AGENT_COUNT}" -gt 1 ]] ; then
+      echo "Error: You cannot share stream workspaces when running more than one agent" >&2
       exit 1
     fi
     # Sanitize //depot/stream-name to __depot_stream-name
