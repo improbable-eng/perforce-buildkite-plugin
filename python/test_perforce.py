@@ -12,7 +12,6 @@ import tempfile
 import time
 import zipfile
 import pytest
-from distutils.dir_util import copy_tree
 
 from perforce import P4Repo
 
@@ -191,6 +190,17 @@ def test_backup_shelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
+
+def copytree(src, dst):
+    """Shim to get around shutil.copytree requiring root dir to not exist"""
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d)
+        else:
+            shutil.copy2(s, d)
+
 def test_client_migration():
     """Test re-use of workspace data when moved to another host"""
     with setup_server_and_client() as client_root:
@@ -201,7 +211,7 @@ def test_client_migration():
         assert len(synced) > 0, "Didn't sync any files"
 
         with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client_root:
-            copy_tree(client_root, second_client_root)
+            copytree(client_root, second_client_root)
             repo = P4Repo(root=second_client_root)
             synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
             assert synced == [], "Should not have synced any files in second client"
