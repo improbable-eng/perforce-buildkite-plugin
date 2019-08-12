@@ -192,7 +192,7 @@ def test_backup_shelve():
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
 def test_client_migration():
-    """Test re-use of workspace data when client moves to another host"""
+    """Test re-use of workspace data when moved to another host"""
     with setup_server_and_client() as client_root:
         repo = P4Repo(root=client_root)
 
@@ -203,5 +203,5 @@ def test_client_migration():
         with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client_root:
             copy_tree(client_root, second_client_root)
             repo = P4Repo(root=second_client_root)
-            synced = repo.sync()
+            synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
             assert synced == [], "Should not have synced any files in second client"
