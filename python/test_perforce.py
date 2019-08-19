@@ -178,6 +178,27 @@ def test_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
+def test_p4print_unshelve():
+    """Test unshelving a pending changelist by p4printing content into a file"""
+    with setup_server_and_client() as client_root:
+        repo = P4Repo(root=client_root)
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+        repo.p4print('3')
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+
+        with pytest.raises(Exception, match=r'Changelist 4 does not contain any shelved files.'):
+            repo.p4print('4')
+
+        # Unshelved changes are removed in following syncs
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+
 def test_backup_shelve():
     """Test making a copy of a shelved changelist"""
     with setup_server_and_client() as client_root:

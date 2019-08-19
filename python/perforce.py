@@ -156,6 +156,7 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
+
         # Reject exclusive lock files for now
         modifiers = [filetype.split('+')[1]
                      for filetype in changeinfo['type']
@@ -167,6 +168,49 @@ class P4Repo:
 
 
         self.perforce.run_unshelve('-s', changelist)
+
+    def p4print(self, changelist):
+        """Unshelve a pending change by p4printing the contents into a file"""
+        self._setup_client()
+
+        changeinfo = self.perforce.run_describe('-S', changelist)
+        if not changeinfo:
+            raise Exception('Changelist %s does not contain any shelved files.' % changelist)
+        changeinfo = changeinfo[0]
+
+        depotfiles = changeinfo['depotFile']
+
+        whereinfo = self.perforce.run_where(depotfiles)
+        depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
+        
+        shelved_depotfiles = [file + '@=' + changelist for file in depotfiles]
+        printinfo = self.perforce.run_print(shelved_depotfiles)
+
+        # coerce [info, content, info, content]
+        # into {depotpath: content, depotpath: content}
+        depot_to_content = {fileinfo['depotFile']: content 
+                            for fileinfo, content in
+                            zip(printinfo[0::2], printinfo[1::2])}
+        import stat
+        for depotfile, content in depot_to_content.items():
+            localfile = depot_to_local[depotfile]
+            if os.path.isfile(localfile):
+                os.chmod(localfile, stat.S_IWRITE)
+                os.unlink(localfile)
+            with open(localfile, 'w') as outfile:
+                outfile.write(content)
+
+        # import os, shutil, stat
+
+        # def on_rm_error( func, path, exc_info):
+        #     # path contains the path of the file that couldn't be removed
+        #     # let's just assume that it's read-only and unlink it.
+        #     os.chmod( path, stat.S_IWRITE )
+        #     os.unlink( path )
+
+        # shutil.rmtree( TEST_OBJECTS_DIR, onerror = on_rm_error )
+        # with open('modified.json', w):
+        #     // these files were modified
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
