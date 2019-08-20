@@ -170,13 +170,43 @@ def test_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
-        with pytest.raises(Exception, match=r'Changelist 4 does not contain any shelved files.'):
-            repo.unshelve('4')
+        with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
+            repo.unshelve('999')
 
         # Unshelved changes are removed in following syncs
         repo.sync()
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+def test_p4print_unshelve():
+    """Test unshelving a pending changelist by p4printing content into a file"""
+    with setup_server_and_client() as client_root:
+        repo = P4Repo(root=client_root)
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+
+        repo.p4print_unshelve('3') # Modify a file
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+
+        repo.p4print_unshelve('4') # Delete a file
+        assert not os.path.exists(os.path.join(client_root, "file.txt"))
+
+        repo.p4print_unshelve('5') # Add a file
+        assert os.path.exists(os.path.join(client_root, "newfile.txt"))
+
+        with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
+            repo.p4print_unshelve('999')
+
+        assert len(repo._read_patched()) == 2 # changes to file.txt and newfile.txt
+
+        # Unshelved changes are removed in following syncs
+        repo.sync()
+        with open(os.path.join(client_root, "file.txt")) as content:
+            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+        assert not os.path.exists(os.path.join(client_root, "newfile.txt"))
+
 
 def test_backup_shelve():
     """Test making a copy of a shelved changelist"""

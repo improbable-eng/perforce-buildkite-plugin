@@ -6,6 +6,8 @@ import re
 import socket
 import logging
 import sys
+import stat
+import json
 
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
@@ -115,6 +117,21 @@ class P4Repo:
         with open(os.path.join(self.root, "p4config"), 'w') as p4config:
             p4config.writelines(["%s=%s\n" % (k, v) for k, v in config.items()])
 
+    def _read_patched(self):
+        """Read a marker to find which files have been modified in the workspace"""
+        patched = os.path.join(self.root, "patched.json")
+        if not os.path.exists(patched):
+            return []
+        with open(patched, 'r') as infile:
+            return json.load(infile)
+
+    def _write_patched(self, files):
+        """Write a marker to track which files have been modified in the workspace"""
+        patched = os.path.join(self.root, "patched.json")
+        content = list(set(files + self._read_patched())) # Combine and deduplicate
+        with open(patched, 'w') as outfile:
+            json.dump(content, outfile)
+
     def clean(self):
         """ Perform a p4clean on the workspace to
             remove added and restore deleted files
@@ -155,6 +172,9 @@ class P4Repo:
         """Revert any pending changes in the workspace"""
         self._setup_client()
         self.perforce.run_revert('//...')
+        patched = self._read_patched()
+        if patched:
+            self.perforce.run_clean(patched)
 
     def unshelve(self, changelist):
         """Unshelve a pending change"""
@@ -176,6 +196,39 @@ class P4Repo:
 
 
         self.perforce.run_unshelve('-s', changelist)
+
+    def p4print_unshelve(self, changelist):
+        """Unshelve a pending change by p4printing the contents into a file"""
+        self._setup_client()
+
+        changeinfo = self.perforce.run_describe('-S', changelist)
+        if not changeinfo:
+            raise Exception('Changelist %s does not contain any shelved files.' % changelist)
+        changeinfo = changeinfo[0]
+
+        depotfiles = changeinfo['depotFile']
+
+        whereinfo = self.perforce.run_where(depotfiles)
+        depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
+        
+        shelved_depotfiles = [file + '@=' + changelist for file in depotfiles]
+        printinfo = self.perforce.run_print(shelved_depotfiles)
+
+        # coerce [info, content, info, content]
+        # into {depotpath: content, depotpath: content}
+        local_to_content = {depot_to_local[fileinfo['depotFile']]: content 
+                            for fileinfo, content in
+                            zip(printinfo[0::2], printinfo[1::2])}
+        try:
+            for localfile, content in local_to_content.items():
+                if os.path.isfile(localfile):
+                    os.chmod(localfile, stat.S_IWRITE)
+                    os.unlink(localfile)
+                if content:
+                    with open(localfile, 'w') as outfile:
+                        outfile.write(content)
+        finally:
+            self._write_patched(list(local_to_content.keys()))
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
