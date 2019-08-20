@@ -6,7 +6,9 @@ import re
 import socket
 import logging
 import sys
+import stat
 import json
+
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
 from P4 import P4, P4Exception, Progress  # pylint: disable=import-error
@@ -186,7 +188,7 @@ class P4Repo:
 
         self.perforce.run_unshelve('-s', changelist)
 
-    def p4print(self, changelist):
+    def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
         self._setup_client()
 
@@ -208,16 +210,16 @@ class P4Repo:
         local_to_content = {depot_to_local[fileinfo['depotFile']]: content 
                             for fileinfo, content in
                             zip(printinfo[0::2], printinfo[1::2])}
-        import stat
-        for localfile, content in local_to_content.items():
-            if os.path.isfile(localfile):
-                os.chmod(localfile, stat.S_IWRITE)
-                os.unlink(localfile)
-            if content:
-                with open(localfile, 'w') as outfile:
-                    outfile.write(content)
-
-        self._write_patched(local_to_content.keys())
+        try:
+            for localfile, content in local_to_content.items():
+                if os.path.isfile(localfile):
+                    os.chmod(localfile, stat.S_IWRITE)
+                    os.unlink(localfile)
+                if content:
+                    with open(localfile, 'w') as outfile:
+                        outfile.write(content)
+        finally:
+            self._write_patched(list(local_to_content.keys()))
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""

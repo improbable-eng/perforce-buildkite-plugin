@@ -186,18 +186,20 @@ def test_p4print_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        repo.p4print('3')
+        repo.p4print_unshelve('3')
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
-        repo.p4print('4')
+        repo.p4print_unshelve('4')
         assert not os.path.exists(os.path.join(client_root, "file.txt"))
 
-        repo.p4print('5')
+        repo.p4print_unshelve('5')
         assert os.path.exists(os.path.join(client_root, "newfile.txt"))
 
         with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
-            repo.p4print('999')
+            repo.p4print_unshelve('999')
+
+        assert len(repo._read_patched()) == 2 # changes to file.txt and newfile.txt
 
         # Unshelved changes are removed in following syncs
         repo.sync()
