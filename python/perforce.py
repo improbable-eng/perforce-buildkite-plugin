@@ -6,7 +6,7 @@ import re
 import socket
 import logging
 import sys
-
+import json
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
 from P4 import P4, P4Exception, Progress  # pylint: disable=import-error
@@ -106,6 +106,21 @@ class P4Repo:
         with open(os.path.join(self.root, "p4config"), 'w') as p4config:
             p4config.writelines(["%s=%s\n" % (k, v) for k, v in config.items()])
 
+    def _read_patched(self):
+        """Read a marker to find which files have been modified in the workspace"""
+        patched = os.path.join(self.root, "patched.json")
+        if not os.path.exists(patched):
+            return []
+        with open(patched, 'r') as infile:
+            return json.load(infile)
+
+    def _write_patched(self, files):
+        """Write a marker to track which files have been modified in the workspace"""
+        patched = os.path.join(self.root, "patched.json")
+        content = list(set(files + self._read_patched())) # Combine and deduplicate
+        with open(patched, 'w') as outfile:
+            json.dump(content, outfile)
+
     def clean(self):
         """ Perform a p4clean on the workspace to
             remove added and restore deleted files
@@ -146,6 +161,9 @@ class P4Repo:
         """Revert any pending changes in the workspace"""
         self._setup_client()
         self.perforce.run_revert('//...')
+        patched = self._read_patched()
+        if patched:
+            self.perforce.run_clean(patched)
 
     def unshelve(self, changelist):
         """Unshelve a pending change"""
@@ -187,12 +205,11 @@ class P4Repo:
 
         # coerce [info, content, info, content]
         # into {depotpath: content, depotpath: content}
-        depot_to_content = {fileinfo['depotFile']: content 
+        local_to_content = {depot_to_local[fileinfo['depotFile']]: content 
                             for fileinfo, content in
                             zip(printinfo[0::2], printinfo[1::2])}
         import stat
-        for depotfile, content in depot_to_content.items():
-            localfile = depot_to_local[depotfile]
+        for localfile, content in local_to_content.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
@@ -200,17 +217,7 @@ class P4Repo:
                 with open(localfile, 'w') as outfile:
                     outfile.write(content)
 
-        # import os, shutil, stat
-
-        # def on_rm_error( func, path, exc_info):
-        #     # path contains the path of the file that couldn't be removed
-        #     # let's just assume that it's read-only and unlink it.
-        #     os.chmod( path, stat.S_IWRITE )
-        #     os.unlink( path )
-
-        # shutil.rmtree( TEST_OBJECTS_DIR, onerror = on_rm_error )
-        # with open('modified.json', w):
-        #     // these files were modified
+        self._write_patched(local_to_content.keys())
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
