@@ -170,8 +170,8 @@ def test_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
-        with pytest.raises(Exception, match=r'Changelist 4 does not contain any shelved files.'):
-            repo.unshelve('4')
+        with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
+            repo.unshelve('999')
 
         # Unshelved changes are removed in following syncs
         repo.sync()
@@ -190,13 +190,20 @@ def test_p4print_unshelve():
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
-        with pytest.raises(Exception, match=r'Changelist 4 does not contain any shelved files.'):
-            repo.p4print('4')
+        repo.p4print('4')
+        assert not os.path.exists(os.path.join(client_root, "file.txt"))
+
+        repo.p4print('5')
+        assert os.path.exists(os.path.join(client_root, "newfile.txt"))
+
+        with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
+            repo.p4print('999')
 
         # Unshelved changes are removed in following syncs
         repo.sync()
         with open(os.path.join(client_root, "file.txt")) as content:
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+        assert not os.path.exists(os.path.join(client_root, "newfile.txt"))
 
 
 def test_backup_shelve():
