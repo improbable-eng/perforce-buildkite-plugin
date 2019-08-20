@@ -6,3 +6,4 @@ __pycache__/
 .pytest_cache
 
 p4_workspace
+python/fixture/server
