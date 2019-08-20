@@ -40,7 +40,7 @@ def main():
                 changelist = repo.backup(user_changelist)
             set_build_changelist(changelist)
 
-        repo.unshelve(changelist)
+        repo.p4print_unshelve(changelist)
 
     revision = get_build_revision()
     description = repo.description(get_users_changelist() or revision.strip('@'))
