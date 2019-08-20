@@ -225,6 +225,8 @@ class P4Repo:
                     os.chmod(localfile, stat.S_IWRITE)
                     os.unlink(localfile)
                 if content:
+                    if not os.path.exists(os.path.dirname(localfile)):
+                        os.makedirs(os.path.dirname(localfile))
                     with open(localfile, 'w') as outfile:
                         outfile.write(content)
         finally:
