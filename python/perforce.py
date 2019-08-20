@@ -156,7 +156,6 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
-
         # Reject exclusive lock files for now
         modifiers = [filetype.split('+')[1]
                      for filetype in changeinfo['type']
@@ -197,8 +196,9 @@ class P4Repo:
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            with open(localfile, 'w') as outfile:
-                outfile.write(content)
+            if content:
+                with open(localfile, 'w') as outfile:
+                    outfile.write(content)
 
         # import os, shutil, stat
 
