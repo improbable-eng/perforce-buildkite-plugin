@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 # Allow sharing of perforce client workspaces for the same stream between pipelines
 if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
