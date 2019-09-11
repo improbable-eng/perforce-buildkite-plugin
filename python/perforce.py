@@ -216,18 +216,19 @@ class P4Repo:
 
         # coerce [info, content, info, content]
         # into {depotpath: content, depotpath: content}
-        local_to_content = {depot_to_local[fileinfo['depotFile']]: content 
+        local_to_content = {depot_to_local[fileinfo['depotFile']]: (fileinfo, content)
                             for fileinfo, content in
                             zip(printinfo[0::2], printinfo[1::2])}
         try:
-            for localfile, content in local_to_content.items():
+            for localfile, (fileinfo, content) in local_to_content.items():
                 if os.path.isfile(localfile):
                     os.chmod(localfile, stat.S_IWRITE)
                     os.unlink(localfile)
                 if content:
                     if not os.path.exists(os.path.dirname(localfile)):
                         os.makedirs(os.path.dirname(localfile))
-                    with open(localfile, 'w') as outfile:
+                    mode = 'wb' if 'binary' in fileinfo['type'] else 'w'
+                    with open(localfile, mode=mode) as outfile:
                         outfile.write(content)
         finally:
             self._write_patched(list(local_to_content.keys()))
