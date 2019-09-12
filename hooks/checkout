@@ -17,12 +17,12 @@ python -m "${venv_module}" "${venv_dir}"
 
 platform=$(python -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
-    venv_activate="${venv_dir}/Scripts/activate"
+    venv_bin="${venv_dir}/Scripts"
 else
-    venv_activate="${venv_dir}/bin/activate"
+    venv_bin="${venv_dir}/bin"
 fi
-source "${venv_activate}"
 
-python -m pip install -r "${plugin_root}/python/requirements.txt"
 
-python "${plugin_root}/python/checkout.py"
+"${venv_bin}/python" -m pip install -r "${plugin_root}/python/requirements.txt"
+
+"${venv_bin}/python" "${plugin_root}/python/checkout.py"
