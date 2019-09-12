@@ -10,11 +10,12 @@ else
     venv_module="venv"
 fi
 
-python -m pip install "${venv_module}"
-python -m "${venv_module}" "${plugin_root}/venv"
+venv_dir="${PWD}/../perforce-plugin-venv"
 
-source "${plugin_root}/venv/bin/activate"
-which python
+python -m pip install "${venv_module}"
+python -m "${venv_module}" "${venv_dir}"
+
+source "${venv_dir}/bin/activate"
 
 python -m pip install -r "${plugin_root}/python/requirements.txt"
 

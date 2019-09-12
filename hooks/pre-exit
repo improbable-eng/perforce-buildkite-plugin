@@ -3,6 +3,8 @@ set -euo pipefail
 
 plugin_root="${BASH_SOURCE%/*}/.."
 
-source "${plugin_root}/venv/bin/activate"
+venv_dir="${PWD}/../perforce-plugin-venv"
 
-python "${BASH_SOURCE%/*}/../python/pre-exit.py"
+source "${venv_dir}/bin/activate"
+
+python "${plugin_root}/python/pre-exit.py"
