@@ -15,7 +15,12 @@ venv_dir="${PWD}/../perforce-plugin-venv"
 python -m pip install "${venv_module}"
 python -m "${venv_module}" "${venv_dir}"
 
-source "${venv_dir}/bin/activate"
+platform=$(python -c "import platform; print(platform.system())")
+if [[ "${platform}" == "Windows" ]]; then
+    ./${venv_dir}/Sripts/activate
+else
+    source "${venv_dir}/bin/activate"
+fi
 
 python -m pip install -r "${plugin_root}/python/requirements.txt"
 
