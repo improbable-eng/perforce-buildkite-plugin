@@ -125,10 +125,12 @@ class P4Repo:
         with open(patched, 'r') as infile:
             return json.load(infile)
 
-    def _write_patched(self, files):
+    def _write_patched(self, files, merge=True):
         """Write a marker to track which files have been modified in the workspace"""
         patched = os.path.join(self.root, "patched.json")
-        content = list(set(files + self._read_patched())) # Combine and deduplicate
+        content = files
+        if merge:
+            content = list(set(files + self._read_patched())) # Combine and deduplicate
         with open(patched, 'w') as outfile:
             json.dump(content, outfile)
 
@@ -175,6 +177,7 @@ class P4Repo:
         patched = self._read_patched()
         if patched:
             self.perforce.run_clean(patched)
+            self._write_patched([], merge=False) # Clear patched file
 
     def unshelve(self, changelist):
         """Unshelve a pending change"""
@@ -219,19 +222,20 @@ class P4Repo:
         local_to_content = {depot_to_local[fileinfo['depotFile']]: (fileinfo, content)
                             for fileinfo, content in
                             zip(printinfo[0::2], printinfo[1::2])}
-        try:
-            for localfile, (fileinfo, content) in local_to_content.items():
-                if os.path.isfile(localfile):
-                    os.chmod(localfile, stat.S_IWRITE)
-                    os.unlink(localfile)
-                if content:
-                    if not os.path.exists(os.path.dirname(localfile)):
-                        os.makedirs(os.path.dirname(localfile))
-                    mode = 'wb' if 'binary' in fileinfo['type'] else 'w'
-                    with open(localfile, mode=mode) as outfile:
-                        outfile.write(content)
-        finally:
-            self._write_patched(list(local_to_content.keys()))
+
+        # Flag these files as modified
+        self._write_patched(list(local_to_content.keys()))
+
+        for localfile, (fileinfo, content) in local_to_content.items():
+            if os.path.isfile(localfile):
+                os.chmod(localfile, stat.S_IWRITE)
+                os.unlink(localfile)
+            if content:
+                if not os.path.exists(os.path.dirname(localfile)):
+                    os.makedirs(os.path.dirname(localfile))
+                mode = 'wb' if 'binary' in fileinfo['type'] else 'w'
+                with open(localfile, mode=mode) as outfile:
+                    outfile.write(content)
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
