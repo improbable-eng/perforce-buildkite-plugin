@@ -7,9 +7,10 @@ venv_dir="${PWD}/../perforce-plugin-venv"
 
 platform=$(python -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
-    ./${venv_dir}/Scripts/activate
+    venv_activate="${venv_dir}/Scripts/activate"
 else
-    source "${venv_dir}/bin/activate"
+    venv_activate="${venv_dir}/bin/activate"
 fi
+source "${venv_activate}"
 
 python "${plugin_root}/python/pre-exit.py"

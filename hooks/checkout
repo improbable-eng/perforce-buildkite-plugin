@@ -17,10 +17,11 @@ python -m "${venv_module}" "${venv_dir}"
 
 platform=$(python -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
-    ./${venv_dir}/Scripts/activate
+    venv_activate="${venv_dir}/Scripts/activate"
 else
-    source "${venv_dir}/bin/activate"
+    venv_activate="${venv_dir}/bin/activate"
 fi
+source "${venv_activate}"
 
 python -m pip install -r "${plugin_root}/python/requirements.txt"
 
