@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-PLUGIN_ROOT="${BASH_SOURCE%/*}/.."
+plugin_root="${BASH_SOURCE%/*}/.."
 
-source "${PLUGIN_ROOT}/venv/bin/activate"
+source "${plugin_root}/venv/bin/activate"
 
-python3 "${BASH_SOURCE%/*}/../python/pre-exit.py"
+python "${BASH_SOURCE%/*}/../python/pre-exit.py"

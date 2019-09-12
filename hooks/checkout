@@ -1,12 +1,21 @@
 #!/bin/bash
 set -eo pipefail
 
-PLUGIN_ROOT="${BASH_SOURCE%/*}/.."
+plugin_root="${BASH_SOURCE%/*}/.."
 
-python3 -m venv "${PLUGIN_ROOT}/venv"
-source "${PLUGIN_ROOT}/venv/bin/activate"
+python_version=$(python -c "import platform; print(platform.python_version_tuple()[0])")
+echo $python_version
+if [[ "${python_version}" == "2" ]]; then
+    venv_module="virtualenv"
+else
+    venv_module="venv"
+fi
 
-python3 -m pip install -r "${PLUGIN_ROOT}/python/requirements.txt"
-which python3
+python -m "${venv_module}" "${plugin_root}/venv"
 
-python3 "${PLUGIN_ROOT}/python/checkout.py"
+source "${plugin_root}/venv/bin/activate"
+which python
+
+python -m pip install -r "${plugin_root}/python/requirements.txt"
+
+python "${plugin_root}/python/checkout.py"
