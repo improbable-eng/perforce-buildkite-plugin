@@ -125,10 +125,12 @@ class P4Repo:
         with open(patched, 'r') as infile:
             return json.load(infile)
 
-    def _write_patched(self, files):
+    def _write_patched(self, files, merge=True):
         """Write a marker to track which files have been modified in the workspace"""
         patched = os.path.join(self.root, "patched.json")
-        content = list(set(files + self._read_patched())) # Combine and deduplicate
+        content = files
+        if merge:
+            content = list(set(files + self._read_patched())) # Combine and deduplicate
         with open(patched, 'w') as outfile:
             json.dump(content, outfile)
 
@@ -175,6 +177,7 @@ class P4Repo:
         patched = self._read_patched()
         if patched:
             self.perforce.run_clean(patched)
+            self._write_patched([], merge=False) # Clear patched file
 
     def unshelve(self, changelist):
         """Unshelve a pending change"""
