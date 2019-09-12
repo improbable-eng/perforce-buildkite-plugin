@@ -1,5 +1,28 @@
 #!/bin/bash
 set -eo pipefail
 
-python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
-python "${BASH_SOURCE%/*}/../python/checkout.py"
+plugin_root="${BASH_SOURCE%/*}/.."
+
+python_version=$(python -c "import platform; print(platform.python_version_tuple()[0])")
+if [[ "${python_version}" == "2" ]]; then
+    venv_module="virtualenv"
+else
+    venv_module="venv"
+fi
+
+venv_dir="${PWD}/../.perforce-plugin-venv"
+
+python -m pip install "${venv_module}"
+python -m "${venv_module}" "${venv_dir}"
+
+platform=$(python -c "import platform; print(platform.system())")
+if [[ "${platform}" == "Windows" ]]; then
+    venv_bin="${venv_dir}/Scripts"
+else
+    venv_bin="${venv_dir}/bin"
+fi
+
+
+"${venv_bin}/python" -m pip install -r "${plugin_root}/python/requirements.txt"
+
+"${venv_bin}/python" "${plugin_root}/python/checkout.py"

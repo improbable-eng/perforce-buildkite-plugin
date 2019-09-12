@@ -1,5 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
-python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
-python "${BASH_SOURCE%/*}/../python/pre-exit.py"
+plugin_root="${BASH_SOURCE%/*}/.."
+
+venv_dir="${PWD}/../.perforce-plugin-venv"
+
+platform=$(python -c "import platform; print(platform.system())")
+if [[ "${platform}" == "Windows" ]]; then
+    venv_bin="${venv_dir}/Scripts"
+else
+    venv_bin="${venv_dir}/bin"
+fi
+
+
+"${venv_bin}/python" "${plugin_root}/python/pre-exit.py"
