@@ -1,5 +1,12 @@
 #!/bin/bash
 set -eo pipefail
 
-python -m pip install -r "${BASH_SOURCE%/*}/../python/requirements.txt"
-python "${BASH_SOURCE%/*}/../python/checkout.py"
+PLUGIN_ROOT="${BASH_SOURCE%/*}/.."
+
+python3 -m venv "${PLUGIN_ROOT}/venv"
+source "${PLUGIN_ROOT}/venv/bin/activate"
+
+python3 -m pip install -r "${PLUGIN_ROOT}/python/requirements.txt"
+which python3
+
+python3 "${PLUGIN_ROOT}/python/checkout.py"
