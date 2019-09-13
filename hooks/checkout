@@ -10,7 +10,7 @@ else
     venv_module="venv"
 fi
 
-venv_dir="${PWD}/../.perforce-plugin-venv"
+venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv"
 
 python -m pip install "${venv_module}"
 python -m "${venv_module}" "${venv_dir}"
