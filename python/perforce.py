@@ -30,6 +30,8 @@ class P4Repo:
         self.parallel = parallel
 
         self.created_client = False
+        self.patchfile = os.path.join(self.root, 'patched.json')
+        self.p4config = os.path.join(self.root, 'p4config')
 
         self.perforce = P4()
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
@@ -89,12 +91,11 @@ class P4Repo:
         self.perforce.save_client(client)
         self.perforce.client = clientname
 
-        p4config = os.path.join(self.root, "p4config")
-        if not os.path.isfile(p4config):
+        if not os.path.isfile(self.p4config):
             self.perforce.logger.warn("p4config missing, flushing workspace to revision zero")
             self.perforce.run_flush(['//...@0'])
         else:
-            with open(p4config) as infile:
+            with open(self.p4config) as infile:
                 prev_clientname = next(line.split('=', 1)[-1]
                     for line in infile.read().splitlines() # removes \n
                     if line.startswith('P4CLIENT='))
@@ -114,24 +115,20 @@ class P4Repo:
         }
         if not os.path.exists(self.root):
             os.makedirs(self.root)
-        with open(os.path.join(self.root, "p4config"), 'w') as p4config:
+        with open(self.p4config, 'w') as p4config:
             p4config.writelines(["%s=%s\n" % (k, v) for k, v in config.items()])
 
     def _read_patched(self):
         """Read a marker to find which files have been modified in the workspace"""
-        patched = os.path.join(self.root, "patched.json")
-        if not os.path.exists(patched):
+        if not os.path.exists(self.patchfile):
             return []
-        with open(patched, 'r') as infile:
+        with open(self.patchfile, 'r') as infile:
             return json.load(infile)
 
-    def _write_patched(self, files, merge=True):
+    def _write_patched(self, files):
         """Write a marker to track which files have been modified in the workspace"""
-        patched = os.path.join(self.root, "patched.json")
-        content = files
-        if merge:
-            content = list(set(files + self._read_patched())) # Combine and deduplicate
-        with open(patched, 'w') as outfile:
+        content = list(set(files + self._read_patched())) # Combine and deduplicate
+        with open(self.patchfile, 'w') as outfile:
             json.dump(content, outfile)
 
     def clean(self):
@@ -177,7 +174,7 @@ class P4Repo:
         patched = self._read_patched()
         if patched:
             self.perforce.run_clean(patched)
-            self._write_patched([], merge=False) # Clear patched file
+            os.remove(self.patchfile)
 
     def unshelve(self, changelist):
         """Unshelve a pending change"""
