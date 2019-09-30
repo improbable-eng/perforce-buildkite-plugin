@@ -211,8 +211,6 @@ def test_p4print_unshelve():
         repo = P4Repo(root=client_root, stream='//stream-depot/main')
         repo.p4print_unshelve('3') # Modify a file
 
-
-
 def test_backup_shelve():
     """Test making a copy of a shelved changelist"""
     with setup_server_and_client() as client_root:
