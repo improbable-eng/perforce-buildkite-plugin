@@ -11,7 +11,7 @@ import json
 
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
-from P4 import P4, P4Exception, Progress  # pylint: disable=import-error
+from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
@@ -159,9 +159,10 @@ class P4Repo:
         self._setup_client()
         self.revert()
         result = self.perforce.run_sync(
-            '-q', '--parallel=threads=%s' % self.parallel,
+            '--parallel=threads=%s' % self.parallel,
             '%s%s' % (self.sync_paths, revision or ''),
-            progress=SyncProgress(self.perforce.logger))
+            handler=SyncOutput(self.perforce.logger),
+        )
         if result:
             self.perforce.logger.info("Synced %s files (%s)" % (
                 result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
@@ -249,27 +250,17 @@ class P4Repo:
         return backup_cl
 
 
-class SyncProgress(Progress):
-    """Log the number of synced files periodically"""
+class SyncOutput(OutputHandler):
+    """Log each synced file"""
     def __init__(self, logger):
-        Progress.__init__(self)
+        OutputHandler.__init__(self)
         self.logger = logger
     
-    def init(self, type):
-        Progress.init(self, type)
-    
-    def setDescription(self, description, units):
-        Progress.setDescription(self, description, units)
-    
-    def setTotal(self, total):
-        Progress.setTotal(self, total)
-    
-    def update(self, position):
-        Progress.update(self, position)
-        self.logger.info('Syncing file #%s...' % position)
-    
-    def done(self, fail):
-        Progress.done(self, fail)
+    def outputStat(self, stat):
+        if 'depotFile' in stat:
+            self.logger.info("%(depotFile)s#%(rev)s %(action)s" % stat)
+        return OutputHandler.REPORT
+
 
 def sizeof_fmt(num, suffix='B'):
     """Format bytes to human readable value"""
