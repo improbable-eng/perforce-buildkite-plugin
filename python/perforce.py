@@ -92,7 +92,7 @@ class P4Repo:
         self.perforce.client = clientname
 
         if not os.path.isfile(self.p4config):
-            self.perforce.logger.warn("p4config missing, flushing workspace to revision zero")
+            self.perforce.logger.warning("p4config missing, flushing workspace to revision zero")
             self.perforce.run_flush(['//...@0'])
         else:
             with open(self.p4config) as infile:
@@ -100,7 +100,7 @@ class P4Repo:
                     for line in infile.read().splitlines() # removes \n
                     if line.startswith('P4CLIENT='))
                 if prev_clientname != clientname:
-                    self.perforce.logger.warn("p4config last client was %s, flushing workspace to match" % prev_clientname)
+                    self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
                     self.perforce.run_flush(['//...@%s' % prev_clientname])
 
         self._write_p4config()
