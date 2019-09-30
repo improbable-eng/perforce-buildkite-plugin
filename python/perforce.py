@@ -215,10 +215,11 @@ class P4Repo:
         printinfo = self.perforce.run_print(shelved_depotfiles)
 
         # coerce [info, content, info, content]
-        # into {depotpath: content, depotpath: content}
+        # into {localpath: content, localpath: content}
         local_to_content = {depot_to_local[fileinfo['depotFile']]: (fileinfo, content)
                             for fileinfo, content in
-                            zip(printinfo[0::2], printinfo[1::2])}
+                            zip(printinfo[0::2], printinfo[1::2])
+                            if fileinfo['depotFile'] in depot_to_local}
 
         # Flag these files as modified
         self._write_patched(list(local_to_content.keys()))
