@@ -207,6 +207,11 @@ def test_p4print_unshelve():
             assert content.read() == "Hello World\n", "Unexpected content in workspace file"
         assert not os.path.exists(os.path.join(client_root, "newfile.txt"))
 
+        # Shelved changes containing files not mapped into this workspace do not throw an exception
+        repo = P4Repo(root=client_root, stream='//stream-depot/main')
+        repo.p4print_unshelve('3') # Modify a file
+
+
 
 def test_backup_shelve():
     """Test making a copy of a shelved changelist"""
