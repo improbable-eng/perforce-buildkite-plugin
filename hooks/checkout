@@ -5,7 +5,7 @@ plugin_root="${BASH_SOURCE%/*}/.."
 
 venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv"
 
-python -m pip install virtualenv==16.7.5
+python -m pip install virtualenv==16.7.7
 python -m virtualenv "${venv_dir}"
 
 platform=$(python -c "import platform; print(platform.system())")
