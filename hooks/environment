@@ -1,8 +1,2 @@
 # Allow steps to pick up perforce configuration used by the plugin
 export P4CONFIG=p4config
-
-python_version=$(python -c "import platform; print(platform.python_version_tuple()[0])")
-if [[ "${python_version}" == "2" ]]; then
-    echo "Error: Python $python_version not supported. Python 3.6 is recommended" >&2
-    exit 1
-fi

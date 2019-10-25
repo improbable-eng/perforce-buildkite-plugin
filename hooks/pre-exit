@@ -5,7 +5,7 @@ plugin_root="${BASH_SOURCE%/*}/.."
 
 venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv"
 
-platform=$(python -c "import platform; print(platform.system())")
+platform=$(python3 -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
     venv_bin="${venv_dir}/Scripts"
 else
@@ -13,4 +13,4 @@ else
 fi
 
 
-"${venv_bin}/python" "${plugin_root}/python/pre-exit.py"
+"${venv_bin}/python3" "${plugin_root}/python/pre-exit.py"
