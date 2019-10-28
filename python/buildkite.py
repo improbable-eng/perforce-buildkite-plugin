@@ -2,6 +2,7 @@
 Interact with buildkite as part of plugin hooks
 """
 import os
+import sys
 import subprocess
 from datetime import datetime
 
@@ -54,7 +55,7 @@ def get_metadata(key):
         return None
 
     if subprocess.call(['buildkite-agent', 'meta-data', 'exists', key]) == 0:
-        return subprocess.check_output(['buildkite-agent', 'meta-data', 'get',  key])
+        return subprocess.check_output(['buildkite-agent', 'meta-data', 'get',  key]).decode(sys.stdout.encoding)
 
 def set_metadata(key, value, overwrite=False):
     """ Set metadata in buildkite for a given key. Optionally overwrite existing data.
