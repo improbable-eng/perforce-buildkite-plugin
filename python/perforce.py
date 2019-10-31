@@ -212,29 +212,14 @@ class P4Repo:
         whereinfo = self.perforce.run_where(depotfiles)
         depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
         
-        shelved_depotfiles = [file + '@=' + changelist for file in depotfiles]
-        printinfo = self.perforce.run_print(shelved_depotfiles)
-
-        # coerce [info, content, info, content]
-        # into {localpath: content, localpath: content}
-        local_to_content = {depot_to_local[fileinfo['depotFile']]: (fileinfo, content)
-                            for fileinfo, content in
-                            zip(printinfo[0::2], printinfo[1::2])
-                            if fileinfo['depotFile'] in depot_to_local}
-
         # Flag these files as modified
-        self._write_patched(list(local_to_content.keys()))
+        self._write_patched(list(depot_to_local.values()))
 
-        for localfile, (fileinfo, content) in local_to_content.items():
+        for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            if content:
-                if not os.path.exists(os.path.dirname(localfile)):
-                    os.makedirs(os.path.dirname(localfile))
-                mode = 'wb' if 'binary' in fileinfo['type'] else 'w'
-                with open(localfile, mode=mode) as outfile:
-                    outfile.write(content)
+            self.perforce.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
