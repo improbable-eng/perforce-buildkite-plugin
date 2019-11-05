@@ -86,13 +86,27 @@ steps:
 
 ## Triggering Builds
 
-There are a few options for triggering builds that use this plugin, in this order from least valuable but most convenient to most valueable but least convenient.
+There are a few options for triggering builds that use this plugin, in this order from least valuable but most convenient to most valuable but least convenient.
 
-A. Schedule builds with a cron in buildkite - this requires no additional setup, but provides the worst reponse time as changes are made
+### Manual
 
-B. A service polls your perforce for the current head revision and POSTs to the Buildkite API to trigger builds for any new changes. Note that you will need to store state to avoid duplicate and skipped builds.
+Relies on people within your team manually clicking `New Build` within the BuildKite UI.
 
-C. Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [p4 triggers](https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/p4_triggers.html) for more information. Note that this will require admin access to the Perforce server.
+* To build current head revision on the server - accept the defaults.
+* To build a specific revision - paste the revision number into the `Commit` textbox.
+* To build a shelved changelist - paste your changelist number into the `Branch` textbox.
+
+### Schedule
+
+Schedule builds with a cron in buildkite - this requires no additional setup, but provides the worst response time as changes are made
+
+### Polling
+
+A service polls your perforce for the current head revision and POSTs to the Buildkite API to trigger builds for any new changes. Note that you will need to store state to avoid duplicate and skipped builds.
+
+### `p4 trigger`
+
+Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [p4 triggers](https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/p4_triggers.html) for more information. Note that this will require admin access to the Perforce server.
 
 ## Contributing
 
