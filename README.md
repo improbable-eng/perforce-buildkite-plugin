@@ -98,7 +98,7 @@ Relies on people within your team manually clicking `New Build` within the Build
 
 ### Schedule
 
-Schedule builds with a cron in buildkite - this requires no additional setup, but provides the worst reponse time as changes are made
+Schedule builds with a cron in buildkite - this requires no additional setup, but provides the worst response time as changes are made
 
 ### Polling
 
