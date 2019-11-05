@@ -94,7 +94,7 @@ Relies on people within your team manually clicking `New Build` within the Build
 
 * To build current head revision on the server - accept the defaults.
 * To build a specific revision - paste the revision number into the `Commit` textbox.
-* To build a Shelf Set (pending Change List) - paste your revision to the `Branch` textbox.
+* To build a shelved changelist - paste your changelist number into the `Branch` textbox.
 
 ### Schedule
 
