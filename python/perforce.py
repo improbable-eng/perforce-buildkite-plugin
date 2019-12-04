@@ -148,7 +148,7 @@ class P4Repo:
 
     def head(self):
         """Get current head revision for the current stream"""
-        if stream:
+        if self.stream:
             return self.perforce.run("changes","-m","1","-s","-submitted", "{}".format(self.stream + '/...'))[0]['change']
         return self.perforce.run_counter("maxCommitChange")[0]['value']
 
