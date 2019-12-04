@@ -102,6 +102,13 @@ def test_fixture(capsys):
     # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
 
+def test_head():
+    """Check that the head() function works properly with/out a None stream"""
+    with setup_server_and_client() as client_root:
+        repo = P4Repo(root=client_root, stream='main')
+        assert repo.head() == "2", "Must refer to client {}".format(repo.client[0]['Client'])
+
+
 def test_checkout():
     """Test normal flow of checking out files"""
     with setup_server_and_client() as client_root:
