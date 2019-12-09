@@ -248,3 +248,16 @@ def test_client_migration():
             repo = P4Repo(root=second_client_root)
             synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
             assert synced == [], "Should not have synced any files in second client"
+
+
+def test_live_server():
+    """Reproduce issues quickly by writing tests which run against a real server"""
+    os.environ["P4USER"] = "carljohnson"
+    os.environ["P4PORT"] = "ssl:perforce.corp.i8e.io:1666"
+    root = "/Users/carl/bk-test"
+    repo = P4Repo(root=root, stream="//nwx/buildkite")
+    repo.p4print_unshelve("28859")
+    # Profiled at 859s (15m)
+    # Second run:  764s (13m)
+    # Third run: 45s (17x)
+

@@ -215,11 +215,37 @@ class P4Repo:
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
+        def run_in_parallel(*fns):
+            from multiprocessing import Process
+            proc = []
+            for fn in fns:
+                p = Process(target=fn)
+                p.start()
+                proc.append(p)
+            for p in proc:
+                p.join()
+
+        import functools
+        fns = []
+        ct = 2
         for depotfile, localfile in depot_to_local.items():
+            ct -= 1
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            self.perforce.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
+            def f(localfile, depotfile, changelist):
+                p4_conn = P4()
+                p4_conn.exception_level = 1  # Only errors are raised as exceptions
+                p4_conn.logger = self.perforce.logger
+                p4_conn.connect()
+                p4_conn.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
+            fns.append(functools.partial(f, localfile, depotfile, changelist))
+            if ct == 0:
+                break
+
+        run_in_parallel(*fns)
+        print("done")
+        
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
