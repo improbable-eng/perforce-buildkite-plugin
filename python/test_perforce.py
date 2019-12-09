@@ -108,7 +108,10 @@ def test_head():
     assert repo.head() == "2", "Unexpected HEAD revision for stream"
 
     repo = P4Repo()
-    assert repo.head() == "6", "Unexpected HEAD revision"
+    assert repo.head() == "6", "Unexpected global HEAD revision"
+
+    repo = P4Repo(stream='//stream-depot/idontexist')
+    assert repo.head() == "6", "Non-existent stream should fallback to global HEAD revision"
 
 def test_checkout():
     """Test normal flow of checking out files"""
