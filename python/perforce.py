@@ -147,7 +147,7 @@ class P4Repo:
         return self.perforce.run_info()[0]
 
     def head(self):
-        """Get current head revision for the current stream"""
+        """Get current head revision"""
         if self.stream is not None:
             stream_head = self.perforce.run_changes([
                 '-m', '1', '-s', 'submitted', '%s/...' % self.stream])
