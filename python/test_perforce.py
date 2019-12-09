@@ -104,14 +104,16 @@ def test_fixture(capsys):
 def test_head():
     """Test resolve of HEAD changelist"""
     setup_server(from_zip='server.zip')
-    repo = P4Repo(stream='//stream-depot/main')
-    assert repo.head() == "2", "Unexpected HEAD revision for stream"
 
     repo = P4Repo()
     assert repo.head() == "6", "Unexpected global HEAD revision"
 
+    repo = P4Repo(stream='//stream-depot/main')
+    assert repo.head() == "2", "Unexpected HEAD revision for stream"
+
     repo = P4Repo(stream='//stream-depot/idontexist')
-    assert repo.head() == "6", "Non-existent stream should fallback to global HEAD revision"
+    with pytest.raises(Exception, match=r"Stream '//stream-depot/idontexist' doesn't exist."):
+        repo.head()
 
 def test_checkout():
     """Test normal flow of checking out files"""
