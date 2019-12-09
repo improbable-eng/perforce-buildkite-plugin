@@ -93,7 +93,6 @@ def test_fixture(capsys):
     # Returns [metadata, contents]
     content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
-    assert repo.head() == "2", "Unexpected head revision"
 
     shelved_change = repo.perforce.run_describe('-sS', '3')
     assert len(shelved_change) > 0, "Shelved changelist was missing"
@@ -103,11 +102,13 @@ def test_fixture(capsys):
     # store_server(repo, 'new_server.zip')
 
 def test_head():
-    """Check that the head() function works properly with/out a None stream"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root, stream='main')
-        assert repo.head() == "2", "Must refer to client {}".format(repo.client[0]['Client'])
+    """Test resolve of HEAD changelist"""
+    setup_server(from_zip='server.zip')
+    repo = P4Repo(stream='//stream-depot/main')
+    assert repo.head() == "2", "Unexpected HEAD revision for stream"
 
+    repo = P4Repo()
+    assert repo.head() == "6", "Unexpected HEAD revision"
 
 def test_checkout():
     """Test normal flow of checking out files"""
