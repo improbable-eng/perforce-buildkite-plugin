@@ -148,6 +148,11 @@ class P4Repo:
 
     def head(self):
         """Get current head revision"""
+        if self.stream is not None:
+            stream_head = self.perforce.run_changes([
+                '-m', '1', '-s', 'submitted', '%s/...' % self.stream])
+            if stream_head:
+                return stream_head[0]['change']
         return self.perforce.run_counter("maxCommitChange")[0]['value']
 
     def description(self, changelist):

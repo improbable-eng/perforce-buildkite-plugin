@@ -93,7 +93,6 @@ def test_fixture(capsys):
     # Returns [metadata, contents]
     content = repo.perforce.run_print("//depot/file.txt")[1]
     assert content == "Hello World\n"
-    assert repo.head() == "2", "Unexpected head revision"
 
     shelved_change = repo.perforce.run_describe('-sS', '3')
     assert len(shelved_change) > 0, "Shelved changelist was missing"
@@ -101,6 +100,18 @@ def test_fixture(capsys):
     # To change the fixture server, uncomment the next line and put a breakpoint on it.
     # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
+
+def test_head():
+    """Test resolve of HEAD changelist"""
+    setup_server(from_zip='server.zip')
+    repo = P4Repo(stream='//stream-depot/main')
+    assert repo.head() == "2", "Unexpected HEAD revision for stream"
+
+    repo = P4Repo()
+    assert repo.head() == "6", "Unexpected global HEAD revision"
+
+    repo = P4Repo(stream='//stream-depot/idontexist')
+    assert repo.head() == "6", "Non-existent stream should fallback to global HEAD revision"
 
 def test_checkout():
     """Test normal flow of checking out files"""
