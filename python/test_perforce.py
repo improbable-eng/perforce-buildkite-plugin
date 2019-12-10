@@ -257,11 +257,3 @@ def test_live_server():
     root = "/Users/carl/p4-test-client"
     repo = P4Repo(root=root)
     repo.p4print_unshelve("28859")
-    # Profiled at 859s (15m)
-    # Second run:  764s (13m)
-    # Third run: 45s (17x)
-
-
-
-
-
