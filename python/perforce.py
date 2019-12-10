@@ -8,14 +8,10 @@ import logging
 import sys
 import stat
 import json
-import functools
-from multiprocessing import Process
-from threading import Lock
 
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
 from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
-
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
