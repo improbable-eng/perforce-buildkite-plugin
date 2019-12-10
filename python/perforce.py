@@ -8,10 +8,14 @@ import logging
 import sys
 import stat
 import json
+import functools
+from multiprocessing import Process
+from threading import Lock
 
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
 from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
+
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
@@ -198,6 +202,40 @@ class P4Repo:
 
         self.perforce.run_unshelve('-s', changelist)
 
+    def run_parallel_p4_cmds(self, cmds, max_connections=1):
+        # Init connection pool
+        max_conns = min(max_connections, len(cmds))
+        mutex = Lock()
+        conns = []
+        for _ in range(max_conns):
+            p4_conn = P4()
+            p4_conn.exception_level = 1  # Only errors are raised as exceptions
+            p4_conn.logger = self.perforce.logger
+            p4_conn.connect()
+            conns.append(p4_conn)
+
+        # Acquire connection and run cmd
+        def run(*args):
+            conn = None
+            while conn is None:
+                if mutex.acquire(timeout=1):
+                    conn = conns.pop()
+                    mutex.release()
+            try:
+                print(args)
+                conn.run(*args)
+            finally:
+                with mutex:
+                    conns.append(conn)
+
+        proc = []
+        for cmd in cmds:
+            p = Process(target=run, args=cmd)
+            p.start()
+            proc.append(p)
+        for p in proc:
+            p.join()
+
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
         self._setup_client()
@@ -215,36 +253,24 @@ class P4Repo:
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
-        def run_in_parallel(*fns):
-            from multiprocessing import Process
-            proc = []
-            for fn in fns:
-                p = Process(target=fn)
-                p.start()
-                proc.append(p)
-            for p in proc:
-                p.join()
 
-        import functools
+    
         fns = []
-        ct = 2
         for depotfile, localfile in depot_to_local.items():
-            ct -= 1
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            def f(localfile, depotfile, changelist):
-                p4_conn = P4()
-                p4_conn.exception_level = 1  # Only errors are raised as exceptions
-                p4_conn.logger = self.perforce.logger
-                p4_conn.connect()
-                p4_conn.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
-            fns.append(functools.partial(f, localfile, depotfile, changelist))
-            if ct == 0:
-                break
+            # def f(localfile, depotfile, changelist):
+            #     p4_conn = P4()
+            #     p4_conn.exception_level = 1  # Only errors are raised as exceptions
+            #     p4_conn.logger = self.perforce.logger
+            #     p4_conn.connect()
+            #     p4_conn.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
+            # fns.append(functools.partial(f, localfile, depotfile, changelist))
+            fns.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
-        run_in_parallel(*fns)
-        print("done")
+        self.run_parallel_p4_cmds(fns)
+
         
 
     def backup(self, changelist):
