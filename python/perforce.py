@@ -202,39 +202,18 @@ class P4Repo:
 
         self.perforce.run_unshelve('-s', changelist)
 
-    def run_parallel_p4_cmds(self, cmds, max_connections=1):
-        # Init connection pool
-        max_conns = min(max_connections, len(cmds))
-        mutex = Lock()
-        conns = []
-        for _ in range(max_conns):
-            p4_conn = P4()
-            p4_conn.exception_level = 1  # Only errors are raised as exceptions
-            p4_conn.logger = self.perforce.logger
-            p4_conn.connect()
-            conns.append(p4_conn)
-
-        # Acquire connection and run cmd
+    def run_parallel_cmds(self, cmds, max_parallel=10):
         def run(*args):
-            conn = None
-            while conn is None:
-                if mutex.acquire(timeout=1):
-                    conn = conns.pop()
-                    mutex.release()
-            try:
-                print(args)
-                conn.run(*args)
-            finally:
-                with mutex:
-                    conns.append(conn)
+            """Acquire new connection and run p4 cmd"""
+            perforce = P4()
+            perforce.exception_level = self.perforce.exception_level
+            perforce.logger = self.perforce.logger
+            perforce.connect()
+            perforce.run(*args)
 
-        proc = []
-        for cmd in cmds:
-            p = Process(target=run, args=cmd)
-            p.start()
-            proc.append(p)
-        for p in proc:
-            p.join()
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+            executor.map(run, cmds)
 
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
@@ -253,25 +232,21 @@ class P4Repo:
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
-
-    
-        fns = []
+        cmds = []
         for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            # def f(localfile, depotfile, changelist):
-            #     p4_conn = P4()
-            #     p4_conn.exception_level = 1  # Only errors are raised as exceptions
-            #     p4_conn.logger = self.perforce.logger
-            #     p4_conn.connect()
-            #     p4_conn.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
-            # fns.append(functools.partial(f, localfile, depotfile, changelist))
-            fns.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+            cmds.append('print', '-o', localfile, '%s@=%s' % (depotfile, changelist))
 
-        self.run_parallel_p4_cmds(fns)
+        self.run_parallel_cmds(cmds, max_parallel=40)
+        # 160s with (10threads?)
+        # 108s with (25 threads?)
+        # ?? with 40
+        # ?? with 100
 
-        
+
+
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
