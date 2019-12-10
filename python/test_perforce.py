@@ -261,3 +261,12 @@ def test_client_migration():
             repo = P4Repo(root=second_client_root)
             synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
             assert synced == [], "Should not have synced any files in second client"
+
+
+# def test_live_server():
+#     """Reproduce production issues quickly by writing tests which run against a real server"""
+#     os.environ["P4USER"] = "carljohnson"
+#     os.environ["P4PORT"] = "ssl:live-server:1666"
+#     root = "/Users/carl/p4-test-client"
+#     repo = P4Repo(root=root)
+#     repo.p4print_unshelve("28859")

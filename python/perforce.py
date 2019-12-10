@@ -204,6 +204,19 @@ class P4Repo:
 
         self.perforce.run_unshelve('-s', changelist)
 
+    def run_parallel_cmds(self, cmds, max_parallel=20):
+        def run(*args):
+            """Acquire new connection and run p4 cmd"""
+            perforce = P4()
+            perforce.exception_level = self.perforce.exception_level
+            perforce.logger = self.perforce.logger
+            perforce.connect()
+            perforce.run(*args)
+
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+            executor.map(run, cmds)
+
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
         self._setup_client()
@@ -221,11 +234,14 @@ class P4Repo:
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
+        cmds = []
         for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            self.perforce.run_print('-o', localfile, '%s@=%s' % (depotfile, changelist))
+            cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+
+        self.run_parallel_cmds(cmds)
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
