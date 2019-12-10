@@ -202,7 +202,7 @@ class P4Repo:
 
         self.perforce.run_unshelve('-s', changelist)
 
-    def run_parallel_cmds(self, cmds, max_parallel=10):
+    def run_parallel_cmds(self, cmds, max_parallel=20):
         def run(*args):
             """Acquire new connection and run p4 cmd"""
             perforce = P4()
@@ -237,16 +237,9 @@ class P4Repo:
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            cmds.append('print', '-o', localfile, '%s@=%s' % (depotfile, changelist))
+            cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
-        self.run_parallel_cmds(cmds, max_parallel=40)
-        # 160s with (10threads?)
-        # 108s with (25 threads?)
-        # ?? with 40
-        # ?? with 100
-
-
-
+        self.run_parallel_cmds(cmds)
 
     def backup(self, changelist):
         """Make a copy of a shelved change"""
