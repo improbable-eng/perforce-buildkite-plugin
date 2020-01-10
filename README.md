@@ -114,6 +114,7 @@ Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [
 
 Run `dev/setup_env_osx.sh`
 Python [virtualenv](https://docs.python.org/3/tutorial/venv.html) `.dev-venv` for running tests will be created at repo root.
+Run the `test_fixture` unit test to check everything is setup correctly: `pytest test_perforce.py -k test_fixture`
 
 ### Linux/Windows
 
