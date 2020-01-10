@@ -4,6 +4,7 @@ __pycache__/
 .buildkite/plugins
 .vscode
 .pytest_cache
+.dev-venv
 
 p4_workspace
 python/fixture/server
