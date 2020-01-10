@@ -110,15 +110,24 @@ Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [
 
 ## Contributing
 
-1. Install python/requirements.txt
-2. Make sure `p4d` is in your `PATH`
-3. Make sure your version of `bk` supports `bk local run`
+### OSX
+
+Run `dev/setup_env_osx.sh`
+Python [virtualenv](https://docs.python.org/3/tutorial/venv.html) `.dev-venv` for running tests will be created at repo root.
+
+### Linux/Windows
+
+TBC, feedback welcome
+
+### Suggested workflow
 
 Making changes to `python/`
-* Write unit tests
+
+* Write unit test in test_perforce.py
 * Implement new functionality
-* Iterate via python unit tests
+* Iterate via unit test
 
 Making changes to `hooks/` and scripts called by hooks
-* Add entries to local-pipeline.yml to test new behaviour, if relevant.
+
+* Add entries to local-pipeline.yml to test new behaviour, if relevant
 * `make` to start p4d on localhost:1666, vendor the plugin, run the pipeline and kill p4d.
