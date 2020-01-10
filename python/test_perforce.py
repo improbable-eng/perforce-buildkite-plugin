@@ -98,6 +98,7 @@ def test_fixture(capsys):
     assert len(shelved_change) > 0, "Shelved changelist was missing"
     assert shelved_change[0]['depotFile'] ==  ['//depot/file.txt'], "Unexpected files in shelved changelist"
     # To change the fixture server, uncomment the next line and put a breakpoint on it.
+    # Log in using details printed to stdout (port/user)
     # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
 
