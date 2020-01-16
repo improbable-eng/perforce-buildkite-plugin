@@ -10,7 +10,7 @@ The P4CLIENT, P4USER and P4PORT used by the plugin are written to a [P4CONFIG](h
 
 ## Examples
 
-Configuration via env vars:
+### Configuration via env vars:
 
 ```yaml
 env:
@@ -22,7 +22,7 @@ steps:
     - ca-johnson/perforce: ~
 ```
 
-Configuration via the plugin:
+### Configuration via the plugin:
 
 ```yaml
 steps:
@@ -34,7 +34,7 @@ steps:
 
 `P4PORT` may also be configured by setting `BUILDKITE_REPO` for your pipeline.
 
-Custom workspace view:
+### Custom workspace view:
 
 ```yaml
 steps:
@@ -45,7 +45,7 @@ steps:
         //dev/vendor/... vendor/...
 ```
 
-Workspace view via a p4 stream:
+### Workspace view via a p4 stream:
 
 ```yaml
 steps:
@@ -54,7 +54,7 @@ steps:
           stream: //dev/minimal
 ```
 
-Partial sync of a stream
+### Partial sync of a stream
 
 ```yaml
 steps:
@@ -64,7 +64,7 @@ steps:
           sync: //dev/minimal/.buildkite/...
 ```
 
-Enable parallel sync
+### Enable parallel sync
 
 ```yaml
 steps:
@@ -73,7 +73,9 @@ steps:
           parallel: 16
 ```
 
-Share a stream workspace between pipelines. Useful to avoid syncing duplicate data with large workspaces.
+### Share a stream workspace between pipelines.
+
+Useful to avoid syncing duplicate data with large workspaces.
 Only allowed when there is a single buildkite agent running on the machine.
 
 ```yaml
