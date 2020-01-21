@@ -5,10 +5,10 @@ plugin_root="${BASH_SOURCE%/*}/.."
 
 venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv"
 
-python3 -m pip install virtualenv==16.7.7
-python3 -m virtualenv "${venv_dir}"
+python -m pip install virtualenv==16.7.7
+python -m virtualenv "${venv_dir}"
 
-platform=$(python3 -c "import platform; print(platform.system())")
+platform=$(python -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
     venv_bin="${venv_dir}/Scripts"
 else
