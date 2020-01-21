@@ -89,18 +89,78 @@ def test_fixture(capsys):
     repo = P4Repo()
     assert repo.info()['serverAddress'] == port
 
-    # There should be a sample file checked into the fixture server
-    # Returns [metadata, contents]
-    content = repo.perforce.run_print("//depot/file.txt")[1]
-    assert content == "Hello World\n"
+    # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
+    # Run unit tests in the debugger and hit the breakpoint
+    # Log in using details printed to stdout (port/user) via p4v or the command line
+    # Make changes to the p4 server
+    # Continue exection so that the 'store_server' line executes
+    # Replace server.zip with new_server.zip
+    # Update validation code below to document the new server contents
 
-    shelved_change = repo.perforce.run_describe('-sS', '3')
-    assert len(shelved_change) > 0, "Shelved changelist was missing"
-    assert shelved_change[0]['depotFile'] ==  ['//depot/file.txt'], "Unexpected files in shelved changelist"
-    # To change the fixture server, uncomment the next line and put a breakpoint on it.
-    # Log in using details printed to stdout (port/user)
-    # Make changes to the p4 server then check in the new server.zip
     # store_server(repo, 'new_server.zip')
+    
+    # Validate contents of server fixture @HEAD
+    depotfiles = [info['depotFile'] for info in repo.perforce.run_files('//...')]
+    depotfile_to_content = {depotfile: repo.perforce.run_print(depotfile)[1] for depotfile in depotfiles}
+    assert depotfile_to_content == {
+        "//depot/file.txt": "Hello World\n",
+        "//stream-depot/main/file.txt": "Hello Stream World\n"
+    }
+
+    # Check submitted changes
+    submitted_changes = [change for change in repo.perforce.run_changes('-s', 'submitted')]
+    submitted_changeinfo = {change["change"]: repo.perforce.run_describe(change["change"])[0] for change in submitted_changes}
+    # Filter info to only contain relevant keys for submitted changes
+    submitted_changeinfo = {
+        change: {key: info.get(key) 
+                 for key in ['depotFile', 'desc', 'action']} 
+                 for change, info in submitted_changeinfo.items()
+    }
+    assert submitted_changeinfo == {
+        '1' :{
+            'action': ['add'],
+            'depotFile': ['//depot/file.txt'],
+            'desc': 'Initial Commit'
+        },
+        '2' :{
+            'action': ['add'],
+            'depotFile': ['//stream-depot/main/file.txt'],
+            'desc': 'Initial Commit to Stream\n'
+        },
+        '6' :{
+            'action': ['edit'],
+            'depotFile': ['//depot/file.txt'],
+            'desc': 'modify //depot/file.txt\n'
+        },
+    }
+
+    # Check shelved changes
+    shelved_changes = [change for change in repo.perforce.run_changes('-s', 'pending')]
+    shelved_changeinfo = {change["change"]: repo.perforce.run_describe('-S', change["change"])[0] for change in shelved_changes}
+    # Filter info to only contain relevant keys for submitted changes
+    shelved_changeinfo = {
+        change: {key: info.get(key) 
+                 for key in ['depotFile', 'desc', 'action']} 
+                 for change, info in shelved_changeinfo.items()
+    }
+    assert shelved_changeinfo == {
+        '3' :{
+            'action': ['edit'],
+            'depotFile': ['//depot/file.txt'],
+            'desc': 'Modify file in shelved change\n',
+            # Change content from 'Hello World\n' to 'Goodbye World\n'
+        },
+        '4' :{
+            'action': ['delete'],
+            'depotFile': ['//depot/file.txt'],
+            'desc': 'Delete file in shelved change\n',
+        },
+        '5' :{
+            'action': ['add'],
+            'depotFile': ['//depot/newfile.txt'],
+            'desc': 'Add file in shelved change\n',
+        },
+    }
 
 def test_head():
     """Test resolve of HEAD changelist"""
