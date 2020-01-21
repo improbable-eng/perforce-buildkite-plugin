@@ -19,7 +19,7 @@ env:
 
 steps:
   plugins:
-    - ca-johnson/perforce: ~
+    - improbable-eng/perforce: ~
 ```
 
 ### Configuration via the plugin:
@@ -27,7 +27,7 @@ steps:
 ```yaml
 steps:
   plugins:
-    - ca-johnson/perforce:
+    - improbable-eng/perforce:
       p4port: perforce:1666
       p4user: username
 ```
@@ -39,7 +39,7 @@ steps:
 ```yaml
 steps:
   plugins:
-    - ca-johnson/perforce:
+    - improbable-eng/perforce:
       view: >-
         //dev/project/... project/...
         //dev/vendor/... vendor/...
@@ -50,7 +50,7 @@ steps:
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           stream: //dev/minimal
 ```
 
@@ -59,7 +59,7 @@ steps:
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           stream: //dev/minimal
           sync: //dev/minimal/.buildkite/...
 ```
@@ -69,7 +69,7 @@ steps:
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           parallel: 16
 ```
 
@@ -81,7 +81,7 @@ Only allowed when there is a single buildkite agent running on the machine.
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           stream: //dev/buildkite
           share_workspace: true
 ```
