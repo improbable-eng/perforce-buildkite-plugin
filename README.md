@@ -1,4 +1,4 @@
-# Perforce Buildkite Plugin [![Build Status](https://travis-ci.com/ca-johnson/perforce-buildkite-plugin.svg?branch=master)](https://travis-ci.com/ca-johnson/perforce-buildkite-plugin)
+# Perforce Buildkite Plugin [![Build Status](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin.svg?branch=master)](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin)
 
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core)
 
@@ -10,7 +10,7 @@ The P4CLIENT, P4USER and P4PORT used by the plugin are written to a [P4CONFIG](h
 
 ## Examples
 
-Configuration via env vars:
+### Configuration via env vars:
 
 ```yaml
 env:
@@ -19,67 +19,71 @@ env:
 
 steps:
   plugins:
-    - ca-johnson/perforce: ~
+    - improbable-eng/perforce: ~
 ```
 
-Configuration via the plugin:
+### Configuration via the plugin:
 
 ```yaml
 steps:
   plugins:
-    - ca-johnson/perforce:
+    - improbable-eng/perforce:
       p4port: perforce:1666
       p4user: username
 ```
 
 `P4PORT` may also be configured by setting `BUILDKITE_REPO` for your pipeline.
 
-Custom workspace view:
+### Custom workspace view:
+
+Note that this must consist of real depot paths like a regular worspace view. You cannot combine streams.
 
 ```yaml
 steps:
   plugins:
-    - ca-johnson/perforce:
+    - improbable-eng/perforce:
       view: >-
         //dev/project/... project/...
         //dev/vendor/... vendor/...
 ```
 
-Workspace view via a p4 stream:
+### Workspace view via a p4 stream:
 
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           stream: //dev/minimal
 ```
 
-Partial sync of a stream
+### Partial sync of a stream
 
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           stream: //dev/minimal
           sync: //dev/minimal/.buildkite/...
 ```
 
-Enable parallel sync
+### Enable parallel sync
 
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           parallel: 16
 ```
 
-Share a stream workspace between pipelines. Useful to avoid syncing duplicate data with large workspaces.
+### Share a stream workspace between pipelines.
+
+Useful to avoid syncing duplicate data with large workspaces.
 Only allowed when there is a single buildkite agent running on the machine.
 
 ```yaml
 steps:
     plugins:
-      - ca-johnson/perforce:
+      - improbable-eng/perforce:
           stream: //dev/buildkite
           share_workspace: true
 ```
@@ -113,7 +117,9 @@ Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [
 ### OSX
 
 Run `dev/setup_env_osx.sh`
+
 Python [virtualenv](https://docs.python.org/3/tutorial/venv.html) `.dev-venv` for running tests will be created at repo root.
+
 Run the `test_fixture` unit test to check everything is setup correctly: `pytest test_perforce.py -k test_fixture`
 
 ### Linux/Windows
