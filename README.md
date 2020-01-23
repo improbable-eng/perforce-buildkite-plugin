@@ -36,6 +36,8 @@ steps:
 
 ### Custom workspace view:
 
+Note that this must consist of real depot paths like a regular worspace view. You cannot combine streams.
+
 ```yaml
 steps:
   plugins:
