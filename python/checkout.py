@@ -19,8 +19,8 @@ def main():
     repo = P4Repo(**config)
 
     revision = get_build_revision()
-    if revision == 'HEAD':
-        # Resolve HEAD to a concrete revision
+    if not revision.isdigit():
+        # Resolve 'HEAD' or ignore git sha and find a concrete revision
         revision = repo.head()
         set_build_revision(revision)
 
