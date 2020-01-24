@@ -7,7 +7,7 @@ venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv"
 
 # Try to use explicit python3 if its installed
 python_bin="python3"
-if ! command -v ${python_bin} >/dev/null 2>&1 then
+if ! [[ -x "$(command -v ${python_bin})" ]]; then
     python_bin="python"
 fi
 
