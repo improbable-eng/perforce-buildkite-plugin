@@ -93,7 +93,7 @@ def test_fixture(capsys):
     # Run unit tests in the debugger and hit the breakpoint
     # Log in using details printed to stdout (port/user) via p4v or the command line
     # Make changes to the p4 server
-    # Continue exection so that the 'store_server' line executes
+    # Continue execution so that the 'store_server' line executes
     # Replace server.zip with new_server.zip
     # Update validation code below to document the new server contents
 
