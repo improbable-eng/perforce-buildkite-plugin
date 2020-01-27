@@ -192,16 +192,6 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
-        # Reject exclusive lock files for now
-        modifiers = [filetype.split('+')[1]
-                     for filetype in changeinfo['type']
-                     if '+' in filetype]
-        if any('l' in modifier for modifier in modifiers):
-            raise Exception(
-                'You cannot run a presubmit test with exclusive lock files (+l) at this time\n'
-                'See https://github.com/ca-johnson/perforce-buildkite-plugin/issues/102 for latest status\n')
-
-
         self.perforce.run_unshelve('-s', changelist)
 
     def run_parallel_cmds(self, cmds, max_parallel=20):
