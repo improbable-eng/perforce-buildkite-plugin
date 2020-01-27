@@ -218,7 +218,9 @@ class P4Repo:
             executor.map(run, cmds)
 
     def p4print_unshelve(self, changelist):
-        """Unshelve a pending change by p4printing the contents into a file"""
+        """ Unshelve a pending change by p4printing the contents into a file
+            Necessary to prevent build machines holding the lock on exclusive-checkout files
+        """
         self._setup_client()
 
         changeinfo = self.perforce.run_describe('-S', changelist)
@@ -241,6 +243,7 @@ class P4Repo:
                 os.unlink(localfile)
             cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
+        # Significantly improves performance on changelists with many/large files
         self.run_parallel_cmds(cmds)
 
     def backup(self, changelist):
