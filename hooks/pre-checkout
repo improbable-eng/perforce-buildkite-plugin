@@ -17,7 +17,8 @@ if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
     # Sanitize //depot/stream-name to __depot_stream-name
     SANITIZED_STREAM=$(echo $STREAM | python -c "import sys; print(sys.stdin.read().replace('/', '_'));")
 
-    PERFORCE_CHECKOUT_PATH="${BUILDKITE_BUILD_CHECKOUT_PATH}/../${SANITIZED_STREAM}"
+    # Instead of builds/<agent_number>/<pipeline>, checkout to builds/<stream_name>
+    PERFORCE_CHECKOUT_PATH="${BUILDKITE_BUILD_CHECKOUT_PATH}/../../${SANITIZED_STREAM}"
     export BUILDKITE_BUILD_CHECKOUT_PATH="${PERFORCE_CHECKOUT_PATH}"
     echo "Changed BUILDKITE_BUILD_CHECKOUT_PATH to ${PERFORCE_CHECKOUT_PATH}"
 fi
