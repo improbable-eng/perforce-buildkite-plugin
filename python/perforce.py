@@ -262,10 +262,17 @@ class SyncOutput(OutputHandler):
     def __init__(self, logger):
         OutputHandler.__init__(self)
         self.logger = logger
+        self.sync_count = 0
     
     def outputStat(self, stat):
         if 'depotFile' in stat:
-            self.logger.info("%(depotFile)s#%(rev)s %(action)s" % stat)
+            self.sync_count  += 1
+            if self.sync_count < 1000:
+                # Normal, verbose logging of synced file
+                self.logger.info("%(depotFile)s#%(rev)s %(action)s" % stat)
+            elif self.sync_count % 1000 == 0:
+                # Syncing many files, print one message for every 1000 files to reduce log spam
+                self.logger.info("Synced %d files..." % self.sync_count)
         return OutputHandler.REPORT
 
 
