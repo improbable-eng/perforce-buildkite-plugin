@@ -11,7 +11,8 @@ if ! [[ -x "$(command -v ${python_bin})" ]]; then
     python_bin="python"
 fi
 
-# We aren't particularly precious over the version of virtualenv, just that its installed
+# Ensure some version of virtualenv is installed
+# Lazy install avoids races between different jobs wanting different versions
 if [[ $(${python_bin} -m pip freeze) =~ "virtualenv=" ]]; then
     ${python_bin} -m pip install "virtualenv==16.7.7"
 fi
