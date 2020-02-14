@@ -11,7 +11,11 @@ if ! [[ -x "$(command -v ${python_bin})" ]]; then
     python_bin="python"
 fi
 
-${python_bin} -m pip install virtualenv==16.7.7
+# Ensure some version of virtualenv is installed
+# Lazy install avoids races between different jobs wanting different versions
+if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
+    ${python_bin} -m pip install "virtualenv==16.7.7"
+fi
 ${python_bin} -m virtualenv "${venv_dir}"
 
 platform=$(${python_bin} -c "import platform; print(platform.system())")
