@@ -29,3 +29,7 @@ fi
 if ! p4d -V | grep '2018.2'; then
     echo "WARNING: Version r18.2 (2018.2) of p4d is recommended for running tests. This version may not be compatible with existing server fixture."
 fi
+
+if ! [[ -x "$(command -v bk)" ]]; then
+    echo "WARNING: `bk` cli is not installed. https://github.com/buildkite/cli"
+fi

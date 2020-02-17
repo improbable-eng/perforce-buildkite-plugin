@@ -5,6 +5,7 @@ __pycache__/
 .vscode
 .pytest_cache
 .dev-venv
+.perforce-plugin-venv
 
-p4_workspace
+local-pipeline
 python/fixture/server
