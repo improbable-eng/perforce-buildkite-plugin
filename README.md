@@ -135,7 +135,8 @@ TBC, feedback welcome
 
 Making changes to `python/`
 
-* Write unit test in test_perforce.py
+* Read implementation of `test_fixture` in `test_perforce.py`
+* Write unit test in `test_perforce.py`, optionally making changes to the test fixture if required
 * Implement new functionality
 * Iterate via unit test
 
