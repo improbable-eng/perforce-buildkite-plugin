@@ -1,6 +1,7 @@
 local_run: vendorize p4d
 	rm -f -r p4_workspace
-	bk local run .buildkite/local-pipeline.yml
+	mkdir local-pipeline -p
+	pushd local-pipeline && bk local run ../.buildkite/local-pipeline.yml
 	$(MAKE) clean_p4d
 
 test:
@@ -8,10 +9,10 @@ test:
 	./ci/test.sh
 
 vendorize:
-	mkdir .buildkite/plugins/perforce -p
-	cp hooks python plugin.yml .buildkite/plugins/perforce/ -rf
+	mkdir local-pipeline/plugins/perforce -p
+	cp hooks python plugin.yml local-pipeline/plugins/perforce/ -rf
 	# Checkout hook not available locally, so make a command hook instead
-	cp .buildkite/plugins/perforce/hooks/checkout .buildkite/plugins/perforce/hooks/command -f
+	cp local-pipeline/plugins/perforce/hooks/checkout local-pipeline/plugins/perforce/hooks/command -f
 
 # p4d: export P4SSLDIR=sslkeys
 p4d: clean_p4d
