@@ -4,7 +4,7 @@ steps:
     env:
       BUILDKITE_CLEAN_CHECKOUT: true
     plugins:
-      - ./.buildkite/plugins/perforce:
+      - ./plugins/perforce:
           p4port: localhost:1666
           p4user: banana
           view: //depot/... ...
@@ -15,8 +15,8 @@ steps:
   # - label: "Test Shared Streams"
   #   command: echo "Hello World"
   #   plugins:
-  #     - ./.buildkite/plugins/perforce:
+  #     - ./plugins/perforce:
   #         p4port: localhost:1666
   #         p4user: banana
-  #         stream: //stream-depot/main # will checkout to ../__stream_depot_main
+  #         stream: //stream-depot/main # will checkout to ../../__stream_depot_main
   #         share_workspace: yes
