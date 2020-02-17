@@ -31,5 +31,5 @@ if ! p4d -V | grep '2018.2'; then
 fi
 
 if ! [[ -x "$(command -v bk)" ]]; then
-    echo "WARNING: `bk` cli is not installed. https://github.com/buildkite/cli
+    echo "WARNING: `bk` cli is not installed. https://github.com/buildkite/cli"
 fi
