@@ -51,7 +51,8 @@ def should_backup_changelists():
 
 def get_metadata(key):
     """If it exists, retrieve metadata from buildkite for a given key"""
-    if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
+    if not __ACCESS_TOKEN__:
+        # Cannot get metadata outside of buildkite context
         return None
 
     if subprocess.call(['buildkite-agent', 'meta-data', 'exists', key]) == 0:
@@ -62,6 +63,7 @@ def set_metadata(key, value, overwrite=False):
         Returns true if data was written
     """
     if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
+        # Cannot set metadata outside of buildkite context, including `bk local run`
         return False
 
     if overwrite or subprocess.call(['buildkite-agent', 'meta-data', 'exists', key]) == 100:
@@ -93,9 +95,6 @@ def set_build_changelist(changelist):
 
 def get_build_revision():
     """Get a p4 revision for the build to sync to"""
-    if __LOCAL_RUN__:
-        return 'HEAD'
-
     return get_metadata(__REVISION_METADATA__) or os.environ['BUILDKITE_COMMIT'] # metadata, HEAD or user-defined value
 
 def set_build_revision(revision):
