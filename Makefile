@@ -1,7 +1,7 @@
 local_run: vendorize p4d
 	rm -f -r p4_workspace
 	mkdir local-pipeline -p
-	pushd local-pipeline && bk local run ../.buildkite/local-pipeline.yml
+	pushd local-pipeline && bk local run ../.buildkite/local-pipeline.yml --meta-data "buildkite-perforce-revision=6"
 	$(MAKE) clean_p4d
 
 test:
