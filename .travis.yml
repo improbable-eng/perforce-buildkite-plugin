@@ -12,3 +12,4 @@ install:
 script:
   - ./ci/test.sh
   - ./ci/lint.sh
+  - ./ci/test_integration.sh
