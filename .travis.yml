@@ -9,5 +9,9 @@ before_install:
 install: 
   - pip install -r ./ci/requirements.txt
   - ./ci/install_$TRAVIS_OS_NAME.sh
-script:
-  - ./ci/test.sh
+
+jobs:
+  include:
+    - stage: test
+      script: ./ci/test.sh
+    - script: ./ci/lint.sh
