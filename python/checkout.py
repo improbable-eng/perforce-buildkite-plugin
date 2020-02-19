@@ -19,7 +19,6 @@ def main():
 
     revision = get_build_revision()
     if revision is None:
-        # Resolve 'HEAD' or ignore git sha and find a concrete revision
         revision = repo.head()
         set_build_revision(revision)
 
