@@ -82,13 +82,12 @@ def store_server(repo, to_zip):
                 abs_path = os.path.join(root, filename)
                 archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
 
-def test_fixture(capsys):
+def test_fixture(capsys, server):
     """Check that tests can start and connect to a local perforce server"""
-    port = setup_server(from_zip='server.zip')
     with capsys.disabled():
-        print('port:', port, 'user: carl')
+        print('port:', server, 'user: carl')
     repo = P4Repo()
-    assert repo.info()['serverAddress'] == port
+    assert repo.info()['serverAddress'] == server
 
     # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
     # Run unit tests in the debugger and hit the breakpoint
@@ -163,10 +162,8 @@ def test_fixture(capsys):
         },
     }
 
-def test_head():
+def test_head(server):
     """Test resolve of HEAD changelist"""
-    setup_server(from_zip='server.zip')
-
     repo = P4Repo()
     assert repo.head() == "6", "Unexpected global HEAD revision"
 
@@ -177,126 +174,120 @@ def test_head():
     with pytest.raises(Exception, match=r"Stream '//stream-depot/idontexist' doesn't exist."):
         repo.head()
 
-def test_checkout():
+def test_checkout(server, tmpdir):
     """Test normal flow of checking out files"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root)
+    repo = P4Repo(root=tmpdir)
 
-        assert os.listdir(client_root) == [], "Workspace should be empty"
-        repo.sync()
-        assert sorted(os.listdir(client_root)) == sorted([
-            "file.txt", "p4config"]), "Workspace sync not as expected"
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    assert os.listdir(tmpdir) == [], "Workspace should be empty"
+    repo.sync()
+    assert sorted(os.listdir(tmpdir)) == sorted([
+        "file.txt", "p4config"]), "Workspace sync not as expected"
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        repo.sync(revision='@0')
-        assert "file.txt" not in os.listdir(client_root), "Workspace file wasn't de-synced"
+    repo.sync(revision='@0')
+    assert "file.txt" not in os.listdir(tmpdir), "Workspace file wasn't de-synced"
 
-        # Validate p4config
-        with open(os.path.join(client_root, "p4config")) as content:
-            assert "P4PORT=%s\n" % repo.perforce.port in content.readlines(), "Unexpected p4config content"
+    # Validate p4config
+    with open(os.path.join(tmpdir, "p4config")) as content:
+        assert "P4PORT=%s\n" % repo.perforce.port in content.readlines(), "Unexpected p4config content"
 
-def test_checkout_stream():
+def test_checkout_stream(server, tmpdir):
     """Test checking out a stream depot"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root, stream='//stream-depot/main')
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
 
-        assert os.listdir(client_root) == [], "Workspace should be empty"
-        repo.sync()
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
+    assert os.listdir(tmpdir) == [], "Workspace should be empty"
+    repo.sync()
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
 
-def test_workspace_recovery():
+def test_workspace_recovery(server, tmpdir):
     """Test that we can detect and recover from various workspace snafus"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root)
+    repo = P4Repo(root=tmpdir)
 
-        # clobber writeable file
-        # partially synced writeable files may be left in the workspace if a machine was shutdown mid-sync
-        with open(os.path.join(client_root, "file.txt"), 'w') as depotfile:
-            depotfile.write("Overwrite this file")
-        repo.sync() # By default, would raise 'cannot clobber writable file'
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    # clobber writeable file
+    # partially synced writeable files may be left in the workspace if a machine was shutdown mid-sync
+    with open(os.path.join(tmpdir, "file.txt"), 'w') as depotfile:
+        depotfile.write("Overwrite this file")
+    repo.sync() # By default, would raise 'cannot clobber writable file'
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        # p4 clean
-        os.remove(os.path.join(client_root, "file.txt"))
-        open(os.path.join(client_root, "added.txt"), 'a').close()
-        repo.clean()
-        assert sorted(os.listdir(client_root)) == sorted([
-            "file.txt", "p4config"]), "Failed to restore workspace file with repo.clean()"
+    # p4 clean
+    os.remove(os.path.join(tmpdir, "file.txt"))
+    open(os.path.join(tmpdir, "added.txt"), 'a').close()
+    repo.clean()
+    assert sorted(os.listdir(tmpdir)) == sorted([
+        "file.txt", "p4config"]), "Failed to restore workspace file with repo.clean()"
 
-        os.remove(os.path.join(client_root, "file.txt"))
-        os.remove(os.path.join(client_root, "p4config"))
-        repo = P4Repo(root=client_root) # Open a fresh client, as if this was a different job
-        repo.sync() # Normally: "You already have file.txt", but since p4config is missing it will restore the workspace
-        assert sorted(os.listdir(client_root)) == sorted([
-            "file.txt", "p4config"]), "Failed to restore corrupt workspace due to missing p4config"
+    os.remove(os.path.join(tmpdir, "file.txt"))
+    os.remove(os.path.join(tmpdir, "p4config"))
+    repo = P4Repo(root=tmpdir) # Open a fresh tmpdir, as if this was a different job
+    repo.sync() # Normally: "You already have file.txt", but since p4config is missing it will restore the workspace
+    assert sorted(os.listdir(tmpdir)) == sorted([
+        "file.txt", "p4config"]), "Failed to restore corrupt workspace due to missing p4config"
 
-def test_unshelve():
+def test_unshelve(server, tmpdir):
     """Test unshelving a pending changelist"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root)
-        repo.sync()
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    repo = P4Repo(root=tmpdir)
+    repo.sync()
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        repo.unshelve('3')
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+    repo.unshelve('3')
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
-        with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
-            repo.unshelve('999')
+    with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
+        repo.unshelve('999')
 
-        # Unshelved changes are removed in following syncs
-        repo.sync()
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    # Unshelved changes are removed in following syncs
+    repo.sync()
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-def test_p4print_unshelve():
+def test_p4print_unshelve(server, tmpdir):
     """Test unshelving a pending changelist by p4printing content into a file"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root)
-        repo.sync()
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    repo = P4Repo(root=tmpdir)
+    repo.sync()
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-        repo.p4print_unshelve('3') # Modify a file
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+    repo.p4print_unshelve('3') # Modify a file
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
-        repo.p4print_unshelve('4') # Delete a file
-        assert not os.path.exists(os.path.join(client_root, "file.txt"))
+    repo.p4print_unshelve('4') # Delete a file
+    assert not os.path.exists(os.path.join(tmpdir, "file.txt"))
 
-        repo.p4print_unshelve('5') # Add a file
-        assert os.path.exists(os.path.join(client_root, "newfile.txt"))
+    repo.p4print_unshelve('5') # Add a file
+    assert os.path.exists(os.path.join(tmpdir, "newfile.txt"))
 
-        with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
-            repo.p4print_unshelve('999')
+    with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
+        repo.p4print_unshelve('999')
 
-        assert len(repo._read_patched()) == 2 # changes to file.txt and newfile.txt
+    assert len(repo._read_patched()) == 2 # changes to file.txt and newfile.txt
 
-        # Unshelved changes are removed in following syncs
-        repo.sync()
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Hello World\n", "Unexpected content in workspace file"
-        assert not os.path.exists(os.path.join(client_root, "newfile.txt"))
+    # Unshelved changes are removed in following syncs
+    repo.sync()
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    assert not os.path.exists(os.path.join(tmpdir, "newfile.txt"))
 
-        # Shelved changes containing files not mapped into this workspace do not throw an exception
-        repo = P4Repo(root=client_root, stream='//stream-depot/main')
-        repo.p4print_unshelve('3') # Modify a file
+    # Shelved changes containing files not mapped into this workspace do not throw an exception
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
+    repo.p4print_unshelve('3') # Modify a file
 
-def test_backup_shelve():
+def test_backup_shelve(server, tmpdir):
     """Test making a copy of a shelved changelist"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root)
+    repo = P4Repo(root=tmpdir)
 
-        backup_changelist = repo.backup('3')
-        assert backup_changelist != '3', "Backup changelist number must be new"
-        repo.revert()
-        repo.unshelve(backup_changelist)
-        with open(os.path.join(client_root, "file.txt")) as content:
-            assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+    backup_changelist = repo.backup('3')
+    assert backup_changelist != '3', "Backup changelist number must be new"
+    repo.revert()
+    repo.unshelve(backup_changelist)
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
 
 def copytree(src, dst):
@@ -309,20 +300,20 @@ def copytree(src, dst):
         else:
             shutil.copy2(s, d)
 
-def test_client_migration():
+def test_client_migration(server, tmpdir):
     """Test re-use of workspace data when moved to another host"""
-    with setup_server_and_client() as client_root:
-        repo = P4Repo(root=client_root)
+    repo = P4Repo(root=tmpdir)
 
-        assert os.listdir(client_root) == [], "Workspace should be empty"
-        synced = repo.sync()
-        assert len(synced) > 0, "Didn't sync any files"
-
-        with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client_root:
-            copytree(client_root, second_client_root)
-            repo = P4Repo(root=second_client_root)
-            synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
-            assert synced == [], "Should not have synced any files in second client"
+    assert os.listdir(tmpdir) == [], "Workspace should be empty"
+    synced = repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
+    
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client:
+        copytree(tmpdir, second_client)
+        # Client names include path on disk, so this creates a new unique client
+        repo = P4Repo(root=second_client)
+        synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
+        assert synced == [], "Should not have synced any files in second client"
 
 
 # def test_live_server():
