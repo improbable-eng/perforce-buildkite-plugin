@@ -4,6 +4,7 @@ Interact with buildkite as part of plugin hooks
 import os
 import sys
 import subprocess
+import re
 from datetime import datetime
 
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
@@ -94,8 +95,22 @@ def set_build_changelist(changelist):
         ])
 
 def get_build_revision():
-    """Get a p4 revision for the build to sync to"""
-    return get_metadata(__REVISION_METADATA__) or os.environ['BUILDKITE_COMMIT'] # metadata, HEAD or user-defined value
+    """Get a p4 revision for the build from buildkite context"""
+    revision = get_metadata(__REVISION_METADATA__)
+    if revision:
+        return revision
+
+    revision = os.environ['BUILDKITE_COMMIT'] # HEAD, user-defined revision or git-sha
+    # Convert bare changelist number to revision specifier
+    # Note: Theoretically, its possible for all 40 characters of a git sha to match this.
+    #       In practice, the inconvenience of forcing users to always include '@' outweighs this risk (~1 in 7 billion)
+    if re.match(r'^\d*$', revision):
+        revision = '@%s' % revision
+    # Filter to only valid revision specifiers
+    if revision.startswith('@') or revision.startswith('#'):
+        return revision
+    # Unable to establish a concrete revision for the build
+    return None 
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
