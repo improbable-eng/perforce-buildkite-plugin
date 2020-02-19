@@ -53,21 +53,22 @@ def run_p4d(p4port, from_zip=None):
     except subprocess.TimeoutExpired:
         pass
 
-def setup_server(from_zip=None):
+
+@pytest.fixture
+def server():
     """Start a p4 server in the background and return the address"""
     port = find_free_port()
-    Thread(target=partial(run_p4d, port, from_zip=from_zip), daemon=True).start()
+    Thread(target=partial(run_p4d, port, from_zip='server.zip'), daemon=True).start()
     time.sleep(1)
     p4port = 'localhost:%s' % port
     os.environ['P4PORT'] = p4port
     return p4port
 
-@contextmanager
-def setup_server_and_client(from_zip='server.zip'):
-    """Start server from a fixture and create a client workspace tmp dir"""
-    setup_server(from_zip)
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as client_root:
-        yield client_root
+@pytest.fixture
+def tmpdir():
+    """Create a temp directory for tests. Usually used as a client root"""
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as tmpdir:
+        yield tmpdir
 
 
 def store_server(repo, to_zip):
