@@ -102,9 +102,9 @@ def get_build_revision():
 
     revision = os.environ['BUILDKITE_COMMIT'] # HEAD, user-defined revision or git-sha
     # Convert bare changelist number to revision specifier
-    # Note: Theoretically, its possible for all 40 characters of a git sha to match this.
+    # Note: Theoretically, its possible for all 40 characters of a git sha to be digits.
     #       In practice, the inconvenience of forcing users to always include '@' outweighs this risk (~1 in 7 billion)
-    if re.match(r'^\d*$', revision):
+    if revision.isdigit():
         revision = '@%s' % revision
     # Filter to only valid revision specifiers
     if revision.startswith('@') or revision.startswith('#'):
