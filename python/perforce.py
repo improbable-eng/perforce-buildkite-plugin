@@ -149,15 +149,29 @@ class P4Repo:
     def head(self):
         """Get current head revision"""
         self._setup_client()
-        client_head = self.perforce.run_changes([
-            '-m', '1', '-s', 'submitted', '//%s/...' % self._get_clientname()])
+        # Get head based on client view (e.g. within the stream)
+        client_head = self.head_at_revision('//%s/...' % self._get_clientname())
         if client_head:
-            return client_head[0]['change']
-        # Fallback for when client view has no submitted changes
+            return client_head
+        # Fallback for when client view has no submitted changes, global head revision
         return self.perforce.run_counter("maxCommitChange")[0]['value']
+
+    def head_at_revision(self, revision):
+        """Get head submitted changelist at revision specifier"""
+        # Resolve revision specifier like "@labelname" to a concrete submitted change
+        result = self.perforce.run_changes([
+            '-m', '1', '-s', 'submitted', revision
+        ])
+        if not result:
+            return None # Revision spec had no submitted changes
+        return result[0]['change']
 
     def description(self, changelist):
         """Get description of a given changelist"""
+        # Resolve revision specifier to a concrete cl
+        head_revision = self.perforce.run_changes([
+            '-m', '1', 
+        ])
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
     def sync(self, revision=None):
