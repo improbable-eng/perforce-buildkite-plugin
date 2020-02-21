@@ -169,9 +169,6 @@ class P4Repo:
     def description(self, changelist):
         """Get description of a given changelist"""
         # Resolve revision specifier to a concrete cl
-        head_revision = self.perforce.run_changes([
-            '-m', '1', 
-        ])
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
     def sync(self, revision=None):
