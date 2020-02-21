@@ -36,8 +36,10 @@ def main():
 
         repo.p4print_unshelve(changelist)
 
-    revision = get_build_revision()
-    description = repo.description(get_users_changelist() or revision.strip('@'))
+    description = repo.description(
+        # Prefer users change description over latest submitted change
+        get_users_changelist() or repo.head_at_revision(revision)
+    )
     set_build_info(revision, description)
 
 
