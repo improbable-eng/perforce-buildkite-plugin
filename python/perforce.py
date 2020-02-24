@@ -152,9 +152,9 @@ class P4Repo:
         # Get head based on client view (e.g. within the stream)
         client_head = self.head_at_revision('//%s/...' % self._get_clientname())
         if client_head:
-            return client_head
+            return '@' + client_head
         # Fallback for when client view has no submitted changes, global head revision
-        return self.perforce.run_counter("maxCommitChange")[0]['value']
+        return '@' + self.perforce.run_counter("maxCommitChange")[0]['value']
 
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
