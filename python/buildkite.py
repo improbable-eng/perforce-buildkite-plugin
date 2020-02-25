@@ -97,11 +97,10 @@ def set_build_changelist(changelist):
 
 def get_build_revision():
     """Get a p4 revision for the build from buildkite context"""
-    revision = get_metadata(__REVISION_METADATA__) or get_metadata(__REVISION_METADATA_DEPRECATED__)
-    if revision:
-        return revision
+    revision = get_metadata(__REVISION_METADATA__) or \
+        get_metadata(__REVISION_METADATA_DEPRECATED__) or \
+        os.environ['BUILDKITE_COMMIT']  # HEAD, user-defined revision or git-sha
 
-    revision = os.environ['BUILDKITE_COMMIT'] # HEAD, user-defined revision or git-sha
     # Convert bare changelist number to revision specifier
     # Note: Theoretically, its possible for all 40 characters of a git sha to be digits.
     #       In practice, the inconvenience of forcing users to always include '@' outweighs this risk (~1 in 7 billion)
