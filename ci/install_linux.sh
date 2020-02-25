@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -euxo pipefail
 sudo apt-get install python-dev build-essential libssl-dev
 
 # Install p4d (perforce server)
