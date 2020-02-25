@@ -12,6 +12,7 @@ __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 
 __REVISION_METADATA__ = 'buildkite-perforce-revision'
+__REVISION_METADATA_DEPRECATED__ = 'buildkite:perforce:revision' # old metadata key, incompatible with `bk local run`
 __SHELVED_METADATA__ = 'buildkite-perforce-shelved'
 __SHELVED_ANNOTATION__ = "Saved shelved change {original} as {copy}"
 
@@ -96,7 +97,7 @@ def set_build_changelist(changelist):
 
 def get_build_revision():
     """Get a p4 revision for the build from buildkite context"""
-    revision = get_metadata(__REVISION_METADATA__)
+    revision = get_metadata(__REVISION_METADATA__) or get_metadata(__REVISION_METADATA_DEPRECATED__)
     if revision:
         return revision
 
@@ -115,6 +116,7 @@ def get_build_revision():
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
     set_metadata(__REVISION_METADATA__, revision)
+    set_metadata(__REVISION_METADATA_DEPRECATED__, revision)
 
 def set_build_info(revision, description):
     """Set the description and commit number in the UI for this build by mimicking a git repo"""
