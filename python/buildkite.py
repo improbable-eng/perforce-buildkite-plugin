@@ -119,4 +119,5 @@ def set_build_revision(revision):
 
 def set_build_info(revision, description):
     """Set the description and commit number in the UI for this build by mimicking a git repo"""
+    revision = revision.lstrip('@#') # revision must look like a git sha for buildkite to accept it
     set_metadata('buildkite:git:commit', 'commit %s\n\n\t%s' % (revision, description))
