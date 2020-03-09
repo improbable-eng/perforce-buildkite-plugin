@@ -90,6 +90,7 @@ def test_fixture(capsys, server):
     assert repo.info()['serverAddress'] == server
 
     # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
+    # Change __P4D_TIMEOUT__ to 'None' or an otherwise large amount of time
     # Run unit tests in the debugger and hit the breakpoint
     # Log in using details printed to stdout (port/user) via p4v or the command line
     # Make changes to the p4 server
@@ -104,7 +105,8 @@ def test_fixture(capsys, server):
     depotfile_to_content = {depotfile: repo.perforce.run_print(depotfile)[1] for depotfile in depotfiles}
     assert depotfile_to_content == {
         "//depot/file.txt": "Hello World\n",
-        "//stream-depot/main/file.txt": "Hello Stream World\n"
+        "//stream-depot/main/file.txt": "Hello Stream World\n",
+        "//stream-depot/dev/file.txt": "Hello Stream World (dev)\n",
     }
 
     # Check submitted changes
@@ -132,6 +134,16 @@ def test_fixture(capsys, server):
             'depotFile': ['//depot/file.txt'],
             'desc': 'modify //depot/file.txt\n'
         },
+        '7': {
+            'action': ['branch'],
+            'depotFile': ['//stream-depot/dev/file.txt'],
+            'desc': 'Copy files from //stream-depot/main to //stream-depot/dev\n'
+        },
+        '8': {
+            'action': ['edit'],
+            'depotFile': ['//stream-depot/dev/file.txt'],
+            'desc': 'Update contents of //stream-depot/dev/file.txt\n'
+        }
     }
 
     # Check shelved changes
@@ -325,6 +337,21 @@ def test_client_migration(server, tmpdir):
         repo = P4Repo(root=second_client)
         synced = repo.sync() # Flushes to match previous client, since p4config is there on disk
         assert synced == [], "Should not have synced any files in second client"
+
+def test_stream_switching(server, tmpdir):
+    """Test stream-switching within the same depot"""
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
+    synced = repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"    
+
+    # Re-use the same checkout directory, but switch streams
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/dev')
+    repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"    
 
 
 # def test_live_server():
