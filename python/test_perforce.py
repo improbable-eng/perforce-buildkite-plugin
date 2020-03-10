@@ -234,9 +234,18 @@ def test_unshelve(server, tmpdir):
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
-    repo.unshelve('3')
+    repo.unshelve('3') # Modify a file
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
+    repo.sync()
+
+    repo.unshelve('4') # Delete a file
+    assert not os.path.exists(os.path.join(tmpdir, "file.txt"))
+    repo.sync()
+
+    repo.unshelve('5') # Add a file
+    assert os.path.exists(os.path.join(tmpdir, "newfile.txt"))
+    repo.sync()
 
     with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
         repo.unshelve('999')
@@ -245,6 +254,8 @@ def test_unshelve(server, tmpdir):
     repo.sync()
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello World\n", "Unexpected content in workspace file"
+    assert not os.path.exists(os.path.join(tmpdir, "newfile.txt")), "File unshelved for add was not deleted"
+
 
 def test_p4print_unshelve(server, tmpdir):
     """Test unshelving a pending changelist by p4printing content into a file"""
@@ -272,7 +283,7 @@ def test_p4print_unshelve(server, tmpdir):
     repo.sync()
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello World\n", "Unexpected content in workspace file"
-    assert not os.path.exists(os.path.join(tmpdir, "newfile.txt"))
+    assert not os.path.exists(os.path.join(tmpdir, "newfile.txt")), "File unshelved for add was not deleted"
 
     # Shelved changes containing files not mapped into this workspace do not throw an exception
     repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
