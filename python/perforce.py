@@ -214,7 +214,7 @@ class P4Repo:
 
         self.perforce.run_unshelve('-s', changelist)
 
-    def run_parallel_cmds(self, cmds, max_parallel=20):
+    def run_parallel_cmds(self, cmds, max_parallel=8):
         def run(*args):
             """Acquire new connection and run p4 cmd"""
             perforce = P4()
