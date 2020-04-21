@@ -76,6 +76,8 @@ class P4Repo:
         if self.created_client:
             return
         clientname = self._get_clientname()
+        # must be set prior to running any commands to avoid issues with default client names
+        self.perforce.client = clientname
         client = self.perforce.fetch_client(clientname)
         if self.root:
             client._root = self.root
@@ -89,7 +91,6 @@ class P4Repo:
         client._options = self.client_opts + ' clobber'
 
         self.perforce.save_client(client)
-        self.perforce.client = clientname
 
         if not os.path.isfile(self.p4config):
             self.perforce.logger.warning("p4config missing, flushing workspace to revision zero")
