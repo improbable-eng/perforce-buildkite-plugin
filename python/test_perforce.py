@@ -285,6 +285,12 @@ def test_p4print_unshelve(server, tmpdir):
         assert content.read() == "Hello World\n", "Unexpected content in workspace file"
     assert not os.path.exists(os.path.join(tmpdir, "newfile.txt")), "File unshelved for add was not deleted"
 
+    # Shelved changes containing files not selected for sync are skipped
+    repo = P4Repo(root=tmpdir, sync='//depot/fake-dir/...')
+    repo.sync()
+    repo.p4print_unshelve('3') # Modify file.txt
+    assert not os.path.exists(os.path.join(tmpdir, "file.txt"))
+
     # Shelved changes containing files not mapped into this workspace do not throw an exception
     repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
     repo.p4print_unshelve('3') # Modify a file

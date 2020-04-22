@@ -245,12 +245,17 @@ class P4Repo:
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
+        # Turn sync spec info a prefix to filter out unwanted files
+        # e.g. //my-depot/dir/... => //my-depot/dir/
+        sync_prefix = self.sync_paths.rstrip('.')
+
         cmds = []
         for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+            if depotfile.startswith(sync_prefix):
+                cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
         self.run_parallel_cmds(cmds)
 
