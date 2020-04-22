@@ -14,9 +14,14 @@ if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
       echo "Error: You cannot share stream workspaces when running more than one agent" >&2
       exit 1
     fi
-    # Sanitize //depot/stream-name to __depot_stream-name
-    SANITIZED_STREAM=$(echo $STREAM | python -c "import sys; print(sys.stdin.read().replace('/', '_'));")
-
+    if [[ "${BUILDKITE_PLUGIN_PERFORCE_STREAM_SWITCHING}" == true ]] ; then
+      echo "Stream switching enabled"
+      # Sanitize '//depot/stream-name' to 'depot'
+      SANITIZED_STREAM=$(echo $STREAM | python -c "import sys; print(sys.stdin.read().split('/')[2]);")
+    else # Create a directory per-stream
+      # Sanitize '//depot/stream-name' to '__depot_stream-name'
+      SANITIZED_STREAM=$(echo $STREAM | python -c "import sys; print(sys.stdin.read().replace('/', '_'));")
+    fi
     # Instead of builds/<agent_number>/<pipeline>, checkout to builds/<stream_name>
     PERFORCE_CHECKOUT_PATH="${BUILDKITE_BUILD_CHECKOUT_PATH}/../../${SANITIZED_STREAM}"
     export BUILDKITE_BUILD_CHECKOUT_PATH="${PERFORCE_CHECKOUT_PATH}"

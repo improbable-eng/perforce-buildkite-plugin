@@ -75,7 +75,7 @@ steps:
           parallel: 16
 ```
 
-### Share a stream workspace between pipelines.
+### Share a stream workspace between pipelines
 
 Useful to avoid syncing duplicate data with large workspaces.
 Only allowed when there is a single buildkite agent running on the machine.
@@ -85,7 +85,10 @@ steps:
     plugins:
       - improbable-eng/perforce:
           stream: //dev/buildkite
+           # Sync each stream once
           share_workspace: true
+          # Sync once and switch streams in-place (requires share_workspace: true)
+          stream_switching: true
 ```
 
 ## Triggering Builds
