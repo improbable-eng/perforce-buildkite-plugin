@@ -76,6 +76,8 @@ class P4Repo:
         if self.created_client:
             return
         clientname = self._get_clientname()
+        # must be set prior to running any commands to avoid issues with default client names
+        self.perforce.client = clientname
         client = self.perforce.fetch_client(clientname)
         if self.root:
             client._root = self.root
@@ -89,7 +91,6 @@ class P4Repo:
         client._options = self.client_opts + ' clobber'
 
         self.perforce.save_client(client)
-        self.perforce.client = clientname
 
         if not os.path.isfile(self.p4config):
             self.perforce.logger.warning("p4config missing, flushing workspace to revision zero")
@@ -244,12 +245,17 @@ class P4Repo:
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
+        # Turn sync spec info a prefix to filter out unwanted files
+        # e.g. //my-depot/dir/... => //my-depot/dir/
+        sync_prefix = self.sync_paths.rstrip('.')
+
         cmds = []
         for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+            if depotfile.startswith(sync_prefix):
+                cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
         self.run_parallel_cmds(cmds)
 
