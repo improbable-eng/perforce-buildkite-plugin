@@ -131,9 +131,9 @@ source .dev-venv/bin/activate
 pytest python/test_perforce.py -k test_fixture
 ```
 
-### Platform support
+### Linux/Windows
 
-Improbable uses this in production on Windows and Linux nodes running `buildkite-agent`. Improbable has seen this work on macOS but is still testing internally.
+TBC, feedback welcome.
 
 ### Suggested workflow
 
