@@ -1,6 +1,6 @@
 # Perforce Buildkite Plugin [![Build Status](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin.svg?branch=master)](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin)
 
-A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core)
+A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core) on Windows, Linux and macOS platforms.
 
 1. Configure at least `P4PORT` and `P4USER` (see examples below)
 2. Provision with credentials - a `P4TICKETS` file is recommended
