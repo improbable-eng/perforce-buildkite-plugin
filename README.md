@@ -1,12 +1,12 @@
 # Perforce Buildkite Plugin [![Build Status](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin.svg?branch=master)](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin)
 
-A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core)
+A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core) on Windows, Linux and macOS platforms.
 
-1. Configure at least P4PORT and P4USER (see examples below)
-2. Provision with credentials - a P4TICKETS file is recommended
+1. Configure at least `P4PORT` and `P4USER` (see examples below)
+2. Provision with credentials - a `P4TICKETS` file is recommended
 3. Optionally customise workspace mapping.
 
-The P4CLIENT, P4USER and P4PORT used by the plugin are written to a [P4CONFIG](https://www.perforce.com/manuals/v16.2/cmdref/P4CONFIG.html) file at the workspace root and the P4CONFIG env var is set, so build scripts are able to automatically pick up configuration for any further interactions with Perforce.
+The `P4CLIENT`, `P4USER` and `P4PORT` used by the plugin are written to a [`P4CONFIG`](https://www.perforce.com/manuals/v16.2/cmdref/P4CONFIG.html) file at the workspace root and the `P4CONFIG` env var is set, so build scripts are able to automatically pick up configuration for any further interactions with Perforce.
 
 ## Examples
 
@@ -36,7 +36,7 @@ steps:
 
 ### Custom workspace view:
 
-Note that this must consist of real depot paths like a regular worspace view. You cannot combine streams.
+Note that this must consist of real depot paths like a regular workspace view. You cannot combine streams.
 
 ```yaml
 steps:
@@ -133,7 +133,7 @@ pytest python/test_perforce.py -k test_fixture
 
 ### Linux/Windows
 
-TBC, feedback welcome
+TBC, feedback welcome.
 
 ### Suggested workflow
 
