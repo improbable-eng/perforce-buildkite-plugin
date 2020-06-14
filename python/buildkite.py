@@ -25,6 +25,9 @@ def get_env():
         plugin_value = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_%s' % p4var)
         if plugin_value:
             env[p4var] = plugin_value
+
+    # Ignore p4config when checking out, as it can override the intended plugin config
+    env['P4CONFIG'] = ""
     return env
 
 def get_config():
@@ -104,13 +107,14 @@ def get_build_revision():
     # Convert bare changelist number to revision specifier
     # Note: Theoretically, its possible for all 40 characters of a git sha to be digits.
     #       In practice, the inconvenience of forcing users to always include '@' outweighs this risk (~1 in 7 billion)
+    
     if revision.isdigit():
         revision = '@%s' % revision
     # Filter to only valid revision specifiers
     if revision.startswith('@') or revision.startswith('#'):
         return revision
     # Unable to establish a concrete revision for the build
-    return None 
+    return None
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
