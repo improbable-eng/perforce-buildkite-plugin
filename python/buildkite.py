@@ -25,7 +25,6 @@ def get_env():
         plugin_value = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_%s' % p4var)
         if plugin_value:
             env[p4var] = plugin_value
-
     return env
 
 def get_config():
