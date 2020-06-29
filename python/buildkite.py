@@ -26,8 +26,6 @@ def get_env():
         if plugin_value:
             env[p4var] = plugin_value
 
-    # Ignore p4config when checking out, as it can override the intended plugin config
-    env['P4CONFIG'] = ""
     return env
 
 def get_config():
@@ -38,6 +36,7 @@ def get_config():
     conf['sync'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SYNC')
     conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
     conf['client_opts'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
+    conf['shelved_change'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SHELVED_CHANGE')
 
     if 'BUILDKITE_PLUGIN_PERFORCE_ROOT' in os.environ and not __LOCAL_RUN__:
         raise Exception("Custom P4 root is for use in unit tests only")
@@ -77,6 +76,11 @@ def set_metadata(key, value, overwrite=False):
 
 def get_users_changelist():
     """Get the shelved changelist supplied by the user, if applicable"""
+    conf = get_config()
+    if conf['shelved_change']:
+        # Overrides the CL to unshelve via plugin config
+        return conf['shelved_change']
+
     branch = os.environ.get('BUILDKITE_BRANCH', '')
     if branch.isdigit():
         return branch
