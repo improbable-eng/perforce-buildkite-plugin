@@ -110,7 +110,7 @@ def get_build_revision():
     # Convert bare changelist number to revision specifier
     # Note: Theoretically, its possible for all 40 characters of a git sha to be digits.
     #       In practice, the inconvenience of forcing users to always include '@' outweighs this risk (~1 in 7 billion)
-    
+
     if revision.isdigit():
         revision = '@%s' % revision
     # Filter to only valid revision specifiers
