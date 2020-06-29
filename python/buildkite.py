@@ -74,6 +74,12 @@ def set_metadata(key, value, overwrite=False):
 
 def get_users_changelist():
     """Get the shelved changelist supplied by the user, if applicable"""
+    # Overrides the CL to unshelve via plugin config
+    # TODO: Remove this to discourage git-based pipelines that sync perforce
+    shelved_cl = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SHELVED_CHANGE')
+    if shelved_cl:
+        return shelved_cl
+
     branch = os.environ.get('BUILDKITE_BRANCH', '')
     if branch.isdigit():
         return branch
