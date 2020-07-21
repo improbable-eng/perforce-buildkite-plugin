@@ -139,6 +139,7 @@ class P4Repo:
             while(retries > 0 and not success):
                 try:
                     f(args)
+                    success = True
                 except P4Exception:
                     for e in self.perforce.errors:
                         self.perforce.logger.error(e)
