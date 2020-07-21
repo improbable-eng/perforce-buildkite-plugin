@@ -14,23 +14,26 @@ import json
 from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 
 # decorator for reconnecting to perforce and retrying a function on P4Exception
-def reconnect_on_exception(retries=3):
-    def wrap(f):
-        def wrapped_f(self, *args):
+class reconnect_on_exception(object):
+    def __init__(self, perforce, retries=3):
+        self.perforce = perforce
+        self.retries = retries
+
+    def __call__(self, f):
+        def wrapped_f(*args):
             success = False
-            while(retries > 0 and not success):
+            while(self.retries > 0 and not success):
                 try:
                     f(args)
                     success = True
                 except P4Exception:
                     for e in self.perforce.errors:
                         self.perforce.logger.error(e)
-                    if not self.perforce.connected() and retries > 0:
-                        retries -= 1
+                    if not self.perforce.connected() and self.retries > 0:
+                        self.retries -= 1
                         self.perforce.disconnect()
                         self.perforce.connect()
         return wrapped_f
-    return wrap
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
@@ -176,7 +179,7 @@ class P4Repo:
         # Fallback for when client view has no submitted changes, global head revision
         return '@' + self.perforce.run_counter("maxCommitChange")[0]['value']
 
-    @reconnect_on_exception
+    @reconnect_on_exception(self.perforce)
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
         # Resolve revision specifier like "@labelname" to a concrete submitted change
@@ -191,7 +194,7 @@ class P4Repo:
         """Get description of a given changelist number"""
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
-    @reconnect_on_exception
+    @reconnect_on_exception(self.perforce)
     def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
