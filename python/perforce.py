@@ -19,12 +19,12 @@ class reconnect_on_exception(object):
         self.retries = retries
 
     def __call__(self, f):
-        def wrapped_f(*args):
+        def wrapped_f(*args, **kwargs):
             perforce = args[0].perforce
             success = False
             while(self.retries > 0 and not success):
                 try:
-                    f(*args)
+                    f(*args, **kwargs)
                     success = True
                 except P4Exception:
                     for e in perforce.errors:
@@ -179,7 +179,7 @@ class P4Repo:
         # Fallback for when client view has no submitted changes, global head revision
         return '@' + self.perforce.run_counter("maxCommitChange")[0]['value']
 
-    @reconnect_on_exception()
+    @reconnect_on_exception
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
         # Resolve revision specifier like "@labelname" to a concrete submitted change
@@ -194,7 +194,7 @@ class P4Repo:
         """Get description of a given changelist number"""
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
-    @reconnect_on_exception()
+    @reconnect_on_exception
     def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
