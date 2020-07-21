@@ -24,7 +24,7 @@ class reconnect_on_exception(object):
             success = False
             while(self.retries > 0 and not success):
                 try:
-                    f(args)
+                    f(*args)
                     success = True
                 except P4Exception:
                     for e in perforce.errors:
