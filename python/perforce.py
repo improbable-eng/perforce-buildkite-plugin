@@ -20,7 +20,7 @@ def reconnect_on_exception(retries=3):
             success = False
             while(retries > 0 and not success):
                 try:
-                    f(*args)
+                    f(args)
                     success = True
                 except P4Exception:
                     for e in self.perforce.errors:
