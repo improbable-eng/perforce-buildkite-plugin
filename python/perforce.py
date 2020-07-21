@@ -132,6 +132,22 @@ class P4Repo:
         with open(self.patchfile, 'w') as outfile:
             json.dump(content, outfile)
 
+    # decorator for reconnecting to perforce and retrying a function on P4Exception
+    def reconnect_on_exception(self, f, retries=3):
+        def wraps(*args):
+            success = False
+            while(retries > 0 and not success):
+                try:
+                    f(args)
+                except P4Exception:
+                    for e in self.perforce.errors:
+                        self.perforce.logger.error(e)
+                    if not self.perforce.connected() and retries > 0:
+                        retries -= 1
+                        self.perforce.disconnect()
+                        self.perforce.connect()
+        return wraps
+
     def clean(self):
         """ Perform a p4clean on the workspace to
             remove added and restore deleted files
@@ -157,6 +173,7 @@ class P4Repo:
         # Fallback for when client view has no submitted changes, global head revision
         return '@' + self.perforce.run_counter("maxCommitChange")[0]['value']
 
+    @reconnect_on_exception
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
         # Resolve revision specifier like "@labelname" to a concrete submitted change
@@ -171,32 +188,19 @@ class P4Repo:
         """Get description of a given changelist number"""
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
+    @reconnect_on_exception
     def sync(self, revision=None, retries=3):
         """Sync the workspace"""
         self._setup_client()
         self.revert()
-
-        result = None
-        successful_sync = False
-        while(retries > 0 and not successful_sync):
-            try:
-                result = self.perforce.run_sync(
-                    '--parallel=threads=%s' % self.parallel,
-                    '%s%s' % (self.sync_paths, revision or ''),
-                    handler=SyncOutput(self.perforce.logger),
-                )
-                if result:
-                    successful_sync = True
-                    self.perforce.logger.info("Synced %s files (%s)" % (
-                        result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
-            except P4Exception:
-                for e in self.perforce.errors:
-                    self.perforce.logger.error(e)
-                if not self.perforce.connected() and retries > 0:
-                    retries -= 1
-                    self.perforce.disconnect()
-                    self.perforce.connect()
-
+        result = self.perforce.run_sync(
+            '--parallel=threads=%s' % self.parallel,
+            '%s%s' % (self.sync_paths, revision or ''),
+            handler=SyncOutput(self.perforce.logger),
+        )
+        if result:
+            self.perforce.logger.info("Synced %s files (%s)" % (
+                result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
         return result
 
     def revert(self):
