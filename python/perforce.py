@@ -14,21 +14,23 @@ import json
 from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 
 # decorator for reconnecting to perforce and retrying a function on P4Exception
-def reconnect_on_exception(f, retries=3):
-    def wraps(self, *args):
-        success = False
-        while(retries > 0 and not success):
-            try:
-                f(args)
-                success = True
-            except P4Exception:
-                for e in self.perforce.errors:
-                    self.perforce.logger.error(e)
-                if not self.perforce.connected() and retries > 0:
-                    retries -= 1
-                    self.perforce.disconnect()
-                    self.perforce.connect()
-    return wraps
+def reconnect_on_exception(retries=3):
+    def wrap(f):
+        def wrapped_f(self, *args):
+            success = False
+            while(retries > 0 and not success):
+                try:
+                    f(*args)
+                    success = True
+                except P4Exception:
+                    for e in self.perforce.errors:
+                        self.perforce.logger.error(e)
+                    if not self.perforce.connected() and retries > 0:
+                        retries -= 1
+                        self.perforce.disconnect()
+                        self.perforce.connect()
+        return wrapped_f
+    return wrap
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
@@ -190,7 +192,7 @@ class P4Repo:
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
     @reconnect_on_exception
-    def sync(self, revision=None, retries=3):
+    def sync(self, revision=None):
         """Sync the workspace"""
         self._setup_client()
         self.revert()
