@@ -13,6 +13,23 @@ import json
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
 from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 
+# decorator for reconnecting to perforce and retrying a function on P4Exception
+def reconnect_on_exception(f, retries=3):
+    def wraps(self, *args):
+        success = False
+        while(retries > 0 and not success):
+            try:
+                f(args)
+                success = True
+            except P4Exception:
+                for e in self.perforce.errors:
+                    self.perforce.logger.error(e)
+                if not self.perforce.connected() and retries > 0:
+                    retries -= 1
+                    self.perforce.disconnect()
+                    self.perforce.connect()
+    return wraps
+
 class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None,
@@ -131,23 +148,6 @@ class P4Repo:
         content = list(set(files + self._read_patched())) # Combine and deduplicate
         with open(self.patchfile, 'w') as outfile:
             json.dump(content, outfile)
-
-    # decorator for reconnecting to perforce and retrying a function on P4Exception
-    def reconnect_on_exception(self, f, retries=3):
-        def wraps(*args):
-            success = False
-            while(retries > 0 and not success):
-                try:
-                    f(args)
-                    success = True
-                except P4Exception:
-                    for e in self.perforce.errors:
-                        self.perforce.logger.error(e)
-                    if not self.perforce.connected() and retries > 0:
-                        retries -= 1
-                        self.perforce.disconnect()
-                        self.perforce.connect()
-        return wraps
 
     def clean(self):
         """ Perform a p4clean on the workspace to
