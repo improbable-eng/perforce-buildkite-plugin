@@ -171,18 +171,32 @@ class P4Repo:
         """Get description of a given changelist number"""
         return self.perforce.run_describe(str(changelist))[0]['desc']
 
-    def sync(self, revision=None):
+    def sync(self, revision=None, retries=3):
         """Sync the workspace"""
         self._setup_client()
         self.revert()
-        result = self.perforce.run_sync(
-            '--parallel=threads=%s' % self.parallel,
-            '%s%s' % (self.sync_paths, revision or ''),
-            handler=SyncOutput(self.perforce.logger),
-        )
-        if result:
-            self.perforce.logger.info("Synced %s files (%s)" % (
-                result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
+
+        result = None
+        successful_sync = False
+        while(retries > 0 and not successful_sync):
+            try:
+                result = self.perforce.run_sync(
+                    '--parallel=threads=%s' % self.parallel,
+                    '%s%s' % (self.sync_paths, revision or ''),
+                    handler=SyncOutput(self.perforce.logger),
+                )
+                if result:
+                    successful_sync = True
+                    self.perforce.logger.info("Synced %s files (%s)" % (
+                        result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
+            except P4Exception:
+                for e in self.perforce.errors:
+                    self.perforce.logger.error(e)
+                if not self.perforce.connected() and retries > 0:
+                    retries -= 1
+                    self.perforce.disconnect()
+                    self.perforce.connect()
+
         return result
 
     def revert(self):
