@@ -160,12 +160,16 @@ class P4Repo:
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
         # Resolve revision specifier like "@labelname" to a concrete submitted change
-        result = self.perforce.run_changes([
-            '-m', '1', '-s', 'submitted', revision
-        ])
-        if not result:
-            return None # Revision spec had no submitted changes
-        return result[0]['change']
+        try:
+            label = self.perforce.run('label', ['-o', revision.replace('@','')])
+            return label[0]['Revision'].replace('@','')
+        except P4Exception:
+            result = self.perforce.run_changes([
+                '-m', '1', '-s', 'submitted', revision
+            ])
+            if not result:
+                return None # Revision spec had no submitted changes
+            return result[0]['change']
 
     def description(self, changelist):
         """Get description of a given changelist number"""
