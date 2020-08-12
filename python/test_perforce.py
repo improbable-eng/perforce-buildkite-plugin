@@ -174,6 +174,18 @@ def test_fixture(capsys, server):
         },
     }
 
+    labels = [label for label in repo.perforce.run_labels()]
+    # Filter info to only contain relevant keys
+    labelinfo = {
+        label.get('label'): {key: label.get(key) 
+                             for key in ['Revision']
+                            }
+        for label in labels
+    }
+    assert labelinfo == {
+        'my-label': {'Revision': '@2'}
+    }
+
 def test_head(server, tmpdir):
     """Test resolve of HEAD changelist"""
     repo = P4Repo(root=tmpdir)
@@ -213,6 +225,7 @@ def test_checkout_stream(server, tmpdir):
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
 
+def test_checkout_label(server, tmpdir):
 def test_workspace_recovery(server, tmpdir):
     """Test that we can detect and recover from various workspace snafus"""
     repo = P4Repo(root=tmpdir)
