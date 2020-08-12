@@ -28,13 +28,14 @@ else
 fi
 
 if ! [[ -d "${venv_dir}" ]]; then
-    temp_venv_dir=$(mktemp -d -t bkp4-venv-XXXXXX)
+    temp_venv_dir=$(mktemp -d -t perforce-plugin-venv-XXXXXX)
     trap "rm -rf ${temp_venv_dir}" EXIT
     ${python_bin} -m virtualenv "${temp_venv_dir}"
     ${temp_venv_dir}${venv_python_bin} -m pip install -r "${plugin_root}/python/requirements.txt"
-    if ! [[ -d "${venv_dir}" ]]; then # second check to minimize race condition
+    if ! [[ -d "${venv_dir}" ]]; then # second check to minimize venv init race
         mv "${temp_venv_dir}" "${venv_dir}"
     fi
+    echo "virtualenv created at ${venv_dir}"
 fi
 
 ${venv_dir}${venv_python_bin} "${plugin_root}/python/checkout.py"
