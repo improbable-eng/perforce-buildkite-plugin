@@ -22,14 +22,18 @@ venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv-${venv_md5}"
 
 platform=$(${python_bin} -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
-    venv_bin="${venv_dir}/Scripts"
+    venv_python_bin="Scripts/python"
 else
-    venv_bin="${venv_dir}/bin"
+    venv_python_bin="bin/python"
 fi
 
 if ! [[ -d "${venv_dir}" ]]; then
-    ${python_bin} -m virtualenv "${venv_dir}"
-    "${venv_bin}/python" -m pip install -r "${plugin_root}/python/requirements.txt"
+    temp_venv_dir=$(mktmp -d -t bkp4-venv-XXXXXX)
+    ${python_bin} -m virtualenv "${temp_venv_dir}"
+    ${temp_venv_dir}${venv_python_bin} -m pip install -r "${plugin_root}/python/requirements.txt"
+    if ! [[ -d "${venv_dir}" ]]; then # second check to minimize race condition
+        mv "${temp_venv_dir}" "${venv_dir}"
+    fi
 fi
 
-"${venv_bin}/python" "${plugin_root}/python/checkout.py"
+${venv_dir}${venv_python_bin} "${plugin_root}/python/checkout.py"
