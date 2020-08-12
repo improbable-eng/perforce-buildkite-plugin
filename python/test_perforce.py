@@ -226,6 +226,18 @@ def test_checkout_stream(server, tmpdir):
         assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
 
 def test_checkout_label(server, tmpdir):
+    """Test checking out at a specific label"""
+    repo = P4Repo(root=tmpdir)
+
+    assert os.listdir(tmpdir) == [], "Workspace should be empty"
+
+    with pytest.raises(Exception, match=r'Invalid changelist/client/label/date'):
+        repo.sync(revision="@nonexistent-label")
+
+    repo.sync(revision="@my-label")
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"     
+
 def test_workspace_recovery(server, tmpdir):
     """Test that we can detect and recover from various workspace snafus"""
     repo = P4Repo(root=tmpdir)
