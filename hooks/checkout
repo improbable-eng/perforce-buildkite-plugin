@@ -29,6 +29,7 @@ fi
 
 if ! [[ -d "${venv_dir}" ]]; then
     temp_venv_dir=$(mktemp -d -t bkp4-venv-XXXXXX)
+    trap "rm -rf ${temp_venv_dir}" EXIT
     ${python_bin} -m virtualenv "${temp_venv_dir}"
     ${temp_venv_dir}${venv_python_bin} -m pip install -r "${plugin_root}/python/requirements.txt"
     if ! [[ -d "${venv_dir}" ]]; then # second check to minimize race condition
