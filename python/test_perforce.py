@@ -110,7 +110,7 @@ def test_fixture(capsys, server):
     }
 
     # Check submitted changes
-    submitted_changes = [change for change in repo.perforce.run_changes('-s', 'submitted')]
+    submitted_changes = repo.perforce.run_changes('-s', 'submitted')
     submitted_changeinfo = {change["change"]: repo.perforce.run_describe(change["change"])[0] for change in submitted_changes}
     # Filter info to only contain relevant keys for submitted changes
     submitted_changeinfo = {
@@ -147,7 +147,7 @@ def test_fixture(capsys, server):
     }
 
     # Check shelved changes
-    shelved_changes = [change for change in repo.perforce.run_changes('-s', 'pending')]
+    shelved_changes = repo.perforce.run_changes('-s', 'pending')
     shelved_changeinfo = {change["change"]: repo.perforce.run_describe('-S', change["change"])[0] for change in shelved_changes}
     # Filter info to only contain relevant keys for submitted changes
     shelved_changeinfo = {
@@ -174,7 +174,7 @@ def test_fixture(capsys, server):
         },
     }
 
-    labels = [label for label in repo.perforce.run_labels()]
+    labels = repo.perforce.run_labels()
     # Filter info to only contain relevant keys
     labelinfo = {
         label.get('label'): {key: label.get(key) 
