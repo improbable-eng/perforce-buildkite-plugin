@@ -22,9 +22,9 @@ venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv-${venv_md5}"
 
 platform=$(${python_bin} -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
-    venv_python_bin="Scripts/python"
+    venv_python_bin="/Scripts/python"
 else
-    venv_python_bin="bin/python"
+    venv_python_bin="/bin/python"
 fi
 
 if ! [[ -d "${venv_dir}" ]]; then
