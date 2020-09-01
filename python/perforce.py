@@ -90,9 +90,9 @@ class P4Repo:
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = self.client_opts + ' clobber'
 
-        self.perforce..input = client
+        self.perforce.input = client
         # force in case the client has files open
-        self.perforce..run_client( "-f -i" )
+        self.perforce.run_client( "-f -i" )
 
         if not os.path.isfile(self.p4config):
             self.perforce.logger.warning("p4config missing, flushing workspace to revision zero")
