@@ -1,5 +1,10 @@
 #!/bin/bash
 set -eo pipefail
 
+plugin_root="${BASH_SOURCE%/*}/.."
+
+source ${plugin_root}/common
+
 echo "Reverting any files still open"
-p4 revert //...
+python_path=$(get_python_path)
+${python_path} "${plugin_root}/python/checkout.py"

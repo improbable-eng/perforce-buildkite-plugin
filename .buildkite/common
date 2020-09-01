@@ -1,0 +1,31 @@
+function get_python_bin() {
+   python_bin="python3"
+    if ! [[ -x "$(command -v ${python_bin})" ]]; then
+        python_bin="python"
+    fi
+    echo "${python_bin}"
+}
+
+function get_venv_dir() {
+    # Unique virtualenv for requirements.txt
+    venv_md5=$(md5sum "./python/requirements.txt" | awk '{print $1}')
+    venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv-${venv_md5}"
+    echo "${venv_dir}"
+}
+
+function get_venv_python_bin() {
+    python_bin=$(get_python_bin)
+    platform=$(${python_bin} -c "import platform; print(platform.system())")
+    if [[ "${platform}" == "Windows" ]]; then
+        venv_python_bin="/Scripts/python"
+    else
+        venv_python_bin="/bin/python"
+    fi
+    echo "${venv_python_bin}"
+}
+
+function get_python_path() {
+    venv_dir=$(get_venv_dir)
+    venv_python_bin=$(get_venv_python_bin)
+    echo "${venv_dir}${venv_python_bin}"
+}

@@ -3,12 +3,9 @@ set -eo pipefail
 
 plugin_root="${BASH_SOURCE%/*}/.."
 
+source ${plugin_root}/common
 
-# Try to use explicit python3 if its installed
-python_bin="python3"
-if ! [[ -x "$(command -v ${python_bin})" ]]; then
-    python_bin="python"
-fi
+python_bin=$(get_python_bin)
 
 # Ensure some version of virtualenv is installed
 # Lazy install avoids races between different jobs wanting different versions
@@ -17,15 +14,9 @@ if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
 fi
 
 # Unique virtualenv for requirements.txt
-venv_md5=$(md5sum "${plugin_root}/python/requirements.txt" | awk '{print $1}')
-venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv-${venv_md5}"
+venv_dir=$(get_venv_dir)
 
-platform=$(${python_bin} -c "import platform; print(platform.system())")
-if [[ "${platform}" == "Windows" ]]; then
-    venv_python_bin="/Scripts/python"
-else
-    venv_python_bin="/bin/python"
-fi
+venv_python_bin=$(get_venv_python_bin)
 
 if ! [[ -d "${venv_dir}" ]]; then
     temp_venv_dir=$(mktemp -d -t perforce-plugin-venv-XXXXXX)
@@ -38,4 +29,5 @@ if ! [[ -d "${venv_dir}" ]]; then
     echo "virtualenv created at ${venv_dir}"
 fi
 
-${venv_dir}${venv_python_bin} "${plugin_root}/python/checkout.py"
+python_path=$(get_python_path)
+${python_path} "${plugin_root}/python/checkout.py"
