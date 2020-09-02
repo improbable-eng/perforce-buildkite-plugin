@@ -6,7 +6,7 @@ from P4 import P4
 from datetime import datetime, timedelta
 from pprint import pprint
 
-# delete workspaces where last access time < N days ago
+# delete workspaces where last access time > N days ago
 __days_unused__ = 30
 
 p4 = P4()
