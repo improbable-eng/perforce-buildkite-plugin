@@ -34,6 +34,7 @@ class P4Repo:
         self.p4config = os.path.join(self.root, 'p4config')
 
         self.perforce = P4()
+        self.perforce.disable_tmp_cleanup() # Required to use multiple P4 connections in parallel safely
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
         logger = logging.getLogger("p4python")
         logger.setLevel(logging.INFO)
