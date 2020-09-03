@@ -28,7 +28,7 @@ def get_env():
     return env
 
 def list_from_env_array(var):
-    """Read list of values from either VAR or VAR_1, VAR_2 etc"""
+    """Read list of values from either VAR or VAR_0, VAR_1 etc"""
     result = os.environ.get(var, [])
     if result:
         return [result] # convert single value to list
