@@ -110,7 +110,7 @@ def test_fixture(capsys, server):
     }
 
     # Check submitted changes
-    submitted_changes = [change for change in repo.perforce.run_changes('-s', 'submitted')]
+    submitted_changes = repo.perforce.run_changes('-s', 'submitted')
     submitted_changeinfo = {change["change"]: repo.perforce.run_describe(change["change"])[0] for change in submitted_changes}
     # Filter info to only contain relevant keys for submitted changes
     submitted_changeinfo = {
@@ -147,7 +147,7 @@ def test_fixture(capsys, server):
     }
 
     # Check shelved changes
-    shelved_changes = [change for change in repo.perforce.run_changes('-s', 'pending')]
+    shelved_changes = repo.perforce.run_changes('-s', 'pending')
     shelved_changeinfo = {change["change"]: repo.perforce.run_describe('-S', change["change"])[0] for change in shelved_changes}
     # Filter info to only contain relevant keys for submitted changes
     shelved_changeinfo = {
@@ -172,6 +172,18 @@ def test_fixture(capsys, server):
             'depotFile': ['//depot/newfile.txt'],
             'desc': 'Add file in shelved change\n',
         },
+    }
+
+    labels = repo.perforce.run_labels()
+    # Filter info to only contain relevant keys
+    labelinfo = {
+        label.get('label'): {key: label.get(key) 
+                             for key in ['Revision']
+                            }
+        for label in labels
+    }
+    assert labelinfo == {
+        'my-label': {'Revision': '@2'}
     }
 
 def test_head(server, tmpdir):
@@ -230,6 +242,17 @@ def test_checkout_stream(server, tmpdir):
     repo.sync()
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
+
+def test_checkout_label(server, tmpdir):
+    """Test checking out at a specific label"""
+    repo = P4Repo(root=tmpdir)
+
+    with pytest.raises(Exception, match=r'Invalid changelist/client/label/date'):
+        repo.sync(revision="@nonexistent-label")
+
+    repo.sync(revision="@my-label")
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"     
 
 def test_workspace_recovery(server, tmpdir):
     """Test that we can detect and recover from various workspace snafus"""
