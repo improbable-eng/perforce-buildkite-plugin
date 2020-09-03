@@ -316,7 +316,7 @@ def test_p4print_unshelve(server, tmpdir):
     assert not os.path.exists(os.path.join(tmpdir, "newfile.txt")), "File unshelved for add was not deleted"
 
     # Shelved changes containing files not selected for sync are skipped
-    repo = P4Repo(root=tmpdir, sync='//depot/fake-dir/...')
+    repo = P4Repo(root=tmpdir, sync=['//depot/fake-dir/...'])
     repo.sync()
     repo.p4print_unshelve('3') # Modify file.txt
     assert not os.path.exists(os.path.join(tmpdir, "file.txt"))
