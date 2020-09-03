@@ -27,23 +27,28 @@ def get_env():
             env[p4var] = plugin_value
     return env
 
+def list_from_env_array(var):
+    """Read list of values from either VAR or VAR_1, VAR_2 etc"""
+    result = os.environ.get(var, [])
+    if result:
+        return [result] # convert single value to list
+
+    i = 0
+    while True:
+        elem = os.environ.get("%s_%d" % (var, i))
+        if not elem:
+            break
+        result.append(elem)
+        i += 1
+    
+    return result
+
 def get_config():
     """Get configuration which will be passed directly to perforce.P4Repo as kwargs"""
     conf = {}
     conf['view'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_VIEW') or '//... ...'
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
-
-    conf['sync'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SYNC', [])
-    if not conf['sync']:
-        # Read from array instead of single item
-        i = 0
-        while True:
-            path = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SYNC_%d' % i)
-            if not path:
-                break
-            conf['sync'].append(path)
-            i += 1
-    
+    conf['sync'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_SYNC')
     conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
     conf['client_opts'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
 
