@@ -21,6 +21,9 @@ class P4Repo:
         root: Directory in which to create the client workspace
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
+        sync: Single path or list of paths to sync. Defaults to entire view.
+        client_opts: Additional options to add to client. (e.g. allwrite)
+        parallel: How many threads to use for parallel sync.
         """
         self.root = os.path.abspath(root or '')
         self.stream = stream
