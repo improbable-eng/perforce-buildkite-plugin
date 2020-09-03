@@ -21,14 +21,14 @@ class P4Repo:
         root: Directory in which to create the client workspace
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
-        sync: Single path or list of paths to sync. Defaults to entire view.
+        sync: List of paths to sync. Defaults to entire view.
         client_opts: Additional options to add to client. (e.g. allwrite)
         parallel: How many threads to use for parallel sync.
         """
         self.root = os.path.abspath(root or '')
         self.stream = stream
         self.view = self._localize_view(view or [])
-        self.sync_paths = sync if isinstance(sync, list) else [sync or '//...'] # Support list of paths or single path as input
+        self.sync_paths = sync or ['//...']
         self.client_opts = client_opts or ''
         self.parallel = parallel
 
