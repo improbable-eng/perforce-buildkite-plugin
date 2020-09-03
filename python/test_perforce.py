@@ -229,8 +229,6 @@ def test_checkout_label(server, tmpdir):
     """Test checking out at a specific label"""
     repo = P4Repo(root=tmpdir)
 
-    assert os.listdir(tmpdir) == [], "Workspace should be empty"
-
     with pytest.raises(Exception, match=r'Invalid changelist/client/label/date'):
         repo.sync(revision="@nonexistent-label")
 
