@@ -29,6 +29,7 @@ class P4Repo:
         self.stream = stream
         self.view = self._localize_view(view or [])
         self.sync_paths = sync or ['//...']
+        assert isinstance(self.sync_paths, list)
         self.client_opts = client_opts or ''
         self.parallel = parallel
 

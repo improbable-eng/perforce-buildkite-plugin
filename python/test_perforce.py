@@ -206,13 +206,13 @@ def test_checkout(server, tmpdir):
 
 def test_checkout_partial_path(server, tmpdir):
     """Test checking out a subset of view with one path"""
-    repo = P4Repo(root=tmpdir, sync='//depot/file.txt')
+    repo = P4Repo(root=tmpdir, sync=['//depot/file.txt'])
     repo.sync()
     assert 'file.txt' in os.listdir(tmpdir)
 
 def test_checkout_partial_dir(server, tmpdir):
     """Test checking out a subset of view with one directory"""
-    repo = P4Repo(root=tmpdir, sync='//depot/...')
+    repo = P4Repo(root=tmpdir, sync=['//depot/...'])
     repo.sync()
     assert 'file.txt' in os.listdir(tmpdir)
 

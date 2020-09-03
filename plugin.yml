@@ -16,7 +16,7 @@ configuration:
     stream:
       type: string
     sync:
-      type: string
+      type: array
     parallel:
       type: string
     client_opts:
