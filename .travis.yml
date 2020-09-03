@@ -4,7 +4,9 @@ python:
   - "3.6"
 os:
   - linux
-dist: bionic # 18.04
+dist:
+  - bionic # 18.04
+  - focal  # 20.04
 before_install:
   - pip install -U pip
 install: 
