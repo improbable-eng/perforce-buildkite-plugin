@@ -2,9 +2,9 @@ language: python
 # cache: pip # not enough installed via pip to justify
 jobs:
   include:
-    - name: "Python 3.6 on Linux"
-      python: 3.6
-      os: linux
+    # - name: "Python 3.6 on Linux"
+    #   python: 3.6
+    #   os: linux
     - name: "Python 3.6 on Windows"
       os: windows
       language: shell
