@@ -160,13 +160,27 @@ class P4Repo:
 
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
-        # Resolve revision specifier like "@labelname" to a concrete submitted change
-        result = self.perforce.run_changes([
+        stripped_revision = revision.lstrip('@')
+        if not (stripped_revision.isdigit() or stripped_revision.endswith('...')):
+            # Revision spec is not a concrete changelist or view
+            try:
+                # Resolve revision directly for automatic labels
+                # Improves performance when label is significantly behind HEAD
+                labelinfo = self.perforce.fetch_label(stripped_revision)
+                 # Revision field is optional
+                revision = labelinfo.get('Revision') or revision
+            except P4Exception:
+                # revision may be clientname, datespec or something else
+                # fallback to default behaviour 
+                pass
+
+        # Get last submitted change at revision spec
+        changeinfo = self.perforce.run_changes([
             '-m', '1', '-s', 'submitted', revision
         ])
-        if not result:
+        if not changeinfo:
             return None # Revision spec had no submitted changes
-        return result[0]['change']
+        return changeinfo[0]['change']
 
     def description(self, changelist):
         """Get description of a given changelist number"""
