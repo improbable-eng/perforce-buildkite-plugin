@@ -8,6 +8,7 @@ before_install:
   - pip install -U pip
 install: 
   - pip install -r ./ci/requirements.txt
+  - pip install -r ./python/requirements.txt
   - ./ci/install_$TRAVIS_OS_NAME.sh
 script:
   - ./ci/test.sh
