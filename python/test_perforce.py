@@ -216,6 +216,24 @@ def test_checkout(server, tmpdir):
     with open(os.path.join(tmpdir, "p4config")) as content:
         assert "P4PORT=%s\n" % repo.perforce.port in content.readlines(), "Unexpected p4config content"
 
+def test_checkout_partial_path(server, tmpdir):
+    """Test checking out a subset of view with one path"""
+    repo = P4Repo(root=tmpdir, sync=['//depot/file.txt'])
+    repo.sync()
+    assert 'file.txt' in os.listdir(tmpdir)
+
+def test_checkout_partial_dir(server, tmpdir):
+    """Test checking out a subset of view with one directory"""
+    repo = P4Repo(root=tmpdir, sync=['//depot/...'])
+    repo.sync()
+    assert 'file.txt' in os.listdir(tmpdir)
+
+def test_checkout_partial_multiple(server, tmpdir):
+    """Test checking out a subset of view with multiple paths"""
+    repo = P4Repo(root=tmpdir, sync=['//depot/fake-dir/...', '//depot/file.txt'])
+    repo.sync()
+    assert 'file.txt' in os.listdir(tmpdir)
+
 def test_checkout_stream(server, tmpdir):
     """Test checking out a stream depot"""
     repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
@@ -321,7 +339,7 @@ def test_p4print_unshelve(server, tmpdir):
     assert not os.path.exists(os.path.join(tmpdir, "newfile.txt")), "File unshelved for add was not deleted"
 
     # Shelved changes containing files not selected for sync are skipped
-    repo = P4Repo(root=tmpdir, sync='//depot/fake-dir/...')
+    repo = P4Repo(root=tmpdir, sync=['//depot/fake-dir/...'])
     repo.sync()
     repo.p4print_unshelve('3') # Modify file.txt
     assert not os.path.exists(os.path.join(tmpdir, "file.txt"))
