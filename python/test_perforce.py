@@ -198,6 +198,8 @@ def test_head(server, tmpdir):
     with pytest.raises(Exception, match=r"Stream '//stream-depot/idontexist' doesn't exist."):
         repo.head()
 
+    assert repo.head_at_revision("@my-label") == "2", "Unexpected HEAD revision for label"
+
 def test_checkout(server, tmpdir):
     """Test normal flow of checking out files"""
     repo = P4Repo(root=tmpdir)
