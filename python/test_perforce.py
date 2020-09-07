@@ -48,7 +48,7 @@ def run_p4d(p4port, from_zip=None):
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(tmpdir)
     try:
-        subprocess.check_output(["/usr/local/bin/p4d", "-r", tmpdir, "-p", str(p4port)],
+        subprocess.check_output(["p4d", "-r", tmpdir, "-p", str(p4port)],
                                 timeout=__P4D_TIMEOUT__)
     except subprocess.TimeoutExpired:
         pass
