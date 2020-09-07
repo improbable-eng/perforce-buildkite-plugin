@@ -91,6 +91,20 @@ steps:
           stream_switching: true
 ```
 
+### Use readonly/partitioned clients
+
+Readonly and partitioned client workspaces can be used to reduce impact of automated build systems on Perforce server performance.
+See related article [Readonly and Partitioned Client Workspaces](https://community.perforce.com/s/article/15372).
+
+Note that existing client workspaces must be deleted and re-created to change type.
+
+```yaml
+steps:
+    plugins:
+      - improbable-eng/perforce:
+          client_type: partitioned
+```
+
 ## Triggering Builds
 
 There are a few options for triggering builds that use this plugin, in this order from least valuable but most convenient to most valuable but least convenient.
