@@ -50,7 +50,7 @@ def get_config():
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
     conf['sync'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_SYNC')
     conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
-    conf['client_opts'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
+    conf['client_options'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
 
     if 'BUILDKITE_PLUGIN_PERFORCE_ROOT' in os.environ and not __LOCAL_RUN__:
         raise Exception("Custom P4 root is for use in unit tests only")
