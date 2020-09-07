@@ -97,17 +97,17 @@ class P4Repo:
 
         self.perforce.save_client(client)
 
-        if not os.path.isfile(self.p4config):
-            self.perforce.logger.warning("p4config missing, flushing workspace to revision zero")
-            self.perforce.run_flush(['//...@0'])
-        else:
+        if os.path.isfile(self.p4config):
             with open(self.p4config) as infile:
                 prev_clientname = next(line.split('=', 1)[-1]
                     for line in infile.read().splitlines() # removes \n
                     if line.startswith('P4CLIENT='))
-                if prev_clientname != clientname:
-                    self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
-                    self.perforce.run_flush(['//...@%s' % prev_clientname])
+            if prev_clientname != clientname:
+                self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
+                self.perforce.run_flush(['//...@%s' % prev_clientname])
+        elif 'Update' in client: # client was accessed previously
+            self.perforce.logger.warning("p4config missing for previously accessed client workspace. flushing to revision zero")
+            self.perforce.run_flush(['//...@0'])
 
         self._write_p4config()
         self.created_client = True
