@@ -16,7 +16,7 @@ from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None, sync=None,
-                 client_options=None, client_type='writeable', parallel=0):
+                 client_options=None, client_type=None, parallel=0):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -32,7 +32,7 @@ class P4Repo:
         self.sync_paths = sync or ['//...']
         assert isinstance(self.sync_paths, list)
         self.client_options = client_options or ''
-        self.client_type = client_type
+        self.client_type = client_type or 'writeable'
         self.parallel = parallel
 
         self.created_client = False
