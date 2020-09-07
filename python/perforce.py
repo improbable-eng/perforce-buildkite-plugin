@@ -90,9 +90,9 @@ class P4Repo:
             client._root = self.root
         if self.stream:
             client._stream = self.stream
-        client._type = self.client_type
         if self.view:
             client._view = self.view
+        client._type = self.client_type
 
         # unless overidden, overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
