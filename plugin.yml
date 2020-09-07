@@ -19,7 +19,7 @@ configuration:
       type: array
     parallel:
       type: string
-    client_opts:
+    client_options:
       type: string
     backup_changelists:
       type: bool

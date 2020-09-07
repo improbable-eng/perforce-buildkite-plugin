@@ -16,13 +16,13 @@ from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None,
-                 sync=None, client_opts=None, parallel=0):
+                 sync=None, client_options=None, parallel=0):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
         sync: List of paths to sync. Defaults to entire view.
-        client_opts: Additional options to add to client. (e.g. allwrite)
+        client_options: Additional options to add to client. (e.g. allwrite)
         parallel: How many threads to use for parallel sync.
         """
         self.root = os.path.abspath(root or '')
@@ -30,7 +30,7 @@ class P4Repo:
         self.view = self._localize_view(view or [])
         self.sync_paths = sync or ['//...']
         assert isinstance(self.sync_paths, list)
-        self.client_opts = client_opts or ''
+        self.client_options = client_options or ''
         self.parallel = parallel
 
         self.created_client = False
@@ -93,7 +93,7 @@ class P4Repo:
 
         # unless overidden, overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
-        client._options = self.client_opts + ' clobber'
+        client._options = self.client_options + ' clobber'
 
         self.perforce.save_client(client)
 
