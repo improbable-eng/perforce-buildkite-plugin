@@ -21,11 +21,15 @@ class P4Repo:
         root: Directory in which to create the client workspace
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
+        sync: List of paths to sync. Defaults to entire view.
+        client_opts: Additional options to add to client. (e.g. allwrite)
+        parallel: How many threads to use for parallel sync.
         """
         self.root = os.path.abspath(root or '')
         self.stream = stream
         self.view = self._localize_view(view or [])
-        self.sync_paths = sync or '//...'
+        self.sync_paths = sync or ['//...']
+        assert isinstance(self.sync_paths, list)
         self.client_opts = client_opts or ''
         self.parallel = parallel
 
@@ -160,13 +164,27 @@ class P4Repo:
 
     def head_at_revision(self, revision):
         """Get head submitted changelist at revision specifier"""
-        # Resolve revision specifier like "@labelname" to a concrete submitted change
-        result = self.perforce.run_changes([
+        stripped_revision = revision.lstrip('@')
+        if not (stripped_revision.isdigit() or stripped_revision.endswith('...')):
+            # Revision spec is not a concrete changelist or view
+            try:
+                # Resolve revision directly for automatic labels
+                # Improves performance when label is significantly behind HEAD
+                labelinfo = self.perforce.fetch_label(stripped_revision)
+                 # Revision field is optional
+                revision = labelinfo.get('Revision') or revision
+            except P4Exception:
+                # revision may be clientname, datespec or something else
+                # fallback to default behaviour 
+                pass
+
+        # Get last submitted change at revision spec
+        changeinfo = self.perforce.run_changes([
             '-m', '1', '-s', 'submitted', revision
         ])
-        if not result:
+        if not changeinfo:
             return None # Revision spec had no submitted changes
-        return result[0]['change']
+        return changeinfo[0]['change']
 
     def description(self, changelist):
         """Get description of a given changelist number"""
@@ -176,9 +194,10 @@ class P4Repo:
         """Sync the workspace"""
         self._setup_client()
         self.revert()
+        sync_files = ['%s%s' % (path, revision or '') for path in self.sync_paths]
         result = self.perforce.run_sync(
             '--parallel=threads=%s' % self.parallel,
-            '%s%s' % (self.sync_paths, revision or ''),
+            *sync_files,
             handler=SyncOutput(self.perforce.logger),
         )
         if result:
@@ -248,14 +267,14 @@ class P4Repo:
 
         # Turn sync spec info a prefix to filter out unwanted files
         # e.g. //my-depot/dir/... => //my-depot/dir/
-        sync_prefix = self.sync_paths.rstrip('.')
+        sync_prefixes = [prefix.rstrip('.') for prefix in self.sync_paths]
 
         cmds = []
         for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
-            if depotfile.startswith(sync_prefix):
+            if any(depotfile.startswith(prefix) for prefix in sync_prefixes):
                 cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
         self.run_parallel_cmds(cmds)
