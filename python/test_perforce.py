@@ -48,7 +48,7 @@ def run_p4d(p4port, from_zip=None):
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(tmpdir)
     try:
-        subprocess.check_output(["p4d", "-r", tmpdir, "-p", str(p4port)],
+        subprocess.check_output(["/usr/local/bin/p4d", "-r", tmpdir, "-p", str(p4port)],
                                 timeout=__P4D_TIMEOUT__)
     except subprocess.TimeoutExpired:
         pass
@@ -255,6 +255,24 @@ def test_checkout_label(server, tmpdir):
     repo.sync(revision="@my-label")
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello World\n", "Unexpected content in workspace file"     
+
+def test_readonly_client(server, tmpdir):
+    """Test creation of a readonly client"""
+    repo = P4Repo(root=tmpdir, client_type='readonly')
+    repo.sync()
+    assert "file.txt" in os.listdir(tmpdir), "Workspace file was not synced"
+
+def test_modify_client_type(server, tmpdir):
+    """Test modifying a client from writeable to readonly and vice versa"""
+    repo = P4Repo(root=tmpdir, client_type='writeable')
+    repo.sync()
+    assert "file.txt" in os.listdir(tmpdir), "Workspace file was not synced"
+
+    repo = P4Repo(root=tmpdir, client_type='readonly')
+    repo.sync()
+
+    repo = P4Repo(root=tmpdir, client_type='writeable')
+    repo.sync()
 
 def test_workspace_recovery(server, tmpdir):
     """Test that we can detect and recover from various workspace snafus"""
