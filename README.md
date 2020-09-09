@@ -63,7 +63,9 @@ steps:
     plugins:
       - improbable-eng/perforce:
           stream: //dev/minimal
-          sync: //dev/minimal/.buildkite/...
+          sync: 
+            - //dev/minimal/.buildkite/...
+            - //dev/minimal/scripts/...
 ```
 
 ### Enable parallel sync
