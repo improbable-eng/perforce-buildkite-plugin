@@ -15,14 +15,15 @@ from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
-    def __init__(self, root=None, view=None, stream=None,
-                 sync=None, client_options=None, parallel=0):
+    def __init__(self, root=None, view=None, stream=None, sync=None,
+                 client_options=None, client_type=None, parallel=0):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
         stream: Client workspace stream. Overrides view parameter.
         sync: List of paths to sync. Defaults to entire view.
         client_options: Additional options to add to client. (e.g. allwrite)
+        client_type: Type of client (writeable, readonly, partitioned)
         parallel: How many threads to use for parallel sync.
         """
         self.root = os.path.abspath(root or '')
@@ -31,6 +32,7 @@ class P4Repo:
         self.sync_paths = sync or ['//...']
         assert isinstance(self.sync_paths, list)
         self.client_options = client_options or ''
+        self.client_type = client_type or 'writeable'
         self.parallel = parallel
 
         self.created_client = False
@@ -90,6 +92,7 @@ class P4Repo:
             client._stream = self.stream
         if self.view:
             client._view = self.view
+        client._type = self.client_type
 
         # unless overidden, overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
