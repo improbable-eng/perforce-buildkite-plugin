@@ -151,7 +151,7 @@ Relies on people within your team manually clicking `New Build` within the Build
 
 A service polls your perforce for the current head revision and POSTs to the Buildkite API to trigger builds for any new changes. Note that you will need to store state to avoid duplicate and skipped builds.
 
-### `p4 trigger`
+### P4 Trigger
 
 Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [p4 triggers](https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/p4_triggers.html) for more information. Note that this will require admin access to the Perforce server.
 
