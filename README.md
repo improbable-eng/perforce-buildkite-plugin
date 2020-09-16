@@ -101,7 +101,13 @@ tbc
 
 #### `client_options` (optional, string)
 
-tbc
+Defaults to `clobber`.
+
+Additional options for the client workspace, see [Options field](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_client.html?#Options2).
+
+```yaml
+client_options: noclobber nowriteall
+```
 
 #### `client_type` (optional, string)
 
