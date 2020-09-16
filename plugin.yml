@@ -3,25 +3,29 @@ description: Checks out a perforce repository instead of git.
 author: https://github.com/ca-johnson
 configuration:
   properties:
-    p4port:
-      type: string
-    p4user:
-      type: string
-    p4tickets:
-      type: string
-    p4trust:
-      type: string  
-    view:
-      type: string
-    stream:
-      type: string
-    sync:
-      type: array
-    parallel:
-      type: string
+    backup_changelists:
+      type: bool
     client_options:
       type: string
     client_type:
       type: string
-    backup_changelists:
+    p4port:
+      type: string
+    p4tickets:
+      type: string
+    p4trust:
+      type: string
+    p4user:
+      type: string
+    parallel:
+      type: string
+    share_workspace:
       type: bool
+    stream:
+      type: string
+    stream_switching:
+      type: bool
+    sync:
+      type: array
+    view:
+      type: string
