@@ -107,6 +107,34 @@ steps:
           client_type: partitioned
 ```
 
+## Configuration
+
+### `backup_changelists` (bool)
+
+### `client_options` (string)
+
+### `client_type` (string)
+
+### `p4port` (string)
+
+### `p4tickets` (string)
+
+### `p4trust` (string)
+
+### `p4user` (string)
+
+### `parallel` (string)
+
+### `share_workspace` (bool)
+
+### `stream` (string)
+
+### `stream_switching` (bool)
+
+### `sync` ([]string)
+
+### `view` (string)
+
 ## Triggering Builds
 
 There are a few options for triggering builds that use this plugin, in this order from least valuable but most convenient to most valuable but least convenient.
