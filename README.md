@@ -34,40 +34,6 @@ steps:
 
 `P4PORT` may also be configured by setting `BUILDKITE_REPO` for your pipeline.
 
-### Custom workspace view:
-
-Note that this must consist of real depot paths like a regular workspace view. You cannot combine streams.
-
-```yaml
-steps:
-  plugins:
-    - improbable-eng/perforce:
-      view: >-
-        //dev/project/... project/...
-        //dev/vendor/... vendor/...
-```
-
-### Workspace view via a p4 stream:
-
-```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          stream: //dev/minimal
-```
-
-### Partial sync of a stream
-
-```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          stream: //dev/minimal
-          sync: 
-            - //dev/minimal/.buildkite/...
-            - //dev/minimal/scripts/...
-```
-
 ### Enable parallel sync
 
 ```yaml
@@ -109,31 +75,55 @@ steps:
 
 ## Configuration
 
-### `backup_changelists` (bool)
+### Basic
 
-### `client_options` (string)
+#### `p4user/p4port/p4tickets/p4trust` (optional, string)
 
-### `client_type` (string)
+Override configuration at the User Environment level. May be overridden by P4CONFIG or P4ENVIRO files.
 
-### `p4port` (string)
+See [p4 set](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_set.html?Highlight=precedence) for more on system variables and precedence.
 
-### `p4tickets` (string)
+#### `stream` (optional, string)
 
-### `p4trust` (string)
+Which p4 stream to sync, e.g. `//dev/minimal`. Can be overridden by `view`.
 
-### `p4user` (string)
+#### `sync` (optional, []string)
 
-### `parallel` (string)
+List of paths to sync, useful when only a subset of files in the clients view are required.
 
-### `share_workspace` (bool)
+```yaml
+sync:
+  - //dev/minimal/.buildkite/...
+  - //dev/minimal/scripts/...
+```
 
-### `stream` (string)
+#### `view` (optional, string)
 
-### `stream_switching` (bool)
+Custom workspace view. Must consist of concrete depot paths. Overrides `stream`.
 
-### `sync` ([]string)
+```yaml
+view: >-
+  //dev/project/... project/...
+  //dev/vendor/... vendor/...
+```
 
-### `view` (string)
+### Advanced
+
+#### `backup_changelists` (optional, bool)
+
+#### `client_options` (optional, string)
+
+#### `client_type` (optional, string)
+
+#### `parallel` (optional, string)
+
+Number of threads to use for parallel sync operations.
+
+#### `share_workspace` (optional, bool)
+
+
+#### `stream_switching` (optional, bool)
+
 
 ## Triggering Builds
 
