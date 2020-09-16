@@ -4,13 +4,13 @@ A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you 
 
 1. Configure at least `P4PORT` and `P4USER` (see examples below)
 2. Provision with credentials - a `P4TICKETS` file is recommended
-3. Optionally customise workspace mapping.
+3. Optionally customise workspace mapping with `stream`, `sync` or `view` settings.
 
 The `P4CLIENT`, `P4USER` and `P4PORT` used by the plugin are written to a [`P4CONFIG`](https://www.perforce.com/manuals/v16.2/cmdref/P4CONFIG.html) file at the workspace root and the `P4CONFIG` env var is set, so build scripts are able to automatically pick up configuration for any further interactions with Perforce.
 
 ## Examples
 
-### Configuration via env vars:
+### Configuration via env vars
 
 ```yaml
 env:
@@ -22,7 +22,7 @@ steps:
     - improbable-eng/perforce: ~
 ```
 
-### Configuration via the plugin:
+### Configuration via plugin
 
 ```yaml
 steps:
@@ -122,15 +122,17 @@ Relies on people within your team manually clicking `New Build` within the Build
 
 ### Schedule
 
-Schedule builds with a cron in buildkite - this requires no additional setup, but provides the worst response time as changes are made
+[Scheduled builds](https://buildkite.com/docs/pipelines/scheduled-builds) with a cron in buildkite - this requires no additional setup, but provides the slowest response time between a change being made and a build triggered.
 
 ### Polling
 
 A service polls your perforce for the current head revision and POSTs to the Buildkite API to trigger builds for any new changes. Note that you will need to store state to avoid duplicate and skipped builds.
 
-### `p4 trigger`
+### P4 Trigger
 
 Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [p4 triggers](https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/p4_triggers.html) for more information. Note that this will require admin access to the Perforce server.
+
+See [examples](./examples) for sample p4 trigger scripts.
 
 ## Contributing
 
@@ -142,7 +144,7 @@ Python [virtualenv](https://docs.python.org/3/tutorial/venv.html) `.dev-venv` fo
 
 Run the `test_fixture` unit test to check everything is setup correctly:
 
-```
+```bash
 source .dev-venv/bin/activate
 pytest python/test_perforce.py -k test_fixture
 ```
