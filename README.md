@@ -100,6 +100,10 @@ See related article [Readonly and Partitioned Client Workspaces](https://communi
 
 Note that `writeable` client workspaces must be deleted and re-created to change to `readonly` or `partitioned` and vice versa.
 
+Note that `readonly` or `partitioned` workspace do not appear in the `db.have` table, which prevents them from being used as a revision specifier.
+This adds a caveat if you wish to re-use workspace data across different machines: the original client which populated that workspace must have been `writeable`.
+(e.g. If a disk with existing workspace data is attached to a new machine, the plugin will create a new client, read the old workspace name from P4CONFIG and `p4 flush //...@<old-workspace>`. The flush command fails if the old workspace was not of type `writeable`)
+
 #### `parallel` (optional, string)
 
 Default: `0` (no parallelism)
