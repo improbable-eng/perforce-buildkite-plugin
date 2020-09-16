@@ -100,7 +100,7 @@ See related article [Readonly and Partitioned Client Workspaces](https://communi
 
 Note that `writeable` client workspaces must be deleted and re-created to change to `readonly` or `partitioned` and vice versa.
 
-Note that `readonly` or `partitioned` workspace do not appear in the `db.have` table, which prevents them from being used as a revision specifier.
+Note that `readonly` or `partitioned` workspaces do not appear in the `db.have` table, which prevents them from being used as a revision specifier.
 
 This adds a caveat if you wish to re-use workspace data across different machines: the original client which populated that workspace must have been `writeable`.
 
