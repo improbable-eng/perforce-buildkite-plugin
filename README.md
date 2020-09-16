@@ -59,10 +59,6 @@ steps:
           stream_switching: true
 ```
 
-### Use readonly/partitioned clients
-
-
-
 ## Configuration
 
 ### Basic
@@ -101,7 +97,11 @@ view: >-
 
 #### `backup_changelists` (optional, bool)
 
+tbc
+
 #### `client_options` (optional, string)
+
+tbc
 
 #### `client_type` (optional, string)
 
@@ -118,9 +118,11 @@ Number of threads to use for parallel sync operations.
 
 #### `share_workspace` (optional, bool)
 
+tbc
 
 #### `stream_switching` (optional, bool)
 
+tbc
 
 ## Triggering Builds
 
@@ -137,7 +139,7 @@ Relies on people within your team manually clicking `New Build` within the Build
 
 ### Schedule
 
-Schedule builds with a cron in buildkite - this requires no additional setup, but provides the worst response time as changes are made
+[Scheduled builds](https://buildkite.com/docs/pipelines/scheduled-builds) with a cron in buildkite - this requires no additional setup, but provides the slowest response time between a change being made and a build triggered.
 
 ### Polling
 
@@ -146,6 +148,8 @@ A service polls your perforce for the current head revision and POSTs to the Bui
 ### `p4 trigger`
 
 Set up a `p4 trigger` which POSTs to the buildkite API to trigger a build. See [p4 triggers](https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/p4_triggers.html) for more information. Note that this will require admin access to the Perforce server.
+
+See [examples](./examples) for sample p4 trigger scripts.
 
 ## Contributing
 
@@ -157,7 +161,7 @@ Python [virtualenv](https://docs.python.org/3/tutorial/venv.html) `.dev-venv` fo
 
 Run the `test_fixture` unit test to check everything is setup correctly:
 
-```
+```bash
 source .dev-venv/bin/activate
 pytest python/test_perforce.py -k test_fixture
 ```
