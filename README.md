@@ -110,7 +110,7 @@ This adds a caveat if you wish to re-use workspace data across different machine
 
 Default: `0` (no parallelism)
 
-Number of threads to use for parallel sync operations.
+Number of threads to use for parallel sync operations. High values may affect Perforce server performance.
 
 #### `share_workspace` (optional, bool)
 
