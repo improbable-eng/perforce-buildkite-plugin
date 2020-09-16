@@ -61,17 +61,7 @@ steps:
 
 ### Use readonly/partitioned clients
 
-Readonly and partitioned client workspaces can be used to reduce impact of automated build systems on Perforce server performance.
-See related article [Readonly and Partitioned Client Workspaces](https://community.perforce.com/s/article/15372).
 
-Note that existing client workspaces must be deleted and re-created to change type.
-
-```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          client_type: partitioned
-```
 
 ## Configuration
 
@@ -114,6 +104,13 @@ view: >-
 #### `client_options` (optional, string)
 
 #### `client_type` (optional, string)
+
+Defaults to `writeable`.
+
+`readonly` and `partitioned` client workspaces can be used to reduce impact of automated build systems on Perforce server performance.
+See related article [Readonly and Partitioned Client Workspaces](https://community.perforce.com/s/article/15372).
+
+Note that `writeable` client workspaces must be deleted and re-created to change to `readonly` or `partitioned` and vice versa.
 
 #### `parallel` (optional, string)
 
