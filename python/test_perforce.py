@@ -194,11 +194,12 @@ def test_fixture(capsys, server):
 
 def test_head(server, tmpdir):
     """Test resolve of HEAD changelist"""
-    repo = P4Repo(root=tmpdir)
-    assert repo.head() == "@6", "Unexpected global HEAD revision"
+    # workspace with no changes in view defaults to global view
+    repo = P4Repo(root=tmpdir, view="//depot/empty_dir/... empty_dir/...")
+    assert repo.head() == "@9", "Unexpected global HEAD revision"
 
-    repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
-    assert repo.head() == "@2", "Unexpected HEAD revision for stream"
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/dev')
+    assert repo.head() == "@8", "Unexpected HEAD revision for stream"
 
     repo = P4Repo(root=tmpdir, stream='//stream-depot/idontexist')
     with pytest.raises(Exception, match=r"Stream '//stream-depot/idontexist' doesn't exist."):
@@ -452,7 +453,7 @@ def test_stream_switching_migration(server, tmpdir):
         assert len(synced) > 0, "Didn't sync any files"
         assert set(os.listdir(second_client)) == set([
             "file.txt", "p4config"]) # file_2.txt was de-synced
-        with open(os.path.join(second_client, "file.stxt")) as content:
+        with open(os.path.join(second_client, "file.txt")) as content:
             assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"    
 
 
