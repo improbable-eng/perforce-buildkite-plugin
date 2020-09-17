@@ -34,78 +34,101 @@ steps:
 
 `P4PORT` may also be configured by setting `BUILDKITE_REPO` for your pipeline.
 
-### Custom workspace view:
+## Configuration
 
-Note that this must consist of real depot paths like a regular workspace view. You cannot combine streams.
+### Basic
 
-```yaml
-steps:
-  plugins:
-    - improbable-eng/perforce:
-      view: >-
-        //dev/project/... project/...
-        //dev/vendor/... vendor/...
-```
+#### `p4user/p4port/p4tickets/p4trust` (optional, string)
 
-### Workspace view via a p4 stream:
+Override configuration at the User Environment level. May be overridden by P4CONFIG or P4ENVIRO files.
 
-```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          stream: //dev/minimal
-```
+See [p4 set](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_set.html?Highlight=precedence) for more on system variables and precedence.
 
-### Partial sync of a stream
+#### `stream` (optional, string)
+
+Which p4 stream to sync, e.g. `//dev/minimal`. Can be overridden by `view`.
+
+#### `sync` (optional, []string)
+
+List of paths to sync, useful when only a subset of files in the clients view are required.
 
 ```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          stream: //dev/minimal
-          sync: 
-            - //dev/minimal/.buildkite/...
-            - //dev/minimal/scripts/...
+sync:
+  - //dev/minimal/.buildkite/...
+  - //dev/minimal/scripts/...
 ```
 
-### Enable parallel sync
+#### `view` (optional, string)
+
+Custom workspace view. Must consist of concrete depot paths. Overrides `stream`.
 
 ```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          parallel: 16
+view: >-
+  //dev/project/... project/...
+  //dev/vendor/... vendor/...
 ```
 
-### Share a stream workspace between pipelines
+### Advanced
 
-Useful to avoid syncing duplicate data with large workspaces.
-Only allowed when there is a single buildkite agent running on the machine.
+#### `backup_changelists` (optional, bool)
+
+Default: `no`.
+
+When running a build against a shelved changelist, create a duplicate of that changelist so that other steps in the build are guaranteed to run against the same version of shelved files.
+
+Caveats:
+
+* May lead to accumulation of many shelved changelists on the server, affecting performance.
+* Removes convenience of being able to re-shelve changes and iterate by retrying only failied steps.
+
+#### `client_options` (optional, string)
+
+Default: `clobber`.
+
+Additional options for the client workspace, see [Options field](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_client.html?#Options2).
 
 ```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          stream: //dev/buildkite
-           # Sync each stream once
-          share_workspace: true
-          # Sync once and switch streams in-place (requires share_workspace: true)
-          stream_switching: true
+client_options: noclobber nowriteall
 ```
 
-### Use readonly/partitioned clients
+#### `client_type` (optional, string)
 
-Readonly and partitioned client workspaces can be used to reduce impact of automated build systems on Perforce server performance.
+Default: `writeable`.
+
+`readonly` and `partitioned` client workspaces can be used to reduce impact of automated build systems on Perforce server performance.
 See related article [Readonly and Partitioned Client Workspaces](https://community.perforce.com/s/article/15372).
 
-Note that existing client workspaces must be deleted and re-created to change type.
+Note that `writeable` client workspaces must be deleted and re-created to change to `readonly` or `partitioned` and vice versa.
 
-```yaml
-steps:
-    plugins:
-      - improbable-eng/perforce:
-          client_type: partitioned
-```
+Note that `readonly` or `partitioned` workspaces do not appear in the `db.have` table, which prevents them from being used as a revision specifier.
+
+This adds a caveat if you wish to re-use workspace data across different machines: the original client which populated that workspace must have been `writeable`.
+
+(e.g. If a disk with existing workspace data is attached to a new machine, the plugin will create a new client, read the old workspace name from P4CONFIG and `p4 flush //...@<old-workspace>`. The flush command fails if the old workspace was not of type `writeable`)
+
+#### `parallel` (optional, string)
+
+Default: `0` (no parallelism)
+
+Number of threads to use for parallel sync operations. High values may affect Perforce server performance.
+
+#### `share_workspace` (optional, bool)
+
+Default: `no`
+
+Allow multiple Buildkite pipelines to share each stream-specific client workspace.
+
+Useful to avoid syncing duplicate data for large workspaces.
+
+Can only be used with stream workspaces and when no more than one buildkite-agent process is running on that machine.
+
+#### `stream_switching` (optional, bool)
+
+Default: `no`
+
+Allows multiple Buildkite pipelines to share a single client workspace, switching streams as required.
+
+Must have `share_workspace: yes` to take effect.
 
 ## Triggering Builds
 
