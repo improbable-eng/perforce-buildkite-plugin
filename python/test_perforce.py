@@ -106,6 +106,7 @@ def test_fixture(capsys, server):
     assert depotfile_to_content == {
         "//depot/file.txt": "Hello World\n",
         "//stream-depot/main/file.txt": "Hello Stream World\n",
+        "//stream-depot/main/file_2.txt": "file_2\n",
         "//stream-depot/dev/file.txt": "Hello Stream World (dev)\n",
     }
 
@@ -143,6 +144,11 @@ def test_fixture(capsys, server):
             'action': ['edit'],
             'depotFile': ['//stream-depot/dev/file.txt'],
             'desc': 'Update contents of //stream-depot/dev/file.txt\n'
+        },
+        '9': {
+            'action': ['add'],
+            'depotFile': ['//stream-depot/main/file_2.txt'],
+            'desc': 'file_2.txt - exists in main but not dev\n'
         }
     }
 
