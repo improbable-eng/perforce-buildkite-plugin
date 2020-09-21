@@ -77,6 +77,22 @@ class P4Repo:
             return '%s //%s/%s' % (depot, clientname, local)
         return [insert_clientname(mapping) for mapping in view]
 
+    def _flush_to_previous_client(self, current_client, prev_clientname):
+        """Flush a new client to match existing workspace data from a previous client"""
+        prev_client = self.perforce.fetch_client(prev_clientname)
+        stream_switch = self.stream and prev_client._stream != self.stream
+        if stream_switch:
+            self.perforce.logger.info("previous client stream %s does not match %s, switching stream temporarily to flush" % (prev_client._stream, self.stream))
+            current_client._stream = prev_client._stream
+            self.perforce.save_client(current_client)
+
+        self.perforce.run_flush(['//...@%s' % prev_clientname])
+
+        if stream_switch:
+            self.perforce.logger.info("switching stream back to %s" % self.stream)
+            current_client._stream = self.stream
+            self.perforce.save_client(current_client)
+
     def _setup_client(self):
         """Creates or re-uses the client workspace for this machine"""
         # pylint: disable=protected-access
@@ -107,7 +123,8 @@ class P4Repo:
                     if line.startswith('P4CLIENT='))
             if prev_clientname != clientname:
                 self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
-                self.perforce.run_flush(['//...@%s' % prev_clientname])
+                self._flush_to_previous_client(client, prev_clientname)
+
         elif 'Update' in client: # client was accessed previously
             self.perforce.logger.warning("p4config missing for previously accessed client workspace. flushing to revision zero")
             self.perforce.run_flush(['//...@0'])

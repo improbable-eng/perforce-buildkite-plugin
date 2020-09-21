@@ -106,6 +106,7 @@ def test_fixture(capsys, server):
     assert depotfile_to_content == {
         "//depot/file.txt": "Hello World\n",
         "//stream-depot/main/file.txt": "Hello Stream World\n",
+        "//stream-depot/main/file_2.txt": "file_2\n",
         "//stream-depot/dev/file.txt": "Hello Stream World (dev)\n",
     }
 
@@ -143,6 +144,11 @@ def test_fixture(capsys, server):
             'action': ['edit'],
             'depotFile': ['//stream-depot/dev/file.txt'],
             'desc': 'Update contents of //stream-depot/dev/file.txt\n'
+        },
+        '9': {
+            'action': ['add'],
+            'depotFile': ['//stream-depot/main/file_2.txt'],
+            'desc': 'file_2.txt - exists in main but not dev\n'
         }
     }
 
@@ -188,11 +194,12 @@ def test_fixture(capsys, server):
 
 def test_head(server, tmpdir):
     """Test resolve of HEAD changelist"""
-    repo = P4Repo(root=tmpdir)
-    assert repo.head() == "@6", "Unexpected global HEAD revision"
+    # workspace with no changes in view defaults to global view
+    repo = P4Repo(root=tmpdir, view="//depot/empty_dir/... empty_dir/...")
+    assert repo.head() == "@9", "Unexpected global HEAD revision"
 
-    repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
-    assert repo.head() == "@2", "Unexpected HEAD revision for stream"
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/dev')
+    assert repo.head() == "@8", "Unexpected HEAD revision for stream"
 
     repo = P4Repo(root=tmpdir, stream='//stream-depot/idontexist')
     with pytest.raises(Exception, match=r"Stream '//stream-depot/idontexist' doesn't exist."):
@@ -413,6 +420,8 @@ def test_stream_switching(server, tmpdir):
     repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
     synced = repo.sync()
     assert len(synced) > 0, "Didn't sync any files"
+    assert set(os.listdir(tmpdir)) == set([
+        "file.txt", "file_2.txt", "p4config"])
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"    
 
@@ -420,8 +429,32 @@ def test_stream_switching(server, tmpdir):
     repo = P4Repo(root=tmpdir, stream='//stream-depot/dev')
     repo.sync()
     assert len(synced) > 0, "Didn't sync any files"
+    assert set(os.listdir(tmpdir)) == set([
+        "file.txt", "p4config"]) # file_2.txt was de-synced
     with open(os.path.join(tmpdir, "file.txt")) as content:
         assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"    
+
+def test_stream_switching_migration(server, tmpdir):
+    """Test stream-switching and client migration simultaneously"""
+    repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
+    synced = repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
+    assert set(os.listdir(tmpdir)) == set([
+        "file.txt", "file_2.txt", "p4config"])
+    with open(os.path.join(tmpdir, "file.txt")) as content:
+        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"    
+
+    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client:
+        copytree(tmpdir, second_client)
+        # Client names include path on disk, so this creates a new unique client
+        # Re-use the same checkout directory and switch streams at the same time
+        repo = P4Repo(root=second_client, stream='//stream-depot/dev')
+        repo.sync()
+        assert len(synced) > 0, "Didn't sync any files"
+        assert set(os.listdir(second_client)) == set([
+            "file.txt", "p4config"]) # file_2.txt was de-synced
+        with open(os.path.join(second_client, "file.txt")) as content:
+            assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"    
 
 
 # def test_live_server():
