@@ -44,13 +44,9 @@ Override configuration at the User Environment level. May be overridden by P4CON
 
 See [p4 set](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_set.html?Highlight=precedence) for more on system variables and precedence.
 
-#### `fingerprints` (optional, array)
+#### `fingerprint` (optional, string)
 
-Supply a list of trusted p4 server fingerprints to ensure are trusted.
-
-See [p4 trust](https://www.perforce.com/manuals/v16.2/cmdref/p4_trust.html) for more information about trust with SSL connections.
-
-If you have specified `p4trust` via the plugin settings, or your server has [`P4TRUST` (docs)](https://www.perforce.com/manuals/v16.2/cmdref/P4TRUST.html) set, this plugin setting respects your choices there.
+Supply a trusted p4 server fingerprint to ensure the server the client connects to has not been MITM'd.
 
 #### `stream` (optional, string)
 
