@@ -1,0 +1,5 @@
+# https://flake8.pycqa.org/en/latest/user/configuration.html#configuration-locations
+[flake8]
+ignore =
+    # don't care about line length.
+    E501
