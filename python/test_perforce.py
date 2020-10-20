@@ -49,6 +49,9 @@ def run_p4d(p4port, from_zip=None):
     p4ssldir = os.path.join(tmpdir, 'ssl')
     p4trust = os.path.join(tmpdir, 'trust.txt')
     shutil.copytree(os.path.join(os.path.dirname(__file__), 'fixture', 'insecure-ssl'), p4ssldir)
+    # Like a beautifully crafted work of art, p4d fails to start if permissions on the secrets are too open.
+    os.chmod(os.path.join(p4ssldir, 'privatekey.txt'), 0600)
+    os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0600)
     os.environ['P4SSLDIR'] = p4ssldir
     os.environ['P4TRUST'] = p4trust
     try:
