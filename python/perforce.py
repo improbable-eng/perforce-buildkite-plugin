@@ -60,10 +60,9 @@ class P4Repo:
             if self.fingerprints:
                 for fingerprint in self.fingerprints:
                     self.perforce.run_trust(
+                        '-f',       # Force the replacement of a mismatched fingerprint
                         '-i',       # Install the specified fingerprint
                         fingerprint,
-                        '-f',       # Force the replacement of a mismatched fingerprint
-                        '-y',       # Automatically accept any prompts
                     )
             else:
                 # Be very trusting. It's your source code!
