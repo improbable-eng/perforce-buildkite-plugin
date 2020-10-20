@@ -16,7 +16,7 @@ from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None, sync=None,
-                 client_options=None, client_type=None, parallel=0, fingerprints=None):
+                 client_options=None, client_type=None, parallel=0, fingerprint=None):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -25,7 +25,7 @@ class P4Repo:
         client_options: Additional options to add to client. (e.g. allwrite)
         client_type: Type of client (writeable, readonly, partitioned)
         parallel: How many threads to use for parallel sync.
-        fingerprints: Acceptable fingerprint(s) for a p4 server to have.
+        fingerprint: Acceptable fingerprint for a p4 server to have.
         """
         self.root = os.path.abspath(root or '')
         self.stream = stream
@@ -35,7 +35,7 @@ class P4Repo:
         self.client_options = client_options or ''
         self.client_type = client_type or 'writeable'
         self.parallel = parallel
-        self.fingerprints = fingerprints or []
+        self.fingerprint = fingerprint or ''
 
         self.created_client = False
         self.patchfile = os.path.join(self.root, 'patched.json')
@@ -57,13 +57,12 @@ class P4Repo:
         self.perforce.connect()
 
         if self.perforce.port.startswith('ssl'):
-            if self.fingerprints:
-                for fingerprint in self.fingerprints:
-                    self.perforce.run_trust(
-                        '-f',       # Force the replacement of a mismatched fingerprint
-                        '-i',       # Install the specified fingerprint
-                        fingerprint,
-                    )
+            if self.fingerprint:
+                self.perforce.run_trust(
+                    '-f',       # Force the replacement of a mismatched fingerprint
+                    '-i',       # Install the specified fingerprint
+                    self.fingerprint,
+                )
             else:
                 # Be very trusting. It's your source code!
                 self.perforce.run_trust('-y')
