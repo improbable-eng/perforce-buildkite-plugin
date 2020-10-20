@@ -62,7 +62,6 @@ def run_p4d(p4port, from_zip=None):
     except subprocess.TimeoutExpired:
         pass
 
-
 @pytest.fixture
 def server():
     """Start a p4 server in the background and return the address"""
@@ -78,7 +77,6 @@ def tmpdir():
     """Create a temp directory for tests. Usually used as a client root"""
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as tmpdir:
         yield tmpdir
-
 
 def store_server(repo, to_zip):
     """Zip up a server to use as a unit test fixture"""
@@ -471,22 +469,16 @@ def test_fingerprint_specified(server, tmpdir):
     assert len(synced) > 0, "Didn't fail to sync"
 
 def test_fingerprint_specified_is_untrusted(server, tmpdir):
-    """Test supplying an explicit fingerprint to client but the fingerprint does not match the server cert"""
-    # fingerprint here matches to the cert in the test fixture directory, and you can check that with
-    # P4SSLDIR=$(pwd)/python/fixture/insecure-ssl p4d -Gf
+    """Test supplying an explicit-but-untrusted fingerprint to client; should get MITM warning"""
     repo = P4Repo(root=tmpdir, fingerprints=['FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF'])
     with pytest.raises(Exception, match=r"WARNING P4PORT IDENTIFICATION HAS CHANGED"):
         repo.sync()
-        assert False, "Should have failed to sync"
 
 def test_fingerprint_specified_is_garbage(server, tmpdir):
-    """Test supplying an explicit fingerprint to client with garbage input"""
-    # fingerprint here matches to the cert in the test fixture directory, and you can check that with
-    # P4SSLDIR=$(pwd)/python/fixture/insecure-ssl p4d -Gf
+    """Test supplying an explicit fingerprint to client with garbage input; should get MITM warning"""
     repo = P4Repo(root=tmpdir, fingerprints=['This is a footprint not a fingerprint'])
     with pytest.raises(Exception, match=r"WARNING P4PORT IDENTIFICATION HAS CHANGED"):
         repo.sync()
-        assert False, "Should have failed to sync"
 
 # def test_live_server():
 #     """Reproduce production issues quickly by writing tests which run against a real server"""
