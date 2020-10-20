@@ -8,7 +8,7 @@ exclude: vendor
 
 repos:
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.20.0
+    rev: v1.25.0
     hooks:
       - id: yamllint
         args:
@@ -16,7 +16,7 @@ repos:
           - --strict
 
   - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-    rev: 0.0.10  # or higher tag
+    rev: 0.1.0  # or higher tag
     hooks:
       - id: yamlfmt
         args:
@@ -27,7 +27,7 @@ repos:
         exclude: repocop.yaml
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v3.3.0
     hooks:
       - id: check-added-large-files
       - id: check-byte-order-marker
