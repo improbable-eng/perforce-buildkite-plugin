@@ -27,7 +27,7 @@ configuration:
       type: bool
     sync:
       type: array
-    trusted_fingerprints:
+    fingerprints:
       type: array
     view:
       type: string
