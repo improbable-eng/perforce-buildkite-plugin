@@ -378,17 +378,6 @@ def test_p4print_unshelve(server, tmpdir):
     repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
     repo.p4print_unshelve('3') # Modify a file
 
-def test_backup_shelve(server, tmpdir):
-    """Test making a copy of a shelved changelist"""
-    repo = P4Repo(root=tmpdir)
-
-    backup_changelist = repo.backup('3')
-    assert backup_changelist != '3', "Backup changelist number must be new"
-    repo.revert()
-    repo.unshelve(backup_changelist)
-    with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
-
 
 def copytree(src, dst):
     """Shim to get around shutil.copytree requiring root dir to not exist"""

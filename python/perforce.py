@@ -299,19 +299,6 @@ class P4Repo:
 
         self.run_parallel_cmds(cmds)
 
-    def backup(self, changelist):
-        """Make a copy of a shelved change"""
-        self.revert()
-        self.unshelve(changelist)
-        # Make pending CL from default CL
-        unshelved = self.perforce.fetch_change()
-        unshelved._description = 'Backup of %s for precommit testing in Buildkite' % changelist
-        self.perforce.save_change(unshelved)
-        backup_change_info = self.perforce.run_changes('-c', self.perforce.client, '-s', 'pending', '-m', '1')
-        backup_cl = backup_change_info[0]['change']
-        self.perforce.run_shelve('-c', backup_cl)
-        return backup_cl
-
 
 class SyncOutput(OutputHandler):
     """Log each synced file"""
