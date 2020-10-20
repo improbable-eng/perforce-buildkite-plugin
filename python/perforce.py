@@ -16,7 +16,7 @@ from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None, sync=None,
-                 client_options=None, client_type=None, parallel=0):
+                 client_options=None, client_type=None, parallel=0, fingerprints=None):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -25,6 +25,7 @@ class P4Repo:
         client_options: Additional options to add to client. (e.g. allwrite)
         client_type: Type of client (writeable, readonly, partitioned)
         parallel: How many threads to use for parallel sync.
+        fingerprints: Acceptable fingerprint(s) for a p4 server to have.
         """
         self.root = os.path.abspath(root or '')
         self.stream = stream
@@ -34,6 +35,7 @@ class P4Repo:
         self.client_options = client_options or ''
         self.client_type = client_type or 'writeable'
         self.parallel = parallel
+        self.fingerprints = fingerprints or []
 
         self.created_client = False
         self.patchfile = os.path.join(self.root, 'patched.json')
@@ -53,9 +55,19 @@ class P4Repo:
         logger.addHandler(handler)
         self.perforce.logger = logger
         self.perforce.connect()
+
         if self.perforce.port.startswith('ssl'):
-            # TODO: Remove this and enforce prior provisioning of trusted fingerprints
-            self.perforce.run_trust('-y')
+            if self.fingerprints:
+                for fingerprint in self.fingerprints:
+                    self.perforce.run_trust(
+                        '-i',       # Install the specified fingerprint
+                        fingerprint,
+                        '-f',       # Force the replacement of a mismatched fingerprint
+                        '-y',       # Automatically accept any prompts
+                    )
+            else:
+                # Be very trusting. It's your source code!
+                self.perforce.run_trust('-y')
 
     def __del__(self):
         self.perforce.disconnect()
@@ -195,7 +207,7 @@ class P4Repo:
                 revision = labelinfo.get('Revision') or revision
             except P4Exception:
                 # revision may be clientname, datespec or something else
-                # fallback to default behaviour 
+                # fallback to default behaviour
                 pass
 
         # Get last submitted change at revision spec
@@ -281,7 +293,7 @@ class P4Repo:
 
         whereinfo = self.perforce.run_where(depotfiles)
         depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
-        
+
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
 
@@ -319,7 +331,7 @@ class SyncOutput(OutputHandler):
         OutputHandler.__init__(self)
         self.logger = logger
         self.sync_count = 0
-    
+
     def outputStat(self, stat):
         if 'depotFile' in stat:
             self.sync_count  += 1

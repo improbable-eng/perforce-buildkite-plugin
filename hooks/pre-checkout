@@ -1,30 +1,6 @@
 #!/bin/bash
 set -eo pipefail
 
-# Reads a list from plugin config into a global result array
-# Returns success if values were read
-plugin_read_list_into_result() {
-  result=()
-
-  for prefix in "$@" ; do
-    local i=0
-    local parameter="${prefix}_${i}"
-
-    if [[ -n "${!prefix:-}" ]] ; then
-      echo "🚨 Plugin received a string for $prefix, expected an array" >&2
-      exit 1
-    fi
-
-    while [[ -n "${!parameter:-}" ]]; do
-      result+=("${!parameter}")
-      i=$((i+1))
-      parameter="${prefix}_${i}"
-    done
-  done
-
-  [[ ${#result[@]} -gt 0 ]] || return 1
-}
-
 # Allow sharing of perforce client workspaces for the same stream between pipelines
 if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
     echo "Workspace sharing enabled"
@@ -50,43 +26,4 @@ if [[ "${BUILDKITE_PLUGIN_PERFORCE_SHARE_WORKSPACE}" == true ]] ; then
     PERFORCE_CHECKOUT_PATH="${BUILDKITE_BUILD_CHECKOUT_PATH}/../../${SANITIZED_STREAM}"
     export BUILDKITE_BUILD_CHECKOUT_PATH="${PERFORCE_CHECKOUT_PATH}"
     echo "Changed BUILDKITE_BUILD_CHECKOUT_PATH to ${PERFORCE_CHECKOUT_PATH}"
-fi
-
-resolve_p4trust() {
-  # https://www.perforce.com/manuals/v16.2/cmdref/P4TRUST.html
-  candidates=(
-    "${BUILDKITE_PLUGIN_PERFORCE_P4TRUST:-}"
-    "${P4TRUST:-}"
-    "${HOME}/.p4trust"
-    "${HOME}/p4trust.txt"
-    "${USERPROFILE:-}/.p4trust"
-    "${USERPROFILE:-}/p4trust.txt"
-  )
-  for candidate in "${candidates[@]}"; do
-    if [[ -n "${candidate:-}" ]]; then
-      if [[ ! -r "${candidate}" ]]; then
-        echo "Cannot use p4trust candidate ${candidate} - not readable."
-        continue
-      fi
-      if [[ ! -w "${candidate}" ]]; then
-        echo "Cannot use p4trust candidate ${candidate} - not writeable."
-        continue
-      fi
-      echo "${candidate}"
-      break
-    fi
-  done
-}
-# Allow changing P4TRUST file at machine level to include specific fingerprints if given
-if plugin_read_list_into_result "BUILDKITE_PLUGIN_PERFORCE_TRUSTED_FINGERPRINTS" ; then
-  actual_p4trust="$(resolve_p4trust)"
-  for fingerprint in "${result[@]}"; do
-    # -q quiet
-    # -x match the whole line
-    # -F pattern is a plain string
-    # grep -qxF "${fingerprint}" "${actual_p4trust}" ||
-      # echo "${fingerprint}" >> "${actual_p4trust}"
-    # https://www.perforce.com/manuals/v16.2/cmdref/p4_trust.html
-    P4TRUST="${actual_p4trust}" p4 trust -y -f -i "${fingerprint}"
-  done
 fi

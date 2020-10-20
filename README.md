@@ -44,7 +44,7 @@ Override configuration at the User Environment level. May be overridden by P4CON
 
 See [p4 set](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_set.html?Highlight=precedence) for more on system variables and precedence.
 
-#### `trusted_fingerprints` (optional, array)
+#### `fingerprints` (optional, array)
 
 Supply a list of trusted p4 server fingerprints to ensure are trusted.
 
