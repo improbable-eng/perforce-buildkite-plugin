@@ -51,9 +51,9 @@ def run_p4d(p4port, from_zip=None):
     shutil.copytree(os.path.join(os.path.dirname(__file__), 'fixture', 'insecure-ssl'), p4ssldir)
     # Like a beautifully crafted work of art, p4d fails to start if permissions on the secrets are too open.
     # https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/P4SSLDIR.html
-    os.chmod(p4ssldir, 0700)
-    os.chmod(os.path.join(p4ssldir, 'privatekey.txt'), 0600)
-    os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0600)
+    os.chmod(p4ssldir, 700)
+    os.chmod(os.path.join(p4ssldir, 'privatekey.txt'), 600)
+    os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 600)
     os.environ['P4SSLDIR'] = p4ssldir
     os.environ['P4TRUST'] = p4trust
     try:
