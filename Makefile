@@ -14,13 +14,8 @@ vendorize:
 	# Checkout hook not available locally, so make a command hook instead
 	cp local-pipeline/plugins/perforce/hooks/checkout local-pipeline/plugins/perforce/hooks/command -f
 
-# p4d: export P4SSLDIR=sslkeys
 p4d: clean_p4d
 	unzip python/fixture/server.zip	-d python/fixture/server/
-	# mkdir python/fixture/server/sslkeys
-	# chmod 700 python/fixture/server/sslkeys
-	# p4d -r python/fixture/server -Gc
-	# p4d -r python/fixture/server -Gf
 	p4d -r python/fixture/server -p 1666 &
 
 clean_p4d:
