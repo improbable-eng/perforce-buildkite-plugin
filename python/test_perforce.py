@@ -460,23 +460,24 @@ def test_stream_switching_migration(server, tmpdir):
         with open(os.path.join(second_client, "file.txt")) as content:
             assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"
 
-def test_fingerprint_specified(server, tmpdir):
+__LEGIT_P4_FINGERPRINT__ = '7A:10:F6:00:95:87:5B:2E:D4:33:AB:44:42:05:85:94:1C:93:2E:A2'
+def test_fingerprint_specified_and_correct(server, tmpdir):
     """Test supplying an explicit fingerprint to client"""
     # fingerprint here matches to the cert in the test fixture directory, and you can check that with
     # P4SSLDIR=$(pwd)/python/fixture/insecure-ssl p4d -Gf
-    repo = P4Repo(root=tmpdir, fingerprints=['7A:10:F6:00:95:87:5B:2E:D4:33:AB:44:42:05:85:94:1C:93:2E:A2'])
+    repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
     synced = repo.sync()
     assert len(synced) > 0, "Didn't fail to sync"
 
 def test_fingerprint_specified_is_untrusted(server, tmpdir):
     """Test supplying an explicit-but-untrusted fingerprint to client; should get MITM warning"""
-    repo = P4Repo(root=tmpdir, fingerprints=['FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF'])
+    repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
     with pytest.raises(Exception, match=r"WARNING P4PORT IDENTIFICATION HAS CHANGED"):
         repo.sync()
 
 def test_fingerprint_specified_is_garbage(server, tmpdir):
     """Test supplying an explicit fingerprint to client with garbage input; should get MITM warning"""
-    repo = P4Repo(root=tmpdir, fingerprints=['This is a footprint not a fingerprint'])
+    repo = P4Repo(root=tmpdir, fingerprint='This is a footprint not a fingerprint')
     with pytest.raises(Exception, match=r"WARNING P4PORT IDENTIFICATION HAS CHANGED"):
         repo.sync()
 
