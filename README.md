@@ -44,6 +44,10 @@ Override configuration at the User Environment level. May be overridden by P4CON
 
 See [p4 set](https://www.perforce.com/manuals/cmdref/Content/CmdRef/p4_set.html?Highlight=precedence) for more on system variables and precedence.
 
+#### `fingerprint` (optional, string)
+
+Supply a trusted p4 server fingerprint to ensure the server the client connects to has not been MITM'd.
+
 #### `stream` (optional, string)
 
 Which p4 stream to sync, e.g. `//dev/minimal`. Can be overridden by `view`.
@@ -165,11 +169,11 @@ Run `dev/setup_env_osx.sh`
 
 Python [virtualenv](https://docs.python.org/3/tutorial/venv.html) `.dev-venv` for running tests will be created at repo root.
 
-Run the `test_fixture` unit test to check everything is setup correctly:
+Run the `test_server_fixture` unit test to check everything is setup correctly:
 
 ```bash
 source .dev-venv/bin/activate
-pytest python/test_perforce.py -k test_fixture
+pytest python/test_perforce.py -k test_server_fixture
 ```
 
 ### Linux/Windows
@@ -180,7 +184,7 @@ TBC, feedback welcome.
 
 Making changes to `python/`
 
-* Read implementation of `test_fixture` in `test_perforce.py`
+* Read implementation of `test_server_fixture` in `test_perforce.py`
 * Write unit test in `test_perforce.py`, optionally making changes to the test fixture if required
 * Implement new functionality
 * Iterate via unit test
