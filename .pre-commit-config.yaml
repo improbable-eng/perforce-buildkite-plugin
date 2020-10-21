@@ -76,3 +76,5 @@ repos:
     rev: 20.8b1
     hooks:
       - id: black
+        args:
+          - --skip-string-normalization
