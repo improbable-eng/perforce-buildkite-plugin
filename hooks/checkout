@@ -3,17 +3,16 @@ set -eo pipefail
 
 plugin_root="${BASH_SOURCE%/*}/.."
 
-
 # Try to use explicit python3 if its installed
 python_bin="python3"
 if ! [[ -x "$(command -v ${python_bin})" ]]; then
-    python_bin="python"
+  python_bin="python"
 fi
 
 # Ensure some version of virtualenv is installed
 # Lazy install avoids races between different jobs wanting different versions
 if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
-    ${python_bin} -m pip install "virtualenv==16.7.7"
+  ${python_bin} -m pip install "virtualenv==16.7.7"
 fi
 
 # Unique virtualenv for requirements.txt
@@ -22,20 +21,20 @@ venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv-${venv_md5}"
 
 platform=$(${python_bin} -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
-    venv_python_bin="/Scripts/python"
+  venv_python_bin="/Scripts/python"
 else
-    venv_python_bin="/bin/python"
+  venv_python_bin="/bin/python"
 fi
 
 if ! [[ -d "${venv_dir}" ]]; then
-    temp_venv_dir=$(mktemp -d -t perforce-plugin-venv-XXXXXX)
-    trap "rm -rf ${temp_venv_dir}" EXIT
-    ${python_bin} -m virtualenv "${temp_venv_dir}"
-    ${temp_venv_dir}${venv_python_bin} -m pip install -r "${plugin_root}/python/requirements.txt"
-    if ! [[ -d "${venv_dir}" ]]; then # second check to minimize venv init race
-        mv "${temp_venv_dir}" "${venv_dir}"
-    fi
-    echo "virtualenv created at ${venv_dir}"
+  temp_venv_dir=$(mktemp -d -t perforce-plugin-venv-XXXXXX)
+  trap "rm -rf ${temp_venv_dir}" EXIT
+  ${python_bin} -m virtualenv "${temp_venv_dir}"
+  ${temp_venv_dir}${venv_python_bin} -m pip install -r "${plugin_root}/python/requirements.txt"
+  if ! [[ -d "${venv_dir}" ]]; then # second check to minimize venv init race
+    mv "${temp_venv_dir}" "${venv_dir}"
+  fi
+  echo "virtualenv created at ${venv_dir}"
 fi
 
 ${venv_dir}${venv_python_bin} "${plugin_root}/python/checkout.py"
