@@ -59,12 +59,13 @@ class P4Repo:
         if self.perforce.port.startswith('ssl'):
             if self.fingerprint:
                 self.perforce.run_trust(
-                    '-f',       # Force the replacement of a mismatched fingerprint
+                    '-r',       # Install a replacement fingerprint - will replace primary if this matches the server
                     '-i',       # Install the specified fingerprint
                     self.fingerprint,
                 )
             else:
-                # Be very trusting. It's your source code!
+                # Trust fingerprint from first contact with server
+                # If fingerprint changes, MITM attack is reported
                 self.perforce.run_trust('-y')
 
     def __del__(self):

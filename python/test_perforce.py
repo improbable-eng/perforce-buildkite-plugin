@@ -460,26 +460,32 @@ def test_stream_switching_migration(server, tmpdir):
         with open(os.path.join(second_client, "file.txt")) as content:
             assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"
 
+# fingerprint here matches to the cert in the test fixture directory, and you can check that with
+# P4SSLDIR=$(pwd)/python/fixture/insecure-ssl p4d -Gf
 __LEGIT_P4_FINGERPRINT__ = '7A:10:F6:00:95:87:5B:2E:D4:33:AB:44:42:05:85:94:1C:93:2E:A2'
-def test_fingerprint_specified_and_correct(server, tmpdir):
-    """Test supplying an explicit fingerprint to client"""
-    # fingerprint here matches to the cert in the test fixture directory, and you can check that with
-    # P4SSLDIR=$(pwd)/python/fixture/insecure-ssl p4d -Gf
+
+def test_fingerprint_good(server, tmpdir):
+    """Test supplying the correct fingerprint"""
     repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
     synced = repo.sync()
-    assert len(synced) > 0, "Didn't fail to sync"
+    assert len(synced) > 0, "Didn't sync any files"
 
-def test_fingerprint_specified_is_untrusted(server, tmpdir):
-    """Test supplying an explicit-but-untrusted fingerprint to client; should get MITM warning"""
+def test_fingerprint_bad(server, tmpdir):
+    """Test supplying an incorrect fingerprint"""
     repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
-    with pytest.raises(Exception, match=r"WARNING P4PORT IDENTIFICATION HAS CHANGED"):
+    with pytest.raises(Exception, match=r"The authenticity of '.+' can't be established"):
         repo.sync()
 
-def test_fingerprint_specified_is_garbage(server, tmpdir):
-    """Test supplying an explicit fingerprint to client with garbage input; should get MITM warning"""
-    repo = P4Repo(root=tmpdir, fingerprint='This is a footprint not a fingerprint')
-    with pytest.raises(Exception, match=r"WARNING P4PORT IDENTIFICATION HAS CHANGED"):
-        repo.sync()
+def test_fingerprint_changed(server, tmpdir):
+    """Test updating a fingerprint"""
+    repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
+    with pytest.raises(Exception, match=r"The authenticity of '.*' can't be established"):
+        repo.sync()   
+
+    repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
+    synced = repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
+
 
 # def test_live_server():
 #     """Reproduce production issues quickly by writing tests which run against a real server"""
