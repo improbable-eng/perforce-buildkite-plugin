@@ -11,12 +11,23 @@ import json
 
 
 # Recommended reference: https://www.perforce.com/manuals/p4python/p4python.pdf
-from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
+from P4 import P4, P4Exception, OutputHandler  # pylint: disable=import-error
+
 
 class P4Repo:
     """A class for manipulating perforce workspaces"""
-    def __init__(self, root=None, view=None, stream=None, sync=None,
-                 client_options=None, client_type=None, parallel=0, fingerprint=None):
+
+    def __init__(
+        self,
+        root=None,
+        view=None,
+        stream=None,
+        sync=None,
+        client_options=None,
+        client_type=None,
+        parallel=0,
+        fingerprint=None,
+    ):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -42,7 +53,7 @@ class P4Repo:
         self.p4config = os.path.join(self.root, 'p4config')
 
         self.perforce = P4()
-        self.perforce.disable_tmp_cleanup() # Required to use multiple P4 connections in parallel safely
+        self.perforce.disable_tmp_cleanup()  # Required to use multiple P4 connections in parallel safely
         self.perforce.exception_level = 1  # Only errors are raised as exceptions
         logger = logging.getLogger("p4python")
         logger.setLevel(logging.INFO)
@@ -59,8 +70,8 @@ class P4Repo:
         if self.perforce.port.startswith('ssl'):
             if self.fingerprint:
                 self.perforce.run_trust(
-                    '-r',       # Install a replacement fingerprint - will replace primary if this matches the server
-                    '-i',       # Install the specified fingerprint
+                    '-r',  # Install a replacement fingerprint - will replace primary if this matches the server
+                    '-i',  # Install the specified fingerprint
                     self.fingerprint,
                 )
             else:
@@ -73,7 +84,10 @@ class P4Repo:
 
     def _get_clientname(self):
         """Get unique clientname for this host and location on disk"""
-        clientname = 'bk-p4-%s-%s' % (os.environ.get('BUILDKITE_AGENT_NAME', socket.gethostname()), os.path.basename(self.root))
+        clientname = 'bk-p4-%s-%s' % (
+            os.environ.get('BUILDKITE_AGENT_NAME', socket.gethostname()),
+            os.path.basename(self.root),
+        )
         return re.sub(r'\W', '-', clientname)
 
     def _localize_view(self, view):
@@ -86,6 +100,7 @@ class P4Repo:
             """Insert client name into path mapping"""
             depot, local = mapping.split(' ')
             return '%s //%s/%s' % (depot, clientname, local)
+
         return [insert_clientname(mapping) for mapping in view]
 
     def _flush_to_previous_client(self, current_client, prev_clientname):
@@ -93,7 +108,10 @@ class P4Repo:
         prev_client = self.perforce.fetch_client(prev_clientname)
         stream_switch = self.stream and prev_client._stream != self.stream
         if stream_switch:
-            self.perforce.logger.info("previous client stream %s does not match %s, switching stream temporarily to flush" % (prev_client._stream, self.stream))
+            self.perforce.logger.info(
+                "previous client stream %s does not match %s, switching stream temporarily to flush"
+                % (prev_client._stream, self.stream)
+            )
             current_client._stream = prev_client._stream
             self.perforce.save_client(current_client)
 
@@ -129,15 +147,22 @@ class P4Repo:
 
         if os.path.isfile(self.p4config):
             with open(self.p4config) as infile:
-                prev_clientname = next(line.split('=', 1)[-1]
-                    for line in infile.read().splitlines() # removes \n
-                    if line.startswith('P4CLIENT='))
+                prev_clientname = next(
+                    line.split('=', 1)[-1]
+                    for line in infile.read().splitlines()  # removes \n
+                    if line.startswith('P4CLIENT=')
+                )
             if prev_clientname != clientname:
-                self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
+                self.perforce.logger.warning(
+                    "p4config last client was %s, flushing workspace to match"
+                    % prev_clientname
+                )
                 self._flush_to_previous_client(client, prev_clientname)
 
-        elif 'Update' in client: # client was accessed previously
-            self.perforce.logger.warning("p4config missing for previously accessed client workspace. flushing to revision zero")
+        elif 'Update' in client:  # client was accessed previously
+            self.perforce.logger.warning(
+                "p4config missing for previously accessed client workspace. flushing to revision zero"
+            )
             self.perforce.run_flush(['//...@0'])
 
         self._write_p4config()
@@ -148,7 +173,7 @@ class P4Repo:
         config = {
             'P4CLIENT': self.perforce.client,
             'P4USER': self.perforce.user,
-            'P4PORT': self.perforce.port
+            'P4PORT': self.perforce.port,
         }
         if not os.path.exists(self.root):
             os.makedirs(self.root)
@@ -164,15 +189,15 @@ class P4Repo:
 
     def _write_patched(self, files):
         """Write a marker to track which files have been modified in the workspace"""
-        content = list(set(files + self._read_patched())) # Combine and deduplicate
+        content = list(set(files + self._read_patched()))  # Combine and deduplicate
         with open(self.patchfile, 'w') as outfile:
             json.dump(content, outfile)
 
     def clean(self):
-        """ Perform a p4clean on the workspace to
-            remove added and restore deleted files
+        """Perform a p4clean on the workspace to
+        remove added and restore deleted files
 
-            Does not detect modified files
+        Does not detect modified files
         """
         self._setup_client()
         # TODO: Add a fast implementation of p4 clean here
@@ -202,7 +227,7 @@ class P4Repo:
                 # Resolve revision directly for automatic labels
                 # Improves performance when label is significantly behind HEAD
                 labelinfo = self.perforce.fetch_label(stripped_revision)
-                 # Revision field is optional
+                # Revision field is optional
                 revision = labelinfo.get('Revision') or revision
             except P4Exception:
                 # revision may be clientname, datespec or something else
@@ -210,11 +235,9 @@ class P4Repo:
                 pass
 
         # Get last submitted change at revision spec
-        changeinfo = self.perforce.run_changes([
-            '-m', '1', '-s', 'submitted', revision
-        ])
+        changeinfo = self.perforce.run_changes(['-m', '1', '-s', 'submitted', revision])
         if not changeinfo:
-            return None # Revision spec had no submitted changes
+            return None  # Revision spec had no submitted changes
         return changeinfo[0]['change']
 
     def description(self, changelist):
@@ -232,8 +255,13 @@ class P4Repo:
             handler=SyncOutput(self.perforce.logger),
         )
         if result:
-            self.perforce.logger.info("Synced %s files (%s)" % (
-                result[0]['totalFileCount'], sizeof_fmt(int(result[0]['totalFileSize']))))
+            self.perforce.logger.info(
+                "Synced %s files (%s)"
+                % (
+                    result[0]['totalFileCount'],
+                    sizeof_fmt(int(result[0]['totalFileSize'])),
+                )
+            )
         return result
 
     def revert(self):
@@ -255,6 +283,7 @@ class P4Repo:
             perforce.run(*args)
 
         from concurrent.futures import ThreadPoolExecutor
+
         with ThreadPoolExecutor(max_workers=max_parallel) as executor:
             executor.map(run, cmds)
 
@@ -264,7 +293,9 @@ class P4Repo:
 
         changeinfo = self.perforce.run_describe('-S', changelist)
         if not changeinfo:
-            raise Exception('Changelist %s does not contain any shelved files.' % changelist)
+            raise Exception(
+                'Changelist %s does not contain any shelved files.' % changelist
+            )
         changeinfo = changeinfo[0]
 
         depotfiles = changeinfo['depotFile']
@@ -285,13 +316,16 @@ class P4Repo:
                 os.chmod(localfile, stat.S_IWRITE)
                 os.unlink(localfile)
             if any(depotfile.startswith(prefix) for prefix in sync_prefixes):
-                cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+                cmds.append(
+                    ('print', '-o', localfile, '%s@=%s' % (depotfile, changelist))
+                )
 
         self.run_parallel_cmds(cmds)
 
 
 class SyncOutput(OutputHandler):
     """Log each synced file"""
+
     def __init__(self, logger):
         OutputHandler.__init__(self)
         self.logger = logger
@@ -299,7 +333,7 @@ class SyncOutput(OutputHandler):
 
     def outputStat(self, stat):
         if 'depotFile' in stat:
-            self.sync_count  += 1
+            self.sync_count += 1
             if self.sync_count < 1000:
                 # Normal, verbose logging of synced file
                 self.logger.info("%(depotFile)s#%(rev)s %(action)s" % stat)

@@ -6,8 +6,15 @@ import argparse
 import subprocess
 
 from perforce import P4Repo
-from buildkite import (get_env, get_config, get_build_revision, set_build_revision,
-    get_users_changelist, set_build_info)
+from buildkite import (
+    get_env,
+    get_config,
+    get_build_revision,
+    set_build_revision,
+    get_users_changelist,
+    set_build_info,
+)
+
 
 def main():
     """Main"""
@@ -29,7 +36,8 @@ def main():
 
     description = repo.description(
         # Prefer users change description over latest submitted change
-        user_changelist or repo.head_at_revision(revision)
+        user_changelist
+        or repo.head_at_revision(revision)
     )
     set_build_info(revision, description)
 
