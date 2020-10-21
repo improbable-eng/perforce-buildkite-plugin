@@ -11,7 +11,7 @@ steps:
           view: //depot/... ...
           root: p4_workspace
           parallel: 2
-          backup_changelists: yes
+          backup_changelists: true
 
   # - label: "Test Shared Streams"
   #   command: echo "Hello World"
