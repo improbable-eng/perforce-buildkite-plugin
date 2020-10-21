@@ -49,8 +49,8 @@ repos:
     rev: v0.0.16
     hooks:
       - id: forbid-binary
-        # Exclude png and snapshots forbid, we can check these in.
-        exclude: ^.+\.(png|snapshot)$
+        # Exclude png and server.zip forbid, we can check these in.
+        exclude: ^.+\.(png|server\.zip)$
       # See checks in shellcheck wiki: https://github.com/koalaman/shellcheck/wiki/
       - id: shellcheck
       - id: shfmt
