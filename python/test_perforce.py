@@ -44,7 +44,6 @@ def run_p4d(p4port, from_zip=None):
             archive.extractall(tmpdir)
 
     p4ssldir = os.path.join(tmpdir, 'ssl')
-    p4trust = os.path.join(tmpdir, 'trust.txt')
     shutil.copytree(os.path.join(os.path.dirname(__file__), 'fixture', 'insecure-ssl'), p4ssldir)
     # Like a beautifully crafted work of art, p4d fails to start if permissions on the secrets are too open.
     # https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/P4SSLDIR.html
@@ -52,11 +51,10 @@ def run_p4d(p4port, from_zip=None):
     os.chmod(os.path.join(p4ssldir, 'privatekey.txt'), 0o600)
     os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0o600)
     os.environ['P4SSLDIR'] = p4ssldir
-    os.environ['P4TRUST'] = p4trust
 
     yield subprocess.Popen(['p4d', '-r', tmpdir, '-p', p4port])
 
-@pytest.fixture
+@pytest.fixture(scope='package')
 def server():
     """Start a p4 server in the background and return the address"""
     port = find_free_port()
@@ -420,18 +418,24 @@ __LEGIT_P4_FINGERPRINT__ = '7A:10:F6:00:95:87:5B:2E:D4:33:AB:44:42:05:85:94:1C:9
 
 def test_fingerprint_good(server, tmpdir):
     """Test supplying the correct fingerprint"""
+    os.environ['P4TRUST'] = os.path.join(tmpdir, 'trust.txt')
+
     repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
     synced = repo.sync()
     assert len(synced) > 0, "Didn't sync any files"
 
 def test_fingerprint_bad(server, tmpdir):
     """Test supplying an incorrect fingerprint"""
+    os.environ['P4TRUST'] = os.path.join(tmpdir, 'trust.txt')
+
     repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
     with pytest.raises(Exception, match=r"The authenticity of '.+' can't be established"):
         repo.sync()
 
 def test_fingerprint_changed(server, tmpdir):
     """Test updating a fingerprint"""
+    os.environ['P4TRUST'] = os.path.join(tmpdir, 'trust.txt')
+
     repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
     with pytest.raises(Exception, match=r"The authenticity of '.*' can't be established"):
         repo.sync()   
