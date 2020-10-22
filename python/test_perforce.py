@@ -63,6 +63,7 @@ def server():
     p4port = 'ssl:localhost:%s' % port
     os.environ['P4PORT'] = p4port
     with run_p4d(p4port, from_zip='server.zip'):
+        time.sleep(0.5)
         yield p4port
 
 @pytest.fixture
