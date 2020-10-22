@@ -90,7 +90,6 @@ def test_server_fixture(capsys, server):
     repo = P4Repo()
 
     # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
-    # Change __P4D_TIMEOUT__ to 'None' or an otherwise large amount of time
     # Run unit tests in the debugger and hit the breakpoint
     # Log in using details printed to stdout (port/user) via p4v or the command line
     # Make changes to the p4 server
