@@ -72,12 +72,6 @@ def server():
     os.environ['P4PORT'] = p4port
     return p4port
 
-@pytest.fixture
-def tmpdir():
-    """Create a temp directory for tests. Usually used as a client root"""
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as tmpdir:
-        yield tmpdir
-
 def store_server(repo, to_zip):
     """Zip up a server to use as a unit test fixture"""
     serverRoot = repo.info()['serverRoot']
