@@ -19,7 +19,6 @@ from perforce import P4Repo
 __P4D_TIMEOUT__ = 30
 # __P4D_TIMEOUT__ = None
 
-
 def find_free_port():
     """Find an open port that we could run a perforce server on"""
     # pylint: disable=no-member
@@ -27,7 +26,6 @@ def find_free_port():
         sock.bind(('', 0))
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return sock.getsockname()[1]
-
 
 def run_p4d(p4port, from_zip=None):
     """Start a perforce server with the given hostname:port.
@@ -47,20 +45,30 @@ def run_p4d(p4port, from_zip=None):
         zip_path = os.path.join(os.path.dirname(__file__), 'fixture', from_zip)
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(tmpdir)
+
+    p4ssldir = os.path.join(tmpdir, 'ssl')
+    p4trust = os.path.join(tmpdir, 'trust.txt')
+    shutil.copytree(os.path.join(os.path.dirname(__file__), 'fixture', 'insecure-ssl'), p4ssldir)
+    # Like a beautifully crafted work of art, p4d fails to start if permissions on the secrets are too open.
+    # https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/P4SSLDIR.html
+    os.chmod(p4ssldir, 0o700)
+    os.chmod(os.path.join(p4ssldir, 'privatekey.txt'), 0o600)
+    os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0o600)
+    os.environ['P4SSLDIR'] = p4ssldir
+    os.environ['P4TRUST'] = p4trust
     try:
-        subprocess.check_output(["p4d", "-r", tmpdir, "-p", str(p4port)],
+        subprocess.check_output(["p4d", "-r", tmpdir, "-p", p4port],
                                 timeout=__P4D_TIMEOUT__)
     except subprocess.TimeoutExpired:
         pass
-
 
 @pytest.fixture
 def server():
     """Start a p4 server in the background and return the address"""
     port = find_free_port()
-    Thread(target=partial(run_p4d, port, from_zip='server.zip'), daemon=True).start()
+    p4port = 'ssl:localhost:%s' % port
+    Thread(target=partial(run_p4d, p4port, from_zip='server.zip'), daemon=True).start()
     time.sleep(1)
-    p4port = 'localhost:%s' % port
     os.environ['P4PORT'] = p4port
     return p4port
 
@@ -69,7 +77,6 @@ def tmpdir():
     """Create a temp directory for tests. Usually used as a client root"""
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as tmpdir:
         yield tmpdir
-
 
 def store_server(repo, to_zip):
     """Zip up a server to use as a unit test fixture"""
@@ -82,12 +89,11 @@ def store_server(repo, to_zip):
                 abs_path = os.path.join(root, filename)
                 archive.write(abs_path, os.path.relpath(abs_path, serverRoot))
 
-def test_fixture(capsys, server):
+def test_server_fixture(capsys, server):
     """Check that tests can start and connect to a local perforce server"""
     with capsys.disabled():
         print('port:', server, 'user: carl')
     repo = P4Repo()
-    assert repo.info()['serverAddress'] == server
 
     # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
     # Change __P4D_TIMEOUT__ to 'None' or an otherwise large amount of time
@@ -99,7 +105,7 @@ def test_fixture(capsys, server):
     # Update validation code below to document the new server contents
 
     # store_server(repo, 'new_server.zip')
-    
+
     # Validate contents of server fixture @HEAD
     depotfiles = [info['depotFile'] for info in repo.perforce.run_files('//...')]
     depotfile_to_content = {depotfile: repo.perforce.run_print(depotfile)[1] for depotfile in depotfiles}
@@ -115,8 +121,8 @@ def test_fixture(capsys, server):
     submitted_changeinfo = {change["change"]: repo.perforce.run_describe(change["change"])[0] for change in submitted_changes}
     # Filter info to only contain relevant keys for submitted changes
     submitted_changeinfo = {
-        change: {key: info.get(key) 
-                 for key in ['depotFile', 'desc', 'action']} 
+        change: {key: info.get(key)
+                 for key in ['depotFile', 'desc', 'action']}
                  for change, info in submitted_changeinfo.items()
     }
     assert submitted_changeinfo == {
@@ -157,8 +163,8 @@ def test_fixture(capsys, server):
     shelved_changeinfo = {change["change"]: repo.perforce.run_describe('-S', change["change"])[0] for change in shelved_changes}
     # Filter info to only contain relevant keys for submitted changes
     shelved_changeinfo = {
-        change: {key: info.get(key) 
-                 for key in ['depotFile', 'desc', 'action']} 
+        change: {key: info.get(key)
+                 for key in ['depotFile', 'desc', 'action']}
                  for change, info in shelved_changeinfo.items()
     }
     assert shelved_changeinfo == {
@@ -183,7 +189,7 @@ def test_fixture(capsys, server):
     labels = repo.perforce.run_labels()
     # Filter info to only contain relevant keys
     labelinfo = {
-        label.get('label'): {key: label.get(key) 
+        label.get('label'): {key: label.get(key)
                              for key in ['Revision']
                             }
         for label in labels
@@ -250,7 +256,7 @@ def test_checkout_stream(server, tmpdir):
     assert os.listdir(tmpdir) == [], "Workspace should be empty"
     repo.sync()
     with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"            
+        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"
 
 def test_checkout_label(server, tmpdir):
     """Test checking out at a specific label"""
@@ -261,7 +267,7 @@ def test_checkout_label(server, tmpdir):
 
     repo.sync(revision="@my-label")
     with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello World\n", "Unexpected content in workspace file"     
+        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
 
 def test_readonly_client(server, tmpdir):
     """Test creation of a readonly client"""
@@ -366,7 +372,7 @@ def test_client_migration(server, tmpdir):
     assert os.listdir(tmpdir) == [], "Workspace should be empty"
     synced = repo.sync()
     assert len(synced) > 0, "Didn't sync any files"
-    
+
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client:
         copytree(tmpdir, second_client)
         # Client names include path on disk, so this creates a new unique client
@@ -382,7 +388,7 @@ def test_stream_switching(server, tmpdir):
     assert set(os.listdir(tmpdir)) == set([
         "file.txt", "file_2.txt", "p4config"])
     with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"    
+        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"
 
     # Re-use the same checkout directory, but switch streams
     repo = P4Repo(root=tmpdir, stream='//stream-depot/dev')
@@ -391,7 +397,7 @@ def test_stream_switching(server, tmpdir):
     assert set(os.listdir(tmpdir)) == set([
         "file.txt", "p4config"]) # file_2.txt was de-synced
     with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"    
+        assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"
 
 def test_stream_switching_migration(server, tmpdir):
     """Test stream-switching and client migration simultaneously"""
@@ -401,7 +407,7 @@ def test_stream_switching_migration(server, tmpdir):
     assert set(os.listdir(tmpdir)) == set([
         "file.txt", "file_2.txt", "p4config"])
     with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"    
+        assert content.read() == "Hello Stream World\n", "Unexpected content in workspace file"
 
     with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as second_client:
         copytree(tmpdir, second_client)
@@ -413,7 +419,33 @@ def test_stream_switching_migration(server, tmpdir):
         assert set(os.listdir(second_client)) == set([
             "file.txt", "p4config"]) # file_2.txt was de-synced
         with open(os.path.join(second_client, "file.txt")) as content:
-            assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"    
+            assert content.read() == "Hello Stream World (dev)\n", "Unexpected content in workspace file"
+
+# fingerprint here matches to the cert in the test fixture directory, and you can check that with
+# P4SSLDIR=$(pwd)/python/fixture/insecure-ssl p4d -Gf
+__LEGIT_P4_FINGERPRINT__ = '7A:10:F6:00:95:87:5B:2E:D4:33:AB:44:42:05:85:94:1C:93:2E:A2'
+
+def test_fingerprint_good(server, tmpdir):
+    """Test supplying the correct fingerprint"""
+    repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
+    synced = repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
+
+def test_fingerprint_bad(server, tmpdir):
+    """Test supplying an incorrect fingerprint"""
+    repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
+    with pytest.raises(Exception, match=r"The authenticity of '.+' can't be established"):
+        repo.sync()
+
+def test_fingerprint_changed(server, tmpdir):
+    """Test updating a fingerprint"""
+    repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
+    with pytest.raises(Exception, match=r"The authenticity of '.*' can't be established"):
+        repo.sync()   
+
+    repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
+    synced = repo.sync()
+    assert len(synced) > 0, "Didn't sync any files"
 
 
 # def test_live_server():

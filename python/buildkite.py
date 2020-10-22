@@ -38,7 +38,7 @@ def list_from_env_array(var):
             break
         result.append(elem)
         i += 1
-    
+
     return result
 
 def get_config():
@@ -50,11 +50,11 @@ def get_config():
     conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
     conf['client_options'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
     conf['client_type'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_TYPE')
+    conf['fingerprint'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_FINGERPRINT')
 
     if 'BUILDKITE_PLUGIN_PERFORCE_ROOT' in os.environ and not __LOCAL_RUN__:
         raise Exception("Custom P4 root is for use in unit tests only")
     conf['root'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_ROOT') or os.environ.get('BUILDKITE_BUILD_CHECKOUT_PATH')
-
 
     # Coerce view into pairs of [depot client] paths
     view_parts = conf['view'].split(' ')
@@ -111,7 +111,7 @@ def get_build_revision():
     if revision.startswith('@') or revision.startswith('#'):
         return revision
     # Unable to establish a concrete revision for the build
-    return None 
+    return None
 
 def set_build_revision(revision):
     """Set the p4 revision for following jobs in this build"""
