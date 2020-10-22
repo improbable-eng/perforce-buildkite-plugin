@@ -245,27 +245,6 @@ class P4Repo:
             self.perforce.run_clean(patched)
             os.remove(self.patchfile)
 
-    def unshelve(self, changelist):
-        """Unshelve a pending change"""
-        self._setup_client()
-
-        changeinfo = self.perforce.run_describe('-S', changelist)
-        if not changeinfo:
-            raise Exception('Changelist %s does not contain any shelved files.' % changelist)
-        changeinfo = changeinfo[0]
-
-        # Reject exclusive lock files for now
-        modifiers = [filetype.split('+')[1]
-                     for filetype in changeinfo['type']
-                     if '+' in filetype]
-        if any('l' in modifier for modifier in modifiers):
-            raise Exception(
-                'You cannot run a presubmit test with exclusive lock files (+l) at this time\n'
-                'See https://github.com/ca-johnson/perforce-buildkite-plugin/issues/102 for latest status\n')
-
-
-        self.perforce.run_unshelve('-s', changelist)
-
     def run_parallel_cmds(self, cmds, max_parallel=20):
         def run(*args):
             """Acquire new connection and run p4 cmd"""
@@ -309,19 +288,6 @@ class P4Repo:
                 cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
 
         self.run_parallel_cmds(cmds)
-
-    def backup(self, changelist):
-        """Make a copy of a shelved change"""
-        self.revert()
-        self.unshelve(changelist)
-        # Make pending CL from default CL
-        unshelved = self.perforce.fetch_change()
-        unshelved._description = 'Backup of %s for precommit testing in Buildkite' % changelist
-        self.perforce.save_change(unshelved)
-        backup_change_info = self.perforce.run_changes('-c', self.perforce.client, '-s', 'pending', '-m', '1')
-        backup_cl = backup_change_info[0]['change']
-        self.perforce.run_shelve('-c', backup_cl)
-        return backup_cl
 
 
 class SyncOutput(OutputHandler):

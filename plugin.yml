@@ -3,8 +3,6 @@ description: Checks out a perforce repository instead of git.
 author: https://github.com/ca-johnson
 configuration:
   properties:
-    backup_changelists:
-      type: bool
     client_options:
       type: string
     client_type:

@@ -74,17 +74,6 @@ view: >-
 
 ### Advanced
 
-#### `backup_changelists` (optional, bool)
-
-Default: `no`.
-
-When running a build against a shelved changelist, create a duplicate of that changelist so that other steps in the build are guaranteed to run against the same version of shelved files.
-
-Caveats:
-
-* May lead to accumulation of many shelved changelists on the server, affecting performance.
-* Removes convenience of being able to re-shelve changes and iterate by retrying only failied steps.
-
 #### `client_options` (optional, string)
 
 Default: `clobber`.
