@@ -15,10 +15,6 @@ import pytest
 
 from perforce import P4Repo
 
-# Time after which the p4 server will automatically be shut-down.
-__P4D_TIMEOUT__ = 30
-# __P4D_TIMEOUT__ = None
-
 def find_free_port():
     """Find an open port that we could run a perforce server on"""
     # pylint: disable=no-member
@@ -27,6 +23,7 @@ def find_free_port():
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return sock.getsockname()[1]
 
+@contextmanager
 def run_p4d(p4port, from_zip=None):
     """Start a perforce server with the given hostname:port.
        Optionally unzip server state from a file
@@ -56,21 +53,18 @@ def run_p4d(p4port, from_zip=None):
     os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0o600)
     os.environ['P4SSLDIR'] = p4ssldir
     os.environ['P4TRUST'] = p4trust
-    try:
-        subprocess.check_output(["p4d", "-r", tmpdir, "-p", p4port],
-                                timeout=__P4D_TIMEOUT__)
-    except subprocess.TimeoutExpired:
-        pass
+
+    yield subprocess.Popen(['p4d', '-r', tmpdir, '-p', p4port])
 
 @pytest.fixture
 def server():
     """Start a p4 server in the background and return the address"""
     port = find_free_port()
     p4port = 'ssl:localhost:%s' % port
-    Thread(target=partial(run_p4d, p4port, from_zip='server.zip'), daemon=True).start()
-    time.sleep(1)
     os.environ['P4PORT'] = p4port
-    return p4port
+    with run_p4d(p4port, from_zip='server.zip'):
+        time.sleep(1)
+        yield p4port
 
 @pytest.fixture
 def tmpdir():
@@ -96,7 +90,6 @@ def test_server_fixture(capsys, server):
     repo = P4Repo()
 
     # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
-    # Change __P4D_TIMEOUT__ to 'None' or an otherwise large amount of time
     # Run unit tests in the debugger and hit the breakpoint
     # Log in using details printed to stdout (port/user) via p4v or the command line
     # Make changes to the p4 server
