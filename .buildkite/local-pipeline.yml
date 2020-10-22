@@ -1,5 +1,6 @@
+---
 steps:
-  - label: "Test"
+  - label: Test
     command: echo "Hello World"
     env:
       BUILDKITE_CLEAN_CHECKOUT: true
@@ -10,7 +11,7 @@ steps:
           view: //depot/... ...
           root: p4_workspace
           parallel: 2
-          backup_changelists: yes
+          backup_changelists: true
 
   # - label: "Test Shared Streams"
   #   command: echo "Hello World"
