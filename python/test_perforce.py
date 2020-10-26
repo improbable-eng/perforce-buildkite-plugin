@@ -15,10 +15,6 @@ import pytest
 
 from perforce import P4Repo
 
-# Time after which the p4 server will automatically be shut-down.
-__P4D_TIMEOUT__ = 30
-# __P4D_TIMEOUT__ = None
-
 def find_free_port():
     """Find an open port that we could run a perforce server on"""
     # pylint: disable=no-member
@@ -27,6 +23,7 @@ def find_free_port():
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return sock.getsockname()[1]
 
+@contextmanager
 def run_p4d(p4port, from_zip=None):
     """Start a perforce server with the given hostname:port.
        Optionally unzip server state from a file
@@ -47,7 +44,6 @@ def run_p4d(p4port, from_zip=None):
             archive.extractall(tmpdir)
 
     p4ssldir = os.path.join(tmpdir, 'ssl')
-    p4trust = os.path.join(tmpdir, 'trust.txt')
     shutil.copytree(os.path.join(os.path.dirname(__file__), 'fixture', 'insecure-ssl'), p4ssldir)
     # Like a beautifully crafted work of art, p4d fails to start if permissions on the secrets are too open.
     # https://www.perforce.com/manuals/v18.1/cmdref/Content/CmdRef/P4SSLDIR.html
@@ -55,28 +51,18 @@ def run_p4d(p4port, from_zip=None):
     os.chmod(os.path.join(p4ssldir, 'privatekey.txt'), 0o600)
     os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0o600)
     os.environ['P4SSLDIR'] = p4ssldir
-    os.environ['P4TRUST'] = p4trust
-    try:
-        subprocess.check_output(["p4d", "-r", tmpdir, "-p", p4port],
-                                timeout=__P4D_TIMEOUT__)
-    except subprocess.TimeoutExpired:
-        pass
 
-@pytest.fixture
+    yield subprocess.Popen(['p4d', '-r', tmpdir, '-p', p4port])
+
+@pytest.fixture(scope='package')
 def server():
     """Start a p4 server in the background and return the address"""
     port = find_free_port()
     p4port = 'ssl:localhost:%s' % port
-    Thread(target=partial(run_p4d, p4port, from_zip='server.zip'), daemon=True).start()
-    time.sleep(1)
     os.environ['P4PORT'] = p4port
-    return p4port
-
-@pytest.fixture
-def tmpdir():
-    """Create a temp directory for tests. Usually used as a client root"""
-    with tempfile.TemporaryDirectory(prefix="bk-p4-test-") as tmpdir:
-        yield tmpdir
+    with run_p4d(p4port, from_zip='server.zip'):
+        time.sleep(1)
+        yield p4port
 
 def store_server(repo, to_zip):
     """Zip up a server to use as a unit test fixture"""
@@ -96,7 +82,6 @@ def test_server_fixture(capsys, server):
     repo = P4Repo()
 
     # To change the fixture server, uncomment the line below with 'store_server' and put a breakpoint on it
-    # Change __P4D_TIMEOUT__ to 'None' or an otherwise large amount of time
     # Run unit tests in the debugger and hit the breakpoint
     # Log in using details printed to stdout (port/user) via p4v or the command line
     # Make changes to the p4 server
@@ -316,35 +301,6 @@ def test_workspace_recovery(server, tmpdir):
     assert sorted(os.listdir(tmpdir)) == sorted([
         "file.txt", "p4config"]), "Failed to restore corrupt workspace due to missing p4config"
 
-def test_unshelve(server, tmpdir):
-    """Test unshelving a pending changelist"""
-    repo = P4Repo(root=tmpdir)
-    repo.sync()
-    with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
-
-    repo.unshelve('3') # Modify a file
-    with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
-    repo.sync()
-
-    repo.unshelve('4') # Delete a file
-    assert not os.path.exists(os.path.join(tmpdir, "file.txt"))
-    repo.sync()
-
-    repo.unshelve('5') # Add a file
-    assert os.path.exists(os.path.join(tmpdir, "newfile.txt"))
-    repo.sync()
-
-    with pytest.raises(Exception, match=r'Changelist 999 does not contain any shelved files.'):
-        repo.unshelve('999')
-
-    # Unshelved changes are removed in following syncs
-    repo.sync()
-    with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Hello World\n", "Unexpected content in workspace file"
-    assert not os.path.exists(os.path.join(tmpdir, "newfile.txt")), "File unshelved for add was not deleted"
-
 def test_p4print_unshelve(server, tmpdir):
     """Test unshelving a pending changelist by p4printing content into a file"""
     repo = P4Repo(root=tmpdir)
@@ -383,16 +339,6 @@ def test_p4print_unshelve(server, tmpdir):
     repo = P4Repo(root=tmpdir, stream='//stream-depot/main')
     repo.p4print_unshelve('3') # Modify a file
 
-def test_backup_shelve(server, tmpdir):
-    """Test making a copy of a shelved changelist"""
-    repo = P4Repo(root=tmpdir)
-
-    backup_changelist = repo.backup('3')
-    assert backup_changelist != '3', "Backup changelist number must be new"
-    repo.revert()
-    repo.unshelve(backup_changelist)
-    with open(os.path.join(tmpdir, "file.txt")) as content:
-        assert content.read() == "Goodbye World\n", "Unexpected content in workspace file"
 
 def copytree(src, dst):
     """Shim to get around shutil.copytree requiring root dir to not exist"""
@@ -466,18 +412,24 @@ __LEGIT_P4_FINGERPRINT__ = '7A:10:F6:00:95:87:5B:2E:D4:33:AB:44:42:05:85:94:1C:9
 
 def test_fingerprint_good(server, tmpdir):
     """Test supplying the correct fingerprint"""
+    os.environ['P4TRUST'] = os.path.join(tmpdir, 'trust.txt')
+
     repo = P4Repo(root=tmpdir, fingerprint=__LEGIT_P4_FINGERPRINT__)
     synced = repo.sync()
     assert len(synced) > 0, "Didn't sync any files"
 
 def test_fingerprint_bad(server, tmpdir):
     """Test supplying an incorrect fingerprint"""
+    os.environ['P4TRUST'] = os.path.join(tmpdir, 'trust.txt')
+
     repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
     with pytest.raises(Exception, match=r"The authenticity of '.+' can't be established"):
         repo.sync()
 
 def test_fingerprint_changed(server, tmpdir):
     """Test updating a fingerprint"""
+    os.environ['P4TRUST'] = os.path.join(tmpdir, 'trust.txt')
+
     repo = P4Repo(root=tmpdir, fingerprint='FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF')
     with pytest.raises(Exception, match=r"The authenticity of '.*' can't be established"):
         repo.sync()   

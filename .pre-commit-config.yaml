@@ -43,6 +43,7 @@ repos:
       - id: pretty-format-json
         args:
           - --autofix
+      - id: sort-simple-yaml
       - id: trailing-whitespace
 
   - repo: https://github.com/syntaqx/git-hooks

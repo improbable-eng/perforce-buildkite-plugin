@@ -1,12 +1,13 @@
+---
 language: python
 # cache: pip # not enough installed via pip to justify
 python:
-  - "3.6"
+  - '3.6'
 os:
   - linux
 before_install:
   - pip install -U pip
-install: 
+install:
   - pip install -r ./ci/requirements.txt
   - pip install -r ./python/requirements.txt
   - ./ci/install_$TRAVIS_OS_NAME.sh

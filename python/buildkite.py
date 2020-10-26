@@ -13,8 +13,6 @@ __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 
 __REVISION_METADATA__ = 'buildkite-perforce-revision'
 __REVISION_METADATA_DEPRECATED__ = 'buildkite:perforce:revision' # old metadata key, incompatible with `bk local run`
-__SHELVED_METADATA__ = 'buildkite-perforce-shelved'
-__SHELVED_ANNOTATION__ = "Saved shelved change {original} as {copy}"
 
 def get_env():
     """Get env vars passed in via plugin config"""
@@ -65,9 +63,6 @@ def get_config():
     conf['view'] = ['%s %s' % (v, next(view_iter)) for v in view_iter]
     return conf
 
-def should_backup_changelists():
-    return os.environ.get('BUILDKITE_PLUGIN_PERFORCE_BACKUP_CHANGELISTS', 'false') == 'true'
-
 def get_metadata(key):
     """If it exists, retrieve metadata from buildkite for a given key"""
     if not __ACCESS_TOKEN__:
@@ -100,23 +95,6 @@ def get_users_changelist():
     branch = os.environ.get('BUILDKITE_BRANCH', '')
     if branch.isdigit():
         return branch
-
-def get_build_changelist():
-    """Get a saved version of the users originally supplied changelist, if available"""
-    return get_metadata(__SHELVED_METADATA__)
-
-def set_build_changelist(changelist):
-    """Set a shelved change that should be used instead of the user-supplied one"""
-    if set_metadata(__SHELVED_METADATA__, changelist) and should_backup_changelists():
-        subprocess.call([
-            'buildkite-agent', 'annotate',
-            __SHELVED_ANNOTATION__.format(**{
-                'original': get_users_changelist(),
-                'copy': changelist,
-            }),
-            '--context', __SHELVED_METADATA__,
-            '--style', 'info',
-        ])
 
 def get_build_revision():
     """Get a p4 revision for the build from buildkite context"""
