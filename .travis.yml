@@ -5,6 +5,7 @@ python:
   - '3.6'
 os:
   - linux
+  - osx
 before_install:
   - pip install -U pip
 install:
