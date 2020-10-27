@@ -13,8 +13,8 @@ before_install:
   - python --version
 install:
   - ./ci/install_$TRAVIS_OS_NAME.sh
-  - pip install -r ./ci/requirements.txt
-  - pip install -r ./python/requirements.txt
+  - python -m pip install -r ./ci/requirements.txt
+  - python -m pip install -r ./python/requirements.txt
 script:
   - ./ci/test.sh
   - ./ci/lint.sh
