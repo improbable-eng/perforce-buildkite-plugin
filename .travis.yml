@@ -9,12 +9,12 @@ jobs:
       osx_image: xcode12.2 # macOS 10.15.7 python ???
       
 before_install:
-  - pip install -U pip
-  - python --version
+  - pip3 install -U pip
+  - python3 --version
 install:
   - ./ci/install_$TRAVIS_OS_NAME.sh
-  - python -m pip install -r ./ci/requirements.txt
-  - python -m pip install -r ./python/requirements.txt
+  - python3 -m pip install -r ./ci/requirements.txt
+  - python3 -m pip install -r ./python/requirements.txt
 script:
   - ./ci/test.sh
   - ./ci/lint.sh

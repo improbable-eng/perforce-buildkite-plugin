@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 set -euxo pipefail
-# sudo apt-get install python-dev build-essential libssl-dev
-# brew update
-brew install pyenv
 pyenv install 3.6.0
 pyenv global 3.6.0
 
