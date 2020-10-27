@@ -9,7 +9,7 @@ test:
 	./ci/test.sh
 
 vendorize:
-	mkdir local-pipeline/plugins/perforce -p
+	mkdir -p local-pipeline/plugins/perforce
 	cp hooks python plugin.yml local-pipeline/plugins/perforce/ -rf
 	# Checkout hook not available locally, so make a command hook instead
 	cp local-pipeline/plugins/perforce/hooks/checkout local-pipeline/plugins/perforce/hooks/command -f
