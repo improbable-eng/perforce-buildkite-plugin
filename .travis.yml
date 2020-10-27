@@ -1,13 +1,16 @@
 ---
 language: python
 # cache: pip # not enough installed via pip to justify
-python:
-  - '3.6'
-os:
-  - linux
-  - osx
+jobs:
+  include:
+    - os: linux
+      python: 3.6
+    - os: osx
+      osx_image: xcode12.2 # macOS 10.15.7 python ???
+      
 before_install:
   - pip install -U pip
+  - python --version
 install:
   - pip install -r ./ci/requirements.txt
   - pip install -r ./python/requirements.txt
