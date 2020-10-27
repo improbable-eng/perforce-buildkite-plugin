@@ -12,9 +12,9 @@ before_install:
   - pip install -U pip
   - python --version
 install:
+  - ./ci/install_$TRAVIS_OS_NAME.sh
   - pip install -r ./ci/requirements.txt
   - pip install -r ./python/requirements.txt
-  - ./ci/install_$TRAVIS_OS_NAME.sh
 script:
   - ./ci/test.sh
   - ./ci/lint.sh

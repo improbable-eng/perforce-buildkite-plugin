@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 # sudo apt-get install python-dev build-essential libssl-dev
+# brew update
+brew install pyenv
+pyenv install 3.6.0
+pyenv global 3.6.0
 
 # Install p4d (perforce server)
 wget http://www.perforce.com/downloads/perforce/r20.1/bin.macosx1015x86_64/p4d
