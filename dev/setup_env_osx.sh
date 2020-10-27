@@ -1,15 +1,15 @@
 #!/bin/bash
-set -eo pipefail
+set -o errexit -o nounset -o pipefail
+
+readonly repo_root="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd -P)"
 
 command -v "python3" >/dev/null 2>&1 || {
-  echo >&2 "I require python3 but it's not installed. Officially supported version is 3.7.5"
+  echo >&2 "I require python3 but it's not installed. Officially supported version is $(cat "${repo_root}/../.python-version")"
   exit 1
 }
 
-readonly root="${BASH_SOURCE%/*}/.."
-
 # Setup python virtualenv for running tests
-readonly venv_dir="${root}/.dev-venv"
+readonly venv_dir="${repo_root}/.dev-venv"
 
 python3 -m pip install virtualenv
 python3 -m virtualenv "${venv_dir}"
@@ -21,8 +21,8 @@ else
   venv_bin="${venv_dir}/bin"
 fi
 
-"${venv_bin}/python" -m pip install -r "${root}/python/requirements.txt"
-"${venv_bin}/python" -m pip install -r "${root}/ci/requirements.txt"
+"${venv_bin}/python" -m pip install -r "${repo_root}/python/requirements.txt"
+"${venv_bin}/python" -m pip install -r "${repo_root}/ci/requirements.txt"
 
 # Install p4d binary if missing
 if ! [[ -x "$(command -v p4d)" ]]; then
