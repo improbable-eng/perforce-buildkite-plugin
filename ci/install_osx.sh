@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-# pyenv install "${PYTHON_VERSION}"
-# pyenv global "${PYTHON_VERSION}"
-
 # Install p4d (perforce server)
 wget http://www.perforce.com/downloads/perforce/r18.2/bin.macosx1010x86_64/p4d
 sudo chmod +x p4d
