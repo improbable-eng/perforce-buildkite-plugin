@@ -8,12 +8,12 @@ jobs:
     - os: osx
       osx_image: xcode12.2 # macOS 10.15.7 Python 3.8.6
 before_install:
-  - pip3 install -U pip
   - python3 --version
+  - pip3 install -U pip
 install:
-  - ./ci/install_$TRAVIS_OS_NAME.sh
   - python3 -m pip install -r ./ci/requirements.txt
   - python3 -m pip install -r ./python/requirements.txt
+  - ./ci/install_$TRAVIS_OS_NAME.sh
 script:
   - ./ci/test.sh
   - ./ci/lint.sh
