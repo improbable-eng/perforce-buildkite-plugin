@@ -22,5 +22,5 @@ clean_p4d:
 	# linux/osx
 	killall -9 p4d || true
 	# windows
-	cmd -c "taskkill /IM p4d /F" || true
+	MSYS_NO_PATHCONV=1 taskkill /IM p4d /F || true
 	rm -rf python/fixture/server
