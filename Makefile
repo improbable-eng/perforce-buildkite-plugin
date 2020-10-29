@@ -1,6 +1,6 @@
 local_run: vendorize p4d
-	rm -f -r p4_workspace
-	mkdir local-pipeline -p
+	rm -rf p4_workspace
+	mkdir -p local-pipeline
 	cd local-pipeline && bk local run ../.buildkite/local-pipeline.yml --meta-data "buildkite-perforce-revision=@6"
 	$(MAKE) clean_p4d
 
@@ -9,10 +9,10 @@ test:
 	./ci/test.sh
 
 vendorize:
-	mkdir local-pipeline/plugins/perforce -p
-	cp hooks python plugin.yml local-pipeline/plugins/perforce/ -rf
+	mkdir -p local-pipeline/plugins/perforce
+	cp -rf hooks python plugin.yml local-pipeline/plugins/perforce/
 	# Checkout hook not available locally, so make a command hook instead
-	cp local-pipeline/plugins/perforce/hooks/checkout local-pipeline/plugins/perforce/hooks/command -f
+	cp -f local-pipeline/plugins/perforce/hooks/checkout local-pipeline/plugins/perforce/hooks/command
 
 p4d: clean_p4d
 	unzip python/fixture/server.zip	-d python/fixture/server/
@@ -20,4 +20,4 @@ p4d: clean_p4d
 
 clean_p4d:
 	killall -9 p4d || true
-	rm -f -r python/fixture/server
+	rm -rf python/fixture/server
