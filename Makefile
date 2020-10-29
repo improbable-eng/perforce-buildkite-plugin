@@ -19,5 +19,8 @@ p4d: clean_p4d
 	p4d -r python/fixture/server -p 1666 &
 
 clean_p4d:
+	# linux/osx
 	killall -9 p4d || true
+	# windows
+	taskkill /IM p4d /F || true
 	rm -rf python/fixture/server
