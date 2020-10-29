@@ -20,4 +20,4 @@ p4d: clean_p4d
 
 clean_p4d:
 	killall -9 p4d || true
-	rm -f -r python/fixture/server
+	rm -rf python/fixture/server
