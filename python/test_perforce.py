@@ -277,7 +277,11 @@ def test_modify_client_type(server, tmpdir):
 
 def test_workspace_recovery(server, tmpdir):
     """Test that we can detect and recover from various workspace snafus"""
-    repo = P4Repo(root=tmpdir)
+    repo = P4Repo(
+        root=tmpdir,
+        # allow unit test to delete otherwise readonly files from workspace
+        client_options='allwrite'
+    )
 
     # clobber writeable file
     # partially synced writeable files may be left in the workspace if a machine was shutdown mid-sync
