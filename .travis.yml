@@ -8,6 +8,8 @@ jobs:
     - os: osx
       language: shell
       osx_image: xcode12.2 # macOS 10.15.7 Python 3.8.6
+      before_install:
+        - brew install openssl # p4python needs SSL libraries to successfully build from source.
     - os: windows
       language: shell
       before_install:
