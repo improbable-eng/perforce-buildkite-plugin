@@ -5,9 +5,16 @@ jobs:
     - os: linux
       language: python
       python: 3.6
+
     - os: osx
       language: shell
       osx_image: xcode12.2 # macOS 10.15.7 Python 3.8.6
+      env:
+        # p4python needs SSL libraries to successfully build from source.
+        PATH: "/usr/local/opt/openssl@1.1/bin:$PATH"
+        LDFLAGS: "-L/usr/local/opt/openssl@1.1/lib"
+        CPPFLAGS: "-I/usr/local/opt/openssl@1.1/include"
+
     - os: windows
       language: shell
       before_install:
@@ -15,6 +22,7 @@ jobs:
         - ln -sf /c/Python38/python /c/Python38/python3
       env:
         PATH: /c/Python38:/c/Python38/Scripts:$PATH
+
 before_install:
   - python3 --version
   - pip3 install -U pip
