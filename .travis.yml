@@ -5,10 +5,11 @@ jobs:
     - os: linux
       language: python
       python: 3.6
-# Disabled because this does not currently build successfully on MacOS due to p4python not getting along well with Python 3.9.
-#     - os: osx
-#       language: shell
-#       osx_image: xcode12u # macOS 10.15.5 Python 3.8.6
+    - os: osx
+      language: shell
+      osx_image: xcode12u # macOS 10.15.5
+      before_install:
+        - pyenv install 3.8.0
     - os: windows
       language: shell
       before_install:
