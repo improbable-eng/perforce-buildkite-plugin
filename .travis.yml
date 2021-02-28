@@ -9,7 +9,11 @@ jobs:
       language: shell
       osx_image: xcode12u # macOS 10.15.5
       before_install:
-        - pyenv install 3.8.0
+        - pyenv install 3.8.0 --skip-existing
+      cache:
+        directories:
+          # 'pyenv install' builds python from source; cache the result
+          - /Users/travis/.pyenv/versions/3.8.0
     - os: windows
       language: shell
       before_install:
