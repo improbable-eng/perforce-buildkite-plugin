@@ -126,7 +126,11 @@ class P4Repo:
         client._options = self.client_options + ' clobber'
         
         # revert changes in client before saving to avoid an error if files are still open in client
-        self.perforce.run_revert('-w', '//...')
+        try:
+            self.perforce.run_revert('-w', '//...')
+        except P4Exception:
+            # client might not exist yet, or not have any changes in either case that's fine
+            pass
 
         self.perforce.save_client(client)
 
