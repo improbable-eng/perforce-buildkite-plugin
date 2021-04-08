@@ -124,6 +124,9 @@ class P4Repo:
         # unless overidden, overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = self.client_options + ' clobber'
+        
+        # revert changes in client before saving to avoid an error if files are still open in client
+        self.revert()
 
         self.perforce.save_client(client)
 
