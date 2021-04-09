@@ -128,8 +128,9 @@ class P4Repo:
         # revert changes in client before saving to avoid an error if files are still open in client
         try:
             self.perforce.run_revert('-w', '//...')
-        except P4Exception:
+        except P4Exception as ex:
             # client might not exist yet, or not have any changes in either case that's fine
+            self.perforce.logger.warning("%s" % ex)
             pass
 
         self.perforce.save_client(client)
