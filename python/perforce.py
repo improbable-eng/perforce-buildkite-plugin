@@ -269,12 +269,10 @@ class P4Repo:
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
         self._setup_client()
-        perforce = P4()
 
         changeinfo = self.perforce.run_describe('-S', changelist)
         if not changeinfo:
-            perforce.logger = self.perforce.logger
-            perforce.logger.error("Changelist %s does not exist: Check to see if the shelved changelist still exists" % changelist)
+            self.perforce.logger.error("Changelist %s does not exist: Check to see if the shelved changelist still exists" % changelist)
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
