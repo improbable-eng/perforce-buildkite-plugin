@@ -269,6 +269,7 @@ class P4Repo:
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
         self._setup_client()
+        perforce = P4()
 
         changeinfo = self.perforce.run_describe('-S', changelist)
         if not changeinfo:
