@@ -278,7 +278,6 @@ class P4Repo:
         if changeinfo['depotFile']:
             depotfiles = changeinfo['depotFile']
         else:
-            self.perforce.logger.error("Changelist %s does not exist: Check to see if the shelved changelist still exists" % changelist)
             raise Exception('Changelist %s does not contain any shelved files' % changelist)
         
 
