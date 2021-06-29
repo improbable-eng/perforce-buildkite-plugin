@@ -275,9 +275,9 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
-        if changeinfo['depotFile']:
+        try:
             depotfiles = changeinfo['depotFile']
-        else:
+        except KeyError:
             raise Exception('Changelist %s does not contain any shelved files' % changelist)
         
 
