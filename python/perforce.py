@@ -275,10 +275,9 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
-        try:
-            depotfiles = changeinfo['depotFile']
-        except KeyError:
+        if 'depotFile' not in changeinfo:
             raise Exception('Changelist %s does not contain any shelved files' % changelist)
+        depotfiles = changeinfo['depotFile']
         
 
         whereinfo = self.perforce.run_where(depotfiles)
