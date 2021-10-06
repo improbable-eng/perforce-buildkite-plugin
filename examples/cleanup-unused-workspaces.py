@@ -27,16 +27,24 @@ clients = p4.run_clients()
 
 # Filter by basic prefix matching.
 # May want to include filtering by user and other fields to avoid false positives.
-bk_clients = [client for client in clients 
-              if client.get('client', '').startswith('bk-p4-')]
+bk_clients = [
+    client for client in clients if client.get('client', '').startswith('bk-p4-')
+]
 
 now = datetime.now()
 n_days_ago = (now - timedelta(days=__days_unused__)).timestamp()
-unused_clients = [client for client in bk_clients
-                  if int(client.get('Access')) < n_days_ago]
+unused_clients = [
+    client for client in bk_clients if int(client.get('Access')) < n_days_ago
+]
 
 pprint(unused_clients)
-proceed = input("Will delete %d/%d Buildkite clients. Continue? (y/n) " % (len(unused_clients),len(bk_clients))).lower() == 'y'
+proceed = (
+    input(
+        "Will delete %d/%d Buildkite clients. Continue? (y/n) "
+        % (len(unused_clients), len(bk_clients))
+    ).lower()
+    == 'y'
+)
 
 if proceed:
     for client in unused_clients:

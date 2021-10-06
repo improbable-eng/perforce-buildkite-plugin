@@ -3,5 +3,5 @@
 # https://github.com/psf/black/blob/master/docs/the_black_code_style.md#line-length
 [flake8]
 # black wraps at 88
-max-line-length = 90
+max-line-length = 120
 extend-ignore = E203
