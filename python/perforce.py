@@ -141,9 +141,13 @@ class P4Repo:
                     for line in infile.read().splitlines() # removes \n
                     if line.startswith('P4CLIENT='))
             # p4 flush @client is only supported for writeable
-            if prev_clientname != clientname and client == "writeable":
+            if prev_clientname != clientname:
+                if client == "writeable":
                     self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
                     self._flush_to_previous_client(client, prev_clientname)
+                else:
+                    self.perforce.logger.warning("cleaning workspace to ensure have table is correctly populated. Due to mismatched with previous clientname %s" % prev_clientname)
+                    self.perforce.run_clean('//...')
 
         elif 'Update' in client: # client was accessed previously
             self.perforce.logger.warning("p4config missing for previously accessed client workspace. flushing to revision zero")
