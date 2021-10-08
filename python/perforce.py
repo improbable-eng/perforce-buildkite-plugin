@@ -140,8 +140,8 @@ class P4Repo:
                 prev_clientname = next(line.split('=', 1)[-1]
                     for line in infile.read().splitlines() # removes \n
                     if line.startswith('P4CLIENT='))
-            # p4 flush @client is only supported for writable
-            if prev_clientname != clientname and client == "writable":
+            # p4 flush @client is only supported for writeable
+            if prev_clientname != clientname and client == "writeable":
                     self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
                     self._flush_to_previous_client(client, prev_clientname)
 
