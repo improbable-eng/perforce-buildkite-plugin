@@ -147,7 +147,7 @@ class P4Repo:
                     self._flush_to_previous_client(client, prev_clientname)
                 else:
                     self.perforce.logger.warning("cleaning workspace to ensure have table is correctly populated. Due to mismatched with previous clientname %s" % prev_clientname)
-                    self.clean()
+                    self.perforce.run_clean(['-a', '-d', '//...'])
 
         elif 'Update' in client: # client was accessed previously
             self.perforce.logger.warning("p4config missing for previously accessed client workspace. flushing to revision zero")
