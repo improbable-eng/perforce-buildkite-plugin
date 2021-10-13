@@ -142,11 +142,17 @@ class P4Repo:
                     if line.startswith('P4CLIENT='))
             # p4 flush @client is only supported for writeable
             if prev_clientname != clientname:
+                bless_version_file = os.path.join(self.root, "bless.version")
                 if client == "writeable":
                     self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
                     self._flush_to_previous_client(client, prev_clientname)
+                elif os.path.isfile(bless_version_file):
+                    with open(bless_version_file, 'r') as file:
+                        blessed_version = file.read()
+                        self.perforce.logger.warning("flushing workspace to previously blessed version %s" % blessed_version)
+                        self.perforce.run_flush(['//...@%s' % blessed_version])
                 else:
-                    self.perforce.logger.warning("cleaning workspace to ensure have table is correctly populated. Due to mismatched with previous clientname %s" % prev_clientname)
+                    self.perforce.logger.warning("cleaning workspace to ensure have table is correctly populated. Due to lack of bless.version file in root and mismatched with previous clientname %s" % prev_clientname)
                     self.perforce.run_clean(['-a', '-d', '//...'])
 
         elif 'Update' in client: # client was accessed previously
