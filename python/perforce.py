@@ -148,7 +148,7 @@ class P4Repo:
                     self._flush_to_previous_client(client, prev_clientname)
                 elif os.path.isfile(bless_version_file):
                     with open(bless_version_file, 'r') as file:
-                        blessed_version = file.read()
+                        blessed_version = file.read().strip()
                         self.perforce.logger.warning("flushing workspace to previously blessed version %s" % blessed_version)
                         self.perforce.run_flush(['//...@%s' % blessed_version])
                 else:
