@@ -12,7 +12,7 @@ fi
 # Ensure some version of virtualenv is installed
 # Lazy install avoids races between different jobs wanting different versions
 if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
-  ${python_bin} -m pip install "virtualenv==16.7.7"
+  ${python_bin} -m pip install "virtualenv==20.13.0"
 fi
 
 # Unique virtualenv for requirements.txt
