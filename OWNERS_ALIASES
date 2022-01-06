@@ -9,12 +9,14 @@ aliases:
     - filipVisko         # Filip Viskovic
     - Helcaraxan         # Duco van Amstel
     - PaulSonOfLars      # PaulSonOfLars
-    - petemounce         # Peter Mounce
   team-live-ops:
     - LeadTimeNull       # Andreas Valentin Pedersen
-    - robbieheywood      # Robbie Heywood
     - adamhosier         # Adam Hosier
-    - ianbillett         # Ian Billet
     - jared-improbable   # Jared Dixey-Hefty
     - tenevdev           # Tencho Tenev
     - Christopher-Steel  # Christopher George Steel
+  team-reliability-engineering:
+    - Christopher-Steel  # Christopher George Steel
+    - filipVisko         # Filip Viskovic
+    - LeadTimeNull       # Andreas Valentin Pedersen
+    - PaulSonOfLars      # PaulSonOfLars

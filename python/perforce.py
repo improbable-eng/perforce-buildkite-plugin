@@ -124,6 +124,14 @@ class P4Repo:
         # unless overidden, overwrite writeable-but-unopened files
         # (e.g. interrupted syncs, artefacts that have been checked-in)
         client._options = self.client_options + ' clobber'
+        
+        # revert changes in client before saving to avoid an error if files are still open in client
+        try:
+            self.perforce.run_revert('-w', '//...')
+        except P4Exception as ex:
+            # client might not exist yet, or not have any changes in either case that's fine
+            self.perforce.logger.warning("%s" % ex)
+            pass
 
         self.perforce.save_client(client)
 
@@ -267,7 +275,10 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files.' % changelist)
         changeinfo = changeinfo[0]
 
+        if 'depotFile' not in changeinfo:
+            raise Exception('Changelist %s does not contain any shelved files' % changelist)
         depotfiles = changeinfo['depotFile']
+        
 
         whereinfo = self.perforce.run_where(depotfiles)
         depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
