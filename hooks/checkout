@@ -11,9 +11,9 @@ fi
 
 # Ensure some version of virtualenv is installed
 # Lazy install avoids races between different jobs wanting different versions
-if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
+#if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
   ${python_bin} -m pip install "virtualenv==20.13.0"
-fi
+#fi
 
 # Unique virtualenv for requirements.txt
 venv_md5=$(md5sum "${plugin_root}/python/requirements.txt" | awk '{print $1}')
