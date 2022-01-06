@@ -104,6 +104,25 @@ class P4Repo:
             current_client._stream = self.stream
             self.perforce.save_client(current_client)
 
+    def _flush_to_stream_and_changelist(self, current_client, prev_client_stream, prev_client_changelist):
+        """
+        Flush a new client to match existing workspace data from a previous client, using the CL and stream.
+        
+        This is needed for partitioned and read-only workspaces that can't directly use another client for flushing.
+        """
+        stream_switch = self.stream and prev_client_stream != self.stream
+        if stream_switch:
+            self.perforce.logger.info("previous client stream %s does not match %s, switching stream temporarily to flush" % (prev_client_stream, self.stream))
+            current_client._stream = prev_client_stream
+            self.perforce.save_client(current_client)
+
+        self.perforce.run_flush(['//...@%s' % prev_client_changelist])
+
+        if stream_switch:
+            self.perforce.logger.info("switching stream back to %s" % self.stream)
+            current_client._stream = self.stream
+            self.perforce.save_client(current_client)
+
     def _setup_client(self):
         """Creates or re-uses the client workspace for this machine"""
         # pylint: disable=protected-access
@@ -140,9 +159,29 @@ class P4Repo:
                 prev_clientname = next(line.split('=', 1)[-1]
                     for line in infile.read().splitlines() # removes \n
                     if line.startswith('P4CLIENT='))
+            # p4 flush @client is only supported for writeable
             if prev_clientname != clientname:
-                self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
-                self._flush_to_previous_client(client, prev_clientname)
+                need_full_clean = True
+                bless_version_file = os.path.join(self.root, "bless.version")
+                if client == "writeable":
+                    self.perforce.logger.warning("p4config last client was %s, flushing workspace to match" % prev_clientname)
+                    self._flush_to_previous_client(client, prev_clientname)
+                    need_full_clean = False
+                elif os.path.isfile(bless_version_file):
+                    with open(bless_version_file, 'r') as file:
+                        # The bless version file has the format stream@CL, e.g. //depot/main@123456
+                        blessed_version_string = file.read().strip()
+                        blessed_stream_and_version = blessed_version_string.split('@')
+                        if len(blessed_stream_and_version) == 2:
+                            self.perforce.logger.warning("flushing workspace to previously blessed version: stream %s at changelist %s" % (blessed_stream_and_version[0], blessed_stream_and_version[1]))
+                            self._flush_to_stream_and_changelist(client, blessed_stream_and_version[0], blessed_stream_and_version[1])
+                            need_full_clean = False
+                        else:
+                            self.perforce.logger.warning("invalid bless.version format: %s. Expected format is stream@CL, e.g. //depot/main@123456" % blessed_version_string)
+                
+                if need_full_clean:
+                    self.perforce.logger.warning("cleaning workspace to ensure have table is correctly populated. Due to lack of bless.version file in root and mismatched with previous clientname %s" % prev_clientname)
+                    self.perforce.run_clean(['-a', '-d', '//...'])
 
         elif 'Update' in client: # client was accessed previously
             self.perforce.logger.warning("p4config missing for previously accessed client workspace. flushing to revision zero")
