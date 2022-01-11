@@ -1,0 +1,29 @@
+name: Tests
+'on':
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  Build:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        # ToDo enable more OS's []
+        os: [ubuntu-latest]
+        python-version: ['3.8', '3.9']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    - run: pip install -r ./ci/requirements.txt
+    - run: pip install -r ./python/requirements.txt
+    # ToDo find a way of specifying windows / linux / macos in lower form.
+    - run: ./ci/install_${{ runner.os }}.sh
+    - run: ./ci/test.sh
+    - run: ./ci/lint.sh
+    - run: make local_run
