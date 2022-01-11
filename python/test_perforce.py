@@ -52,7 +52,11 @@ def run_p4d(p4port, from_zip=None):
     os.chmod(os.path.join(p4ssldir, 'certificate.txt'), 0o600)
     os.environ['P4SSLDIR'] = p4ssldir
 
-    yield subprocess.Popen(['p4d', '-r', tmpdir, '-p', p4port])
+    try:
+        p4d = subprocess.Popen(['p4d', '-r', tmpdir, '-p', p4port])
+        yield p4d
+    finally:
+        p4d.terminate()
 
 @pytest.fixture(scope='package')
 def server():
