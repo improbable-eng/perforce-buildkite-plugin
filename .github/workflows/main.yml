@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # ToDo enable more OS's []
-        os: [ubuntu-latest]
+        os: ["ubuntu-latest" , "windows-latest"]
         python-version: ['3.8', '3.9']
     steps:
     - uses: actions/checkout@v2
@@ -23,7 +23,19 @@ jobs:
     - run: pip install -r ./ci/requirements.txt
     - run: pip install -r ./python/requirements.txt
     # ToDo find a way of specifying windows / linux / macos in lower form.
-    - run: ./ci/install_${{ runner.os }}.sh
+    - run: |
+         if [ "$RUNNER_OS" == "Linux" ]; then
+              ./ci/install_linux.sh
+         elif [ "$RUNNER_OS" == "Windows" ]; then
+              ./ci/install_windows.sh
+         else
+              echo "$RUNNER_OS not supported"
+              exit 1
+         fi
+      shell: bash
     - run: ./ci/test.sh
+      shell: bash
     - run: ./ci/lint.sh
+      shell: bash
     - run: make local_run
+      shell: bash
