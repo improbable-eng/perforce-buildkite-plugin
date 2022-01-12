@@ -26,18 +26,14 @@ jobs:
         cache: 'pip'
     - run: pip install -r ./ci/requirements.txt
     - run: pip install -r ./python/requirements.txt
-
+    - if: runner.os == 'Windows' 
+      run: ./ci/install_windows.sh 
+    - if: runner.os == 'Linux' 
+      run: ./ci/install_linux.sh
     - name: "PyTest"
       run: ./ci/test.sh
     - name: "Linting"
       run: ./ci/lint.sh
-    # E2E Testing config
-    - name: "Install Buildkite agent for E2E"
-      if: runner.os == 'Linux' 
-      run: ./ci/install_linux.sh
-    - name: "Install Buildkite agent for E2E"
-      if: runner.os == 'Windows' 
-      run: ./ci/install_windows.sh 
-    - name: "E2E Local Run"
+    - name: "E2E"
       run: make local_run
 
