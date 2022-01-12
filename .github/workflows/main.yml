@@ -16,11 +16,14 @@ jobs:
     strategy:
       matrix:
         # TODO enable wider more OS support
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-latest" , "macos-latest"]
         python-version: ['3.8', '3.9']
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
+      env:
+        LDFLAGS: "-L/usr/local/opt/openssl/lib"
+        CPPFLAGS: "-I/usr/local/opt/openssl/include"
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
