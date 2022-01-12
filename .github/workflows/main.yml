@@ -1,0 +1,39 @@
+name: Tests
+'on':
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+
+  Build:
+    defaults:
+      run: 
+        shell: bash
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        # TODO enable wider more OS support
+        os: ["ubuntu-latest"]
+        python-version: ['3.8', '3.9']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    - run: pip install -r ./ci/requirements.txt
+    - run: pip install -r ./python/requirements.txt
+    - if: runner.os == 'Windows' 
+      run: ./ci/install_windows.sh 
+    - if: runner.os == 'Linux' 
+      run: ./ci/install_linux.sh
+    - name: "PyTest"
+      run: ./ci/test.sh
+    - name: "Linting"
+      run: ./ci/lint.sh
+    - name: "E2E"
+      run: make local_run
+
