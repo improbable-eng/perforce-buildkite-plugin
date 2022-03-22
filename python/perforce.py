@@ -318,9 +318,15 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files' % changelist)
         depotfiles = changeinfo['depotFile']
         
+        self.perforce.logger.info("Depotfiles: " + json.dumps(depotfiles, indent=4))
 
         whereinfo = self.perforce.run_where(depotfiles)
+
+        self.perforce.logger.info("Whereinfo: " + json.dumps(whereinfo, indent=4))
+
         depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
+
+        self.perforce.logger.info("Depot To Local: " + json.dumps(depot_to_local, indent=4))
 
         # Flag these files as modified
         self._write_patched(list(depot_to_local.values()))
@@ -329,6 +335,8 @@ class P4Repo:
         # e.g. //my-depot/dir/... => //my-depot/dir/
         sync_prefixes = [prefix.rstrip('.') for prefix in self.sync_paths]
 
+        self.perforce.logger.info("len(depotfiles): %s, len(whereinfo): %d, len(depot_to_local): %d" % (len(depotfiles), len(whereinfo), len(depot_to_local)))
+
         cmds = []
         for depotfile, localfile in depot_to_local.items():
             if os.path.isfile(localfile):
@@ -336,6 +344,8 @@ class P4Repo:
                 os.unlink(localfile)
             if any(depotfile.startswith(prefix) for prefix in sync_prefixes):
                 cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+            else:
+                self.perforce.logger.info('file doesnt have matching prefix: ' + depotfile)
 
         self.run_parallel_cmds(cmds)
 
