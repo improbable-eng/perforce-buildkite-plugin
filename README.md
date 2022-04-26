@@ -2,7 +2,7 @@
 
 [![Tests Status](https://github.com/improbable-eng/perforce-buildkite-plugin/actions/workflows/main.yml/badge.svg)](https://github.com/improbable-eng/perforce-buildkite-plugin/actions/workflows/main.yml?query=branch%3Amaster)
 
-[![Tests Status](https://github.com/improbable-eng/perforce-buildkite-plugin/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/improbable-eng/perforce-buildkite-plugin/actions/workflows/codeql-analysis.yml?query=branch%3Amaster)
+[![CodeQL Status](https://github.com/improbable-eng/perforce-buildkite-plugin/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/improbable-eng/perforce-buildkite-plugin/actions/workflows/codeql-analysis.yml?query=branch%3Amaster)
 
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core) on Windows, Linux and macOS platforms.
 
