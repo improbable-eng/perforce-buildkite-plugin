@@ -2,6 +2,7 @@
 Manage a perforce workspace in the context of a build machine
 """
 import os
+from pathlib import Path
 import re
 import socket
 import logging
@@ -57,11 +58,13 @@ class P4Repo:
 
         print("About to run p4 connect")
         print(f"P4PORT={self.perforce.port}")
-        print(f"P4CONFIG is at {self.p4config}")
+        print(f"P4CONFIG is at {Path(self.p4config).absolute()}")
         if(os.path.exists(self.p4config)):
             print("P4 config file exists")
             with open(self.p4config, 'r') as f:
                 print(f.read())
+        else:
+            print("p4config doesn't exist on disk")
 
         self.perforce.connect()
 
@@ -200,7 +203,7 @@ class P4Repo:
         self.created_client = True
 
     def _write_p4config(self):
-        print("Writing P4 conf")
+        print(f"Writing P4 conf to {Path(self.p4config).absolute()}")
         """Writes a p4config at the workspace root"""
         config = {
             'P4CLIENT': self.perforce.client,
