@@ -16,6 +16,7 @@ __REVISION_METADATA_DEPRECATED__ = 'buildkite:perforce:revision' # old metadata 
 
 def get_env():
     """Get env vars passed in via plugin config"""
+    print("Gathering env vars")
     env = {
         'P4PORT': os.environ.get('P4PORT') or os.environ.get('BUILDKITE_REPO')
     }
@@ -43,6 +44,7 @@ def list_from_env_array(var):
 
 def get_config():
     """Get configuration which will be passed directly to perforce.P4Repo as kwargs"""
+    print("Getting config")
     conf = {}
     conf['view'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_VIEW') or '//... ...'
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')

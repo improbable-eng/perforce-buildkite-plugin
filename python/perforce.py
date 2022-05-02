@@ -54,6 +54,10 @@ class P4Repo:
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         self.perforce.logger = logger
+
+        print("About to run p4 connect")
+        print(f"P4PORT={self.perforce.port}")
+
         self.perforce.connect()
 
         if self.perforce.port.startswith('ssl'):
@@ -191,6 +195,7 @@ class P4Repo:
         self.created_client = True
 
     def _write_p4config(self):
+        print("Writing P4 conf")
         """Writes a p4config at the workspace root"""
         config = {
             'P4CLIENT': self.perforce.client,
