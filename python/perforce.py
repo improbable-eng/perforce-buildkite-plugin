@@ -58,8 +58,10 @@ class P4Repo:
         print("About to run p4 connect")
         print(f"P4PORT={self.perforce.port}")
         print(f"P4CONFIG is at {self.p4config}")
-        with open('self.p4config', 'r') as f:
-            print(f.read())
+        if(os.path.exists(self.p4config)):
+            print("P4 config file exists")
+            with open(self.p4config, 'r') as f:
+                print(f.read())
 
         self.perforce.connect()
 
