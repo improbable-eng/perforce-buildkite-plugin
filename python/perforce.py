@@ -67,9 +67,8 @@ class P4Repo:
             print("p4config doesn't exist on disk")
 
         # Hack to remove bad ticket 
-
         p4ticket = Path("C:", "Users", "buildkite-agent", "p4tickets.txt")
-        print(f"p4 ticket is at {p4ticket}")
+        print(f"p4 ticket should be at {p4ticket}")
         if os.path.exists(p4ticket):
             print("Found p4 tickets, removing bad ticket")
             os.chmod( p4ticket, stat.S_IWRITE )
@@ -82,7 +81,24 @@ class P4Repo:
                     else:
                         print("Found bad ticket. Removing.")
         else :
-            print("Found p4 tickets not found, uh oh")
+            print("p4 tickets not found, uh oh")
+
+        # Hack to remove bad ticket 
+        p4ticket = Path(os.environ["USERPROFILE"], "buildkite-agent", "p4tickets.txt")
+        print(f"p4 ticket should be at {p4ticket}")
+        if os.path.exists(p4ticket):
+            print("Found p4 tickets, removing bad ticket")
+            os.chmod( p4ticket, stat.S_IWRITE )
+            with open(p4ticket, "r") as f:
+                lines = f.readlines()
+            with open(p4ticket, "w") as f:
+                for line in lines:
+                    if "EF94E790EEA5112D" not in line:
+                        f.write(line)
+                    else:
+                        print("Found bad ticket. Removing.")
+        else :
+            print("p4 tickets not found, uh oh")
 
 
         self.perforce.connect()
