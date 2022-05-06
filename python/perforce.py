@@ -84,7 +84,7 @@ class P4Repo:
             print("p4 tickets not found, uh oh")
 
         # Hack to remove bad ticket 
-        p4ticket = Path(os.environ["USERPROFILE"], "buildkite-agent", "p4tickets.txt")
+        p4ticket = Path(Path.home(), "p4tickets.txt")
         print(f"p4 ticket should be at {p4ticket}")
         if os.path.exists(p4ticket):
             print("Found p4 tickets, removing bad ticket")
