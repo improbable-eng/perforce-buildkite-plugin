@@ -67,9 +67,8 @@ class P4Repo:
             print("p4config doesn't exist on disk")
 
         # Hack to remove bad ticket 
-        userdir = Path.home()
-        print(f"User dir is {userdir}")
-        p4ticket = Path(userdir, "p4tickets.txt")
+
+        p4ticket = Path("C:", "Users", "buildkite-agent", "p4tickets.txt")
         print(f"p4 ticket is at {p4ticket}")
         if os.path.exists(p4ticket):
             print("Found p4 tickets, removing bad ticket")
