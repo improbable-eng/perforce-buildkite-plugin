@@ -128,10 +128,19 @@ class P4Repo:
         # pylint: disable=protected-access
         if self.created_client:
             return
+
         clientname = self._get_clientname()
         # must be set prior to running any commands to avoid issues with default client names
         self.perforce.client = clientname
+
+        # Before specifying new stream, clean patched files from the existing workspace
         client = self.perforce.fetch_client(clientname)
+        patched = self._read_patched()
+        if patched:
+            self.perforce.run_clean(patched)
+            os.remove(self.patchfile)
+
+        # Set root, stream, and view from supplied values
         if self.root:
             client._root = self.root
         if self.stream:
