@@ -16,7 +16,7 @@ from P4 import P4, P4Exception, OutputHandler # pylint: disable=import-error
 class P4Repo:
     """A class for manipulating perforce workspaces"""
     def __init__(self, root=None, view=None, stream=None, sync=None,
-                 client_options=None, client_type=None, parallel=0, fingerprint=None):
+                 client_options=None, client_type=None, parallel=1, fingerprint=None):
         """
         root: Directory in which to create the client workspace
         view: Client workspace mapping
@@ -133,12 +133,7 @@ class P4Repo:
         # must be set prior to running any commands to avoid issues with default client names
         self.perforce.client = clientname
 
-        # Before specifying new stream, clean patched files from the existing workspace
         client = self.perforce.fetch_client(clientname)
-        patched = self._read_patched()
-        if patched:
-            self.perforce.run_clean(patched)
-            os.remove(self.patchfile)
 
         # Set root, stream, and view from supplied values
         if self.root:
@@ -311,8 +306,15 @@ class P4Repo:
             perforce.run(*args)
 
         from concurrent.futures import ThreadPoolExecutor
+        results = []
         with ThreadPoolExecutor(max_workers=max_parallel) as executor:
-            executor.map(run, cmds)
+            for cmd in cmds:
+                results.append(executor.submit(run, cmd))
+        for result in results:
+            try:
+                result.result()
+            except Exception as e:
+                self.perforce.logger.error("exception!", e)
 
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
@@ -337,26 +339,29 @@ class P4Repo:
 
         self.perforce.logger.info("Depot To Local: " + json.dumps(depot_to_local, indent=4))
 
-        # Flag these files as modified
-        self._write_patched(list(depot_to_local.values()))
-
         # Turn sync spec info a prefix to filter out unwanted files
         # e.g. //my-depot/dir/... => //my-depot/dir/
         sync_prefixes = [prefix.rstrip('.') for prefix in self.sync_paths]
+
+        synced_patched_files = []
 
         self.perforce.logger.info("len(depotfiles): %s, len(whereinfo): %d, len(depot_to_local): %d" % (len(depotfiles), len(whereinfo), len(depot_to_local)))
 
         cmds = []
         for depotfile, localfile in depot_to_local.items():
-            if os.path.isfile(localfile):
-                os.chmod(localfile, stat.S_IWRITE)
-                os.unlink(localfile)
             if any(depotfile.startswith(prefix) for prefix in sync_prefixes):
+                if os.path.isfile(localfile):
+                    os.chmod(localfile, stat.S_IWRITE)
+                    os.unlink(localfile)
                 cmds.append(('print', '-o', localfile, '%s@=%s' % (depotfile, changelist)))
+                synced_patched_files.append(localfile)
             else:
                 self.perforce.logger.info('file doesnt have matching prefix: ' + depotfile)
 
-        self.run_parallel_cmds(cmds)
+        # Flag synced shelved files as modified
+        self._write_patched(synced_patched_files)
+
+        self.run_parallel_cmds(cmds, max_parallel=int(self.parallel))
 
 
 class SyncOutput(OutputHandler):

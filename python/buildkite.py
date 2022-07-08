@@ -47,7 +47,7 @@ def get_config():
     conf['view'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_VIEW') or '//... ...'
     conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
     conf['sync'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_SYNC')
-    conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 0
+    conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 1
     conf['client_options'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
     conf['client_type'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_TYPE')
     conf['fingerprint'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_FINGERPRINT')
