@@ -296,7 +296,7 @@ class P4Repo:
             self.perforce.run_clean(patched)
             os.remove(self.patchfile)
 
-    def run_parallel_cmds(self, cmds, max_parallel=20):
+    def run_parallel_cmds(self, cmds, max_parallel=20, max_attempts = 5):
         def run(*args):
             """Acquire new connection and run p4 cmd"""
             perforce = P4()
@@ -305,16 +305,24 @@ class P4Repo:
             perforce.connect()
             perforce.run(*args)
 
+        if max_attempts == 0:
+            raise Exception("attempted to retry too many times")
+
         from concurrent.futures import ThreadPoolExecutor
-        results = []
+        results = {}
+        retry = []
         with ThreadPoolExecutor(max_workers=max_parallel) as executor:
             for cmd in cmds:
-                results.append(executor.submit(run, cmd))
-        for result in results:
+                results[executor.submit(run, cmd)] = cmd
+        for result, cmd in results.items():
             try:
                 result.result()
             except Exception as e:
                 self.perforce.logger.error("exception!", e)
+                retry.append(cmd)
+
+        if len(retry) > 0:
+            run_parallel_cmds(self, retry, max_parallel, max_attempts - 1)
 
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
