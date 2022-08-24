@@ -318,7 +318,7 @@ class P4Repo:
             try:
                 result.result()
             except Exception as e:
-                self.perforce.logger.error("exception!", e)
+                self.perforce.logger.error("exception: " + str(e))
                 retry.append(cmd)
 
         if len(retry) > 0:
