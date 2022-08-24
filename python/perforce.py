@@ -322,6 +322,7 @@ class P4Repo:
                 retry.append(cmd)
 
         if len(retry) > 0:
+            self.perforce.logger.info("About to retry commands: " + json.dumps(retry))
             self.run_parallel_cmds(retry, max_parallel, max_attempts - 1)
 
     def p4print_unshelve(self, changelist):
