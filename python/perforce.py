@@ -296,7 +296,7 @@ class P4Repo:
             self.perforce.run_clean(patched)
             os.remove(self.patchfile)
 
-    def run_parallel_cmds(self, cmds, max_parallel=20):
+    def run_parallel_cmds(self, cmds, max_parallel=20, max_attempts = 5):
         def run(*args):
             """Acquire new connection and run p4 cmd"""
             perforce = P4()
@@ -305,16 +305,25 @@ class P4Repo:
             perforce.connect()
             perforce.run(*args)
 
+        if max_attempts == 0:
+            raise Exception("attempted to retry too many times")
+
         from concurrent.futures import ThreadPoolExecutor
-        results = []
+        results = {}
+        retry = []
         with ThreadPoolExecutor(max_workers=max_parallel) as executor:
             for cmd in cmds:
-                results.append(executor.submit(run, cmd))
-        for result in results:
+                results[executor.submit(run, cmd)] = cmd
+        for result, cmd in results.items():
             try:
                 result.result()
             except Exception as e:
-                self.perforce.logger.error("exception!", e)
+                self.perforce.logger.error("exception: " + str(e))
+                retry.append(cmd)
+
+        if len(retry) > 0:
+            self.perforce.logger.info("About to retry commands: " + json.dumps(retry))
+            self.run_parallel_cmds(retry, max_parallel, max_attempts - 1)
 
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
@@ -329,23 +338,15 @@ class P4Repo:
             raise Exception('Changelist %s does not contain any shelved files' % changelist)
         depotfiles = changeinfo['depotFile']
         
-        self.perforce.logger.info("Depotfiles: " + json.dumps(depotfiles, indent=4))
-
         whereinfo = self.perforce.run_where(depotfiles)
 
-        self.perforce.logger.info("Whereinfo: " + json.dumps(whereinfo, indent=4))
-
         depot_to_local = {item['depotFile']: item['path'] for item in whereinfo}
-
-        self.perforce.logger.info("Depot To Local: " + json.dumps(depot_to_local, indent=4))
 
         # Turn sync spec info a prefix to filter out unwanted files
         # e.g. //my-depot/dir/... => //my-depot/dir/
         sync_prefixes = [prefix.rstrip('.') for prefix in self.sync_paths]
 
         synced_patched_files = []
-
-        self.perforce.logger.info("len(depotfiles): %s, len(whereinfo): %d, len(depot_to_local): %d" % (len(depotfiles), len(whereinfo), len(depot_to_local)))
 
         cmds = []
         for depotfile, localfile in depot_to_local.items():
