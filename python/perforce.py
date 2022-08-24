@@ -322,7 +322,7 @@ class P4Repo:
                 retry.append(cmd)
 
         if len(retry) > 0:
-            run_parallel_cmds(self, retry, max_parallel, max_attempts - 1)
+            self.run_parallel_cmds(retry, max_parallel, max_attempts - 1)
 
     def p4print_unshelve(self, changelist):
         """Unshelve a pending change by p4printing the contents into a file"""
