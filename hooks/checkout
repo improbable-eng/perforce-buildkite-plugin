@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-plugin_root="${BASH_SOURCE%/*}/.."
+script_folder="$(dirname -- "$(readlink -f "${BASH_SOURCE}")")"
+plugin_root="$(dirname ${script_folder})"
 
 # Try to use explicit python3 if its installed
 python_bin="python3"
