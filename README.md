@@ -1,5 +1,3 @@
-# Perforce Buildkite Plugin [![Build Status](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin.svg?branch=master)](https://travis-ci.com/improbable-eng/perforce-buildkite-plugin)
-
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) that lets you check out code from [Perforce Version Control](https://www.perforce.com/products/helix-core) on Windows, Linux and macOS platforms.
 
 1. Configure at least `P4PORT` and `P4USER` (see examples below)
@@ -19,7 +17,7 @@ env:
 
 steps:
   plugins:
-    - improbable-eng/perforce: ~
+    - inflexiongames/perforce: ~
 ```
 
 ### Configuration via plugin
@@ -27,7 +25,7 @@ steps:
 ```yaml
 steps:
   plugins:
-    - improbable-eng/perforce:
+    - inflexiongames/perforce:
       p4port: perforce:1666
       p4user: username
 ```

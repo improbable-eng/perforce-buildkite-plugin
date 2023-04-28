@@ -1,11 +1,13 @@
 """
 Interact with buildkite as part of plugin hooks
 """
+from dataclasses import dataclass
 import os
 import sys
 import subprocess
 import re
 from datetime import datetime
+from typing import Callable, Dict, Optional, Tuple
 
 __ACCESS_TOKEN__ = os.environ['BUILDKITE_AGENT_ACCESS_TOKEN']
 # https://github.com/buildkite/cli/blob/e8aac4bedf34cd8084a3ae7a4ab7812c611d0310/local/run.go#L403
@@ -13,6 +15,9 @@ __LOCAL_RUN__ = os.environ['BUILDKITE_AGENT_NAME'] == 'local'
 
 __REVISION_METADATA__ = 'buildkite-perforce-revision'
 __REVISION_METADATA_DEPRECATED__ = 'buildkite:perforce:revision' # old metadata key, incompatible with `bk local run`
+
+__STREAM_ENV_VAR__ = "PERFORCE_PLUGIN_STREAM"
+__SHELF_ENV_VAR__ = "PERFORCE_PLUGIN_SHELF"
 
 def get_env():
     """Get env vars passed in via plugin config"""
@@ -25,18 +30,26 @@ def get_env():
             env[p4var] = plugin_value
     return env
 
-def list_from_env_array(var):
+def list_from_env_array(var, substitutions: Dict[str, Callable] = None):
     """Read list of values from either VAR or VAR_0, VAR_1 etc"""
     result = os.environ.get(var, [])
     if result:
-        return [result] # convert single value to list
+        processed_elem = result
+        if substitutions is not None:
+            for replacement, replacer in substitutions.items():
+                processed_elem = processed_elem.replace(replacement, replacer())
+        return [processed_elem] # convert single value to list
 
     i = 0
     while True:
         elem = os.environ.get("%s_%d" % (var, i))
         if not elem:
             break
-        result.append(elem)
+        processed_elem = elem
+        if substitutions is not None:
+            for replacement, replacer in substitutions.items():
+                processed_elem = processed_elem.replace(replacement, replacer())
+        result.append(processed_elem)
         i += 1
 
     return result
@@ -45,8 +58,10 @@ def get_config():
     """Get configuration which will be passed directly to perforce.P4Repo as kwargs"""
     conf = {}
     conf['view'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_VIEW') or '//... ...'
-    conf['stream'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_STREAM')
-    conf['sync'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_SYNC')
+    conf['stream'] = get_stream_from_buildkite()
+    conf['sync'] = list_from_env_array('BUILDKITE_PLUGIN_PERFORCE_SYNC', {
+        "<stream>": get_stream_from_buildkite
+    })
     conf['parallel'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_PARALLEL') or 1
     conf['client_options'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
     conf['client_type'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_TYPE')
@@ -84,17 +99,50 @@ def set_metadata(key, value, overwrite=False):
         subprocess.call(['buildkite-agent', 'meta-data', 'set',  key, value])
         return True
 
+def set_environment_var(key, value):
+    """ Sets an env variable for the job. Uses buildkite-agent for resilience."""
+
+    if not __ACCESS_TOKEN__ or __LOCAL_RUN__:
+        # Cannot set env vars outside of buildkite context, including `bk local run`
+        return False
+
+    subprocess.call(['buildkite-agent', 'env', 'set', f'"{key}={value}"'])
+    os.environ[key] = value
+    return True
+
+@dataclass
+class StreamAndShelf:
+    stream: str
+    user_changelist: Optional[str]
+
+def get_stream_and_user_changelist() -> StreamAndShelf:
+    """Extract the stream and user changelist (if applicable) from the Buildkite Branch"""
+    branch = os.environ.get('BUILDKITE_BRANCH', '')
+
+    stream_shelf_pattern = r"(?P<stream>[A-z_0-9-]+\/[A-z_0-9-]+)(?:!(?P<shelf>[0-9]+))?"
+    matches_pattern = re.match(stream_shelf_pattern, branch)
+
+    stream = ""
+    user_changelist = None
+    if matches_pattern:
+        stream = f"//{matches_pattern.group('stream')}"
+        user_changelist = matches_pattern.group('shelf')
+
+    return StreamAndShelf(stream, user_changelist)
+
+
 def get_users_changelist():
     """Get the shelved changelist supplied by the user, if applicable"""
-    # Overrides the CL to unshelve via plugin config
-    # TODO: Remove this to discourage git-based pipelines that sync perforce
-    shelved_cl = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_SHELVED_CHANGE')
-    if shelved_cl:
-        return shelved_cl
+    user_changelist = get_stream_and_user_changelist().user_changelist
+    if user_changelist is not None:
+        set_environment_var(__SHELF_ENV_VAR__, user_changelist)
+    return user_changelist
 
-    branch = os.environ.get('BUILDKITE_BRANCH', '')
-    if branch.isdigit():
-        return branch
+def get_stream_from_buildkite():
+    """Get the name of the current stream from buildkite"""
+    stream = get_stream_and_user_changelist().stream
+    set_environment_var(__STREAM_ENV_VAR__, stream)
+    return stream
 
 def get_build_revision():
     """Get a p4 revision for the build from buildkite context"""
