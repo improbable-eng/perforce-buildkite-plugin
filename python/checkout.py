@@ -13,6 +13,7 @@ def main():
     """Main"""
     os.environ.update(get_env())
     config = get_config()
+    print(config)
 
     repo = P4Repo(**config)
 
