@@ -11,7 +11,7 @@ from buildkite import (get_env, get_config, get_build_revision, set_build_revisi
 
 def main():
     """Main"""
-    os.environ.update(get_env())
+    # os.environ.update(get_env())
     config = get_config()
     print(config)
 
