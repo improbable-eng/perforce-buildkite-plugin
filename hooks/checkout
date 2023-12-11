@@ -16,10 +16,17 @@ if [[ ! $(${python_bin} -m pip freeze) =~ "virtualenv==" ]]; then
 fi
 
 # Unique virtualenv for requirements.txt
-venv_md5=$(md5sum "${plugin_root}/python/requirements.txt" | awk '{print $1}')
+platform=$(${python_bin} -c "import platform; print(platform.system())")
+if [[ "${platform}" == "Darwin" ]]; then
+    # Use md5 for macOS
+    venv_md5=$(md5 -q "${plugin_root}/python/requirements.txt")
+else
+    # Use md5sum for other platforms
+    venv_md5=$(md5sum "${plugin_root}/python/requirements.txt" | awk '{print $1}')
+fi
+
 venv_dir="${BUILDKITE_BUILD_CHECKOUT_PATH}/../.perforce-plugin-venv-${venv_md5}"
 
-platform=$(${python_bin} -c "import platform; print(platform.system())")
 if [[ "${platform}" == "Windows" ]]; then
   venv_python_bin="/Scripts/python"
 else
