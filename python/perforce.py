@@ -194,7 +194,6 @@ class P4Repo:
         """Writes a p4config at the workspace root"""
         config = {
             'P4CLIENT': self.perforce.client,
-            'P4USER': self.perforce.user,
             'P4PORT': self.perforce.port
         }
         if not os.path.exists(self.root):
