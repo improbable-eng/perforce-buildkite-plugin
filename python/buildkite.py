@@ -51,8 +51,9 @@ def get_config():
     conf['client_options'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_OPTIONS')
     conf['client_type'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_CLIENT_TYPE')
 
-    if 'BUILDKITE_PLUGIN_PERFORCE_ROOT' in os.environ and not __LOCAL_RUN__:
-        raise Exception("Custom P4 root is for use in unit tests only")
+    # TODO: Hack - ALlow custom roots to be set for now
+    # if 'BUILDKITE_PLUGIN_PERFORCE_ROOT' in os.environ and not __LOCAL_RUN__:
+    #     raise Exception("Custom P4 root is for use in unit tests only")
     conf['root'] = os.environ.get('BUILDKITE_PLUGIN_PERFORCE_ROOT') or os.environ.get('BUILDKITE_BUILD_CHECKOUT_PATH')
 
     # Coerce view into pairs of [depot client] paths
